@@ -1,15 +1,15 @@
 # Project World Model (PWM)
 
-## 🎓 Academic Foundation
+## 🎓 Academic Foundation & Validation
 
-`Project-World-Model (PWM)` is the commercial evolution of a framework originally developed within a Master's Thesis at **JAMK University of Applied Sciences** (Professional Project Management, Master of Engineering). 
+The core architecture of `Project-World-Model (PWM)` is built upon the theoretical frameworks and validation models developed in my Master of Engineering thesis at **JAMK University of Applied Sciences** (Professional Project Management). 
 
-The underlying research, titled *"Emergent Workflows in the Video Game Industry: Leveraging AI World Models as a Framework for Production Management,"* was designed to solve the **Paradox of Agility**—a systemic bottleneck where AI-accelerated asset generation overwhelms traditional linear integration pipelines (Scrum/Kanban). 
+* **Thesis Title:** *Itseohjautuvat työnkulut videopeliteollisuudessa: tekoälyn maailmanmallit tuotannon johtamisen viitekehyksenä* (Emergent Workflows in the Video Game Industry: Leveraging AI World Models as a Framework for Production Management)
+* **Official Permanent Repository Link:** [URN:NBN:fi:amk-2026052919003](https://urn.fi/URN:NBN:fi:amk-2026052919003)
 
-By transitioning from reactive project tracking to predictive, latent-space simulation via an asynchronous *Team of Rivals* agent architecture, this platform operationalizes advanced academic theory into a production-ready, commercial enterprise for the **Build with Gemini XPRIZE**.
+This research directly addresses the **Paradox of Agility**—where AI-accelerated content asset production outpaces traditional linear integration pipelines (Scrum/Kanban). By transitioning project management from reactive tracking to predictive, latent-space simulation via an asynchronous *Team of Rivals* agent architecture, this platform operationalizes advanced academic theory into a commercially viable, production-ready enterprise for the **Build with Gemini XPRIZE**.
 
-## Overview
-The Project World Model (PWM) framework represents a fundamental paradigm shift in enterprise software engineering and complex production management. By evolving the technological infrastructure from the L1 stage of isolated generative asset creation to the L3 stage of causal, latent-space simulation, the PWM structurally eradicates the "Paradox of Agility" and the crushing weight of integration debt.
+The platform explicitly implements the thesis's core performance metric, the **Compute-to-Rework Ratio ($CRR$)**, to simulate pipeline bottlenecks before they incur human engineering or software regression costs.
 
 ## Architecture
 ![PWM Architecture Diagram](Docs/pwm_architecture_diagram.png)
