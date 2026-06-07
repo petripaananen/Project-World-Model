@@ -9,9 +9,8 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-# --- GCP Configuration Placeholders ---
-# Replace these with your actual GCP details tomorrow
-GCP_PROJECT_ID="YOUR_GCP_PROJECT_ID_PLACEHOLDER"
+# --- GCP Configuration ---
+GCP_PROJECT_ID="project-world-model"
 GCP_REGION="us-central1"
 SERVICE_NAME="project-world-model"
 REPOSITORY_NAME="pwm-containers"

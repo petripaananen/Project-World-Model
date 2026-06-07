@@ -493,7 +493,7 @@ def main():
     parser.add_argument(
         "--port",
         type=int,
-        default=8765,
+        default=None,
         help="Web dashboard port (default: 8765)",
     )
     parser.add_argument(
@@ -516,7 +516,7 @@ def main():
     config.verbose = args.verbose
 
     # Apply port override
-    if args.port:
+    if args.port is not None:
         config.dashboard.web_port = args.port
 
     # Validate API access for analyze mode

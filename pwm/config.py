@@ -23,7 +23,7 @@ load_dotenv(_PROJECT_ROOT / ".env")
 
 class GCPConfig(BaseModel):
     """Google Cloud Platform configuration."""
-    project_id: str = Field(default="", description="GCP project ID")
+    project_id: str = Field(default="project-world-model", description="GCP project ID")
     location: str = Field(default="us-central1", description="GCP region")
 
 
@@ -59,8 +59,14 @@ class IngestionConfig(BaseModel):
 
 class DashboardConfig(BaseModel):
     """Web dashboard configuration."""
-    web_host: str = Field(default="127.0.0.1", description="Dashboard bind host")
-    web_port: int = Field(default=8765, description="Dashboard port")
+    web_host: str = Field(
+        default_factory=lambda: os.getenv("HOST", "0.0.0.0"),
+        description="Dashboard bind host",
+    )
+    web_port: int = Field(
+        default_factory=lambda: int(os.getenv("PORT", "8765")),
+        description="Dashboard port",
+    )
     event_log_path: Path = Field(
         default_factory=lambda: Path("output/events.jsonl"),
         description="Path to immutable event log",

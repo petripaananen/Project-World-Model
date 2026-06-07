@@ -28,4 +28,4 @@ RUN mkdir -p /app/output && chmod 777 /app/output
 EXPOSE 8765
 
 # Launch the orchestrator in mock loop mode with web dashboard
-CMD python -m pwm.main --mode demo --ingestion mock --web --loop --port 8765
+CMD python -m pwm.main --mode demo --ingestion mock --web --loop --no-interactive
