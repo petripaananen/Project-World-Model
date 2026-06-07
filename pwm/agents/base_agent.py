@@ -69,6 +69,34 @@ class BaseAgent(ABC):
             "output_tokens": self._total_output_tokens,
         }
 
+    def sanitize_input(self, text: str) -> str:
+        """
+        Sanitize text inputs to mitigate prompt injection, XSS, and command injection attacks.
+        Strips script/iframe tags and neutralizes typical system prompt bypass keywords.
+        """
+        if not text:
+            return ""
+        
+        import re
+        # Strip XSS script / iframe tags
+        sanitized = re.sub(r"<script.*?>.*?</script>", "", text, flags=re.IGNORECASE)
+        sanitized = re.sub(r"<iframe.*?>.*?</iframe>", "", sanitized, flags=re.IGNORECASE)
+        
+        # Neutralize prompt injection attempts
+        injection_patterns = [
+            r"ignore\s+(?:all\s+|previous\s+)?instructions",
+            r"bypass\s+(?:safety|guardrails)",
+            r"you\s+are\s+now\s+(?:an?\s+)?admin",
+            r"system\s+override",
+            r"developer\s+mode",
+            r"override\s+system\s+instructions",
+        ]
+        
+        for pattern in injection_patterns:
+            sanitized = re.sub(pattern, "[CLEANED SECURELY]", sanitized, flags=re.IGNORECASE)
+            
+        return sanitized
+
     async def call_gemini(
         self,
         prompt: str,
@@ -79,7 +107,7 @@ class BaseAgent(ABC):
         retry_delay: float = 2.0,
     ) -> str:
         """
-        Call Gemini API with retry logic and token tracking.
+        Call Gemini API with retry logic, token tracking, and strict SAIF safety settings.
 
         Args:
             prompt: The user prompt to send
@@ -96,18 +124,42 @@ class BaseAgent(ABC):
         temp = temperature if temperature is not None else self.config.models.temperature
         max_tokens = max_output_tokens or self.config.models.max_output_tokens
 
+        # Strict safety settings (SAIF compliance)
+        safety_settings = [
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+                threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+            ),
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+            ),
+        ]
+
         gen_config = types.GenerateContentConfig(
             system_instruction=sys_prompt if sys_prompt else None,
             temperature=temp,
             max_output_tokens=max_tokens,
+            safety_settings=safety_settings,
         )
+
+        # Sanitize prompt before sending
+        sanitized_prompt = self.sanitize_input(prompt)
 
         last_error = None
         for attempt in range(max_retries):
             try:
                 response = await self._client.aio.models.generate_content(
                     model=self.model_name,
-                    contents=prompt,
+                    contents=sanitized_prompt,
                     config=gen_config,
                 )
 
@@ -163,8 +215,11 @@ class BaseAgent(ABC):
                 if isinstance(result, dict):
                     return result
                 return {"raw": result}
-            except Exception:
-                return {"raw": cleaned, "_parse_error": True}
+            except Exception as e:
+                # Log parsing anomaly (SAIF compliance)
+                if self.config.verbose:
+                    print(f"⚠️ [{self.__class__.__name__}] Schema validation anomaly/parse failure: {e}")
+                return {"raw": cleaned, "_parse_error": True, "_parse_exception": str(e)}
 
     @abstractmethod
     async def process(self, data: Dict[str, Any], **kwargs) -> Dict[str, Any]:
