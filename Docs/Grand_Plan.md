@@ -67,8 +67,8 @@ The PWM framework addresses the **"Paradox of Agility"** – the phenomenon wher
 *   **Tasks**:
     - [x] Migrate web dashboard and orchestrator to Google Cloud Run for continuous, serverless execution. *(Completed: Deployed successfully to Cloud Run under project `project-world-model`)*
     - [x] Operationalize the **CRR Metric (Compute-to-Rework Ratio)** to mathematically prove ROI to CFOs. *(Completed: CRR engine calculates and logs AI-to-rework cost ratios)*
-    - [🔄] Transition agent execution to Vertex AI API and integrate GCP Firestore for serverless log auditing. *(In Progress)*
-    - [ ] Implement **Management Control of Compute** (cognitive budgeting tools) to prevent the *Jevons Paradox* (hallucination loops inflating cloud bills).
+    - [x] Transition agent execution to Vertex AI API and integrate GCP Firestore for serverless log auditing. *(Completed: Prioritized Vertex AI endpoints and routed all event logs asynchronously to GCP Firestore)*
+    - [🔄] Implement **Management Control of Compute** (cognitive budgeting tools) to prevent the *Jevons Paradox* (hallucination loops inflating cloud bills). *(In Progress)*
 
 ### Phase 7: First Commercial Version (V1.0) and Go-to-Market Strategy
 *   **Objective**: Commercial launch and industry paradigm shift.
