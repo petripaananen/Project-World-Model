@@ -1,1 +1,5 @@
-"""PWM Dashboard — Layer 5: Scenario Strategist Interface."""
+"""PWM Dashboard implementations — Layer 5."""
+
+from .cli_dashboard import CLIDashboard
+
+__all__ = ["CLIDashboard"]

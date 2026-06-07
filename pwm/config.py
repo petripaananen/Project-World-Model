@@ -57,6 +57,16 @@ class IngestionConfig(BaseModel):
     )
 
 
+class DashboardConfig(BaseModel):
+    """Web dashboard configuration."""
+    web_host: str = Field(default="127.0.0.1", description="Dashboard bind host")
+    web_port: int = Field(default=8765, description="Dashboard port")
+    event_log_path: Path = Field(
+        default_factory=lambda: Path("output/events.jsonl"),
+        description="Path to immutable event log",
+    )
+
+
 class CRRConfig(BaseModel):
     """Compute-to-Rework Ratio calculation parameters."""
     # Cost assumptions
@@ -99,6 +109,7 @@ class PWMConfig(BaseModel):
     models: ModelConfig = Field(default_factory=ModelConfig)
     ingestion: IngestionConfig = Field(default_factory=IngestionConfig)
     crr: CRRConfig = Field(default_factory=CRRConfig)
+    dashboard: DashboardConfig = Field(default_factory=DashboardConfig)
 
     # Runtime
     project_root: Path = Field(

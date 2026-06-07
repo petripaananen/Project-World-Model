@@ -11,6 +11,7 @@ Usage:
     python -m pwm.main                    # Full pipeline with mock data
     python -m pwm.main --mode demo        # Demo mode (no Gemini API needed)
     python -m pwm.main --mode analyze     # Full analysis with Gemini agents
+    python -m pwm.main --web              # Start web dashboard
     python -m pwm.main --help             # Show all options
 """
 
@@ -37,6 +38,7 @@ from pwm.ingestion.models import (
     ResolutionStrategy,
     DebtSeverity,
 )
+from pwm.logging.event_logger import EventLogger
 from pwm.simulation.crr_engine import CRREngine
 from pwm.simulation.debt_detector import DebtDetector
 
@@ -47,7 +49,6 @@ async def ingest_worker(queue: asyncio.Queue, config: PWMConfig, ingestion_mode:
     linear = LinearIngestor(config)
     
     while True:
-        # We don't use rich console here to avoid mangling the dashboard
         print(f"\n[📡 Ingest Worker] Waking up to poll MCP servers...")
         try:
             p_state = await github.ingest(mode=ingestion_mode)
@@ -58,7 +59,14 @@ async def ingest_worker(queue: asyncio.Queue, config: PWMConfig, ingestion_mode:
             print(f"[❌ Ingest Worker] Error: {e}")
         await asyncio.sleep(interval)
 
-async def agent_worker(queue: asyncio.Queue, config: PWMConfig, mode: str, no_interactive: bool):
+async def agent_worker(
+    queue: asyncio.Queue,
+    config: PWMConfig,
+    mode: str,
+    no_interactive: bool,
+    event_logger: EventLogger | None = None,
+    dashboard_state=None,
+):
     """Layer 3-5: Consumes snapshots, detects debt, runs Agents, and renders Dashboard."""
     dashboard = CLIDashboard()
     detector = DebtDetector(config)
@@ -71,9 +79,20 @@ async def agent_worker(queue: asyncio.Queue, config: PWMConfig, mode: str, no_in
         state.sprint_state = s_state
         
         print(f"[🤖 Agent Worker] Processing snapshot {state.run_id}...")
+
+        # Log pipeline start
+        if event_logger:
+            await event_logger.log_pipeline_start(state.run_id)
         
         # Layer 2: Detect
         state.debt_report = detector.analyze(p_state, s_state)
+
+        if event_logger and state.debt_report:
+            await event_logger.log_debt_detected(
+                state.run_id,
+                state.debt_report.total_debt_items,
+                state.debt_report.total_estimated_rework_hours,
+            )
         
         if not state.debt_report.conflicts:
             print(f"[🤖 Agent Worker] No conflicts detected. Waiting for next snapshot.")
@@ -103,12 +122,33 @@ async def agent_worker(queue: asyncio.Queue, config: PWMConfig, mode: str, no_in
             state.proposals, state.verdicts = _generate_demo_proposals(state)
             state.total_input_tokens = 15000
             state.total_output_tokens = 8000
+
+        # Log proposals and verdicts
+        if event_logger:
+            for proposal in state.proposals:
+                desc = proposal.target_conflict.description[:80] if proposal.target_conflict else "Unknown"
+                await event_logger.log_proposal(state.run_id, desc, len(proposal.strategies))
+            for verdict in state.verdicts:
+                await event_logger.log_verdict(
+                    state.run_id, verdict.verdict.value, verdict.architectural_integrity_score
+                )
             
         # Layer 2: CRR
         crr_engine = CRREngine(config)
         state.crr = crr_engine.calculate(state.debt_report, state.total_input_tokens, state.total_output_tokens)
+
+        if event_logger and state.crr:
+            await event_logger.log_crr(
+                state.run_id, state.crr.crr,
+                state.crr.total_ai_cost_usd, state.crr.estimated_rework_cost_usd,
+            )
+            await event_logger.log_pipeline_end(state.run_id, state.crr.crr)
+
+        # Push state to web dashboard if connected
+        if dashboard_state:
+            await dashboard_state.update_state(state)
         
-        # Layer 5: Dashboard
+        # Layer 5: CLI Dashboard
         dashboard.render_full_report(state)
         
         if not no_interactive:
@@ -119,19 +159,40 @@ async def agent_worker(queue: asyncio.Queue, config: PWMConfig, mode: str, no_in
                 
         queue.task_done()
 
-async def run_async_architecture(config: PWMConfig, mode: str, ingestion_mode: str, no_interactive: bool):
+async def run_async_architecture(
+    config: PWMConfig,
+    mode: str,
+    ingestion_mode: str,
+    no_interactive: bool,
+    web: bool = False,
+):
     """Deploys the full async Team of Rivals architecture with event queues."""
     queue = asyncio.Queue()
+    event_logger = EventLogger(config.dashboard.event_log_path)
+    event_logger.load_from_disk()
+    dashboard_state = None
     
     print("\n🌍 Deploying Async Team of Rivals Architecture...")
-    print("Spawning Ingest Worker and Agent Worker tasks...\n")
-    
+    print("Spawning Ingest Worker and Agent Worker tasks...")
+
+    tasks = []
+
+    # Optionally start web dashboard
+    if web:
+        from pwm.dashboard.web_dashboard import DashboardState, start_dashboard
+        dashboard_state = DashboardState(event_logger)
+        tasks.append(asyncio.create_task(start_dashboard(config, dashboard_state)))
+
     # Spawn workers
-    ingester = asyncio.create_task(ingest_worker(queue, config, ingestion_mode, interval=60))
-    agent = asyncio.create_task(agent_worker(queue, config, mode, no_interactive))
+    tasks.append(asyncio.create_task(
+        ingest_worker(queue, config, ingestion_mode, interval=60)
+    ))
+    tasks.append(asyncio.create_task(
+        agent_worker(queue, config, mode, no_interactive, event_logger, dashboard_state)
+    ))
     
     # Run forever
-    await asyncio.gather(ingester, agent)
+    await asyncio.gather(*tasks)
 
 async def run_pipeline(
     config: PWMConfig,
@@ -425,6 +486,17 @@ def main():
         help="Run in continuous async loop mode (Prototype Phase 3 architecture)",
     )
     parser.add_argument(
+        "--web",
+        action="store_true",
+        help="Start the web dashboard (FastAPI + WebSocket)",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8765,
+        help="Web dashboard port (default: 8765)",
+    )
+    parser.add_argument(
         "--output",
         type=str,
         default=None,
@@ -443,6 +515,10 @@ def main():
     config = PWMConfig.from_env()
     config.verbose = args.verbose
 
+    # Apply port override
+    if args.port:
+        config.dashboard.web_port = args.port
+
     # Validate API access for analyze mode
     if args.mode == "analyze" and not config.validate_api_access():
         print(
@@ -452,15 +528,16 @@ def main():
         )
         return
 
-    if args.loop:
-        # Run Phase 3 async architecture
+    if args.loop or args.web:
+        # Run async architecture (with optional web dashboard)
         try:
             asyncio.run(
                 run_async_architecture(
                     config=config,
                     mode=args.mode,
                     ingestion_mode=args.ingestion,
-                    no_interactive=args.no_interactive
+                    no_interactive=args.no_interactive,
+                    web=args.web,
                 )
             )
         except KeyboardInterrupt:
