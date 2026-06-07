@@ -43,6 +43,84 @@ from pwm.simulation.crr_engine import CRREngine
 from pwm.simulation.debt_detector import DebtDetector
 
 
+async def _execute_agent_pipeline(
+    state: PWMPipelineState,
+    config: PWMConfig,
+    mode: str,
+    event_logger: EventLogger | None = None,
+) -> PWMPipelineState:
+    """
+    Shared Layer 3/4 agent execution step.
+
+    Runs Worker + Critic agents (or demo fallback), calculates CRR,
+    and logs events. Called by both the linear pipeline and the async
+    loop architecture to avoid code duplication.
+
+    Args:
+        state: Pipeline state with debt_report already populated
+        config: PWM configuration
+        mode: "demo" or "analyze"
+        event_logger: Optional event logger for audit trail
+
+    Returns:
+        Updated PWMPipelineState with proposals, verdicts, and CRR
+    """
+    if mode == "analyze":
+        from pwm.agents.worker_agent import WorkerAgent
+        from pwm.agents.critic_agent import CriticAgent
+
+        worker = WorkerAgent(config=config)
+        critic = CriticAgent(config=config)
+
+        data = {
+            "debt_report": state.debt_report,
+            "project_context": _build_project_context(state),
+            "worker_agent": worker,
+        }
+        data = await worker.process(data)
+        state.proposals = data.get("proposals", [])
+        data["proposals"] = state.proposals
+        data = await critic.process(data)
+        state.proposals = data.get("proposals", [])
+        state.verdicts = data.get("verdicts", [])
+
+        worker_tokens = worker.token_usage
+        critic_tokens = critic.token_usage
+        state.total_input_tokens = worker_tokens["input_tokens"] + critic_tokens["input_tokens"]
+        state.total_output_tokens = worker_tokens["output_tokens"] + critic_tokens["output_tokens"]
+    else:
+        state.proposals, state.verdicts = _generate_demo_proposals(state)
+        state.total_input_tokens = 15_000
+        state.total_output_tokens = 8_000
+
+    # Log proposals and verdicts
+    if event_logger:
+        for proposal in state.proposals:
+            desc = proposal.target_conflict.description[:80] if proposal.target_conflict else "Unknown"
+            await event_logger.log_proposal(state.run_id, desc, len(proposal.strategies))
+        for verdict in state.verdicts:
+            await event_logger.log_verdict(
+                state.run_id, verdict.verdict.value, verdict.architectural_integrity_score
+            )
+
+    # CRR calculation
+    crr_engine = CRREngine(config)
+    state.crr = crr_engine.calculate(
+        debt_report=state.debt_report,
+        input_tokens=state.total_input_tokens,
+        output_tokens=state.total_output_tokens,
+    )
+
+    if event_logger and state.crr:
+        await event_logger.log_crr(
+            state.run_id, state.crr.crr,
+            state.crr.total_ai_cost_usd, state.crr.estimated_rework_cost_usd,
+        )
+        await event_logger.log_pipeline_end(state.run_id, state.crr.crr)
+
+    return state
+
+
 async def ingest_worker(queue: asyncio.Queue, config: PWMConfig, ingestion_mode: str, interval: int = 60):
     """Layer 1: Continuous background ingestion. Produces project state snapshots."""
     github = GitHubIngestor(config)
@@ -99,35 +177,9 @@ async def agent_worker(
             queue.task_done()
             continue
             
-        # Layer 3/4: Agents
+        # Layer 3/4: Agents (shared pipeline step)
         try:
-            if mode == "analyze":
-                from pwm.agents.worker_agent import WorkerAgent
-                from pwm.agents.critic_agent import CriticAgent
-                
-                worker = WorkerAgent(config=config)
-                critic = CriticAgent(config=config)
-                
-                data = {
-                    "debt_report": state.debt_report,
-                    "project_context": _build_project_context(state),
-                    "worker_agent": worker,
-                }
-                data = await worker.process(data)
-                state.proposals = data.get("proposals", [])
-                data["proposals"] = state.proposals
-                data = await critic.process(data)
-                state.proposals = data.get("proposals", [])
-                state.verdicts = data.get("verdicts", [])
-                
-                worker_tokens = worker.token_usage
-                critic_tokens = critic.token_usage
-                state.total_input_tokens = worker_tokens["input_tokens"] + critic_tokens["input_tokens"]
-                state.total_output_tokens = worker_tokens["output_tokens"] + critic_tokens["output_tokens"]
-            else:
-                state.proposals, state.verdicts = _generate_demo_proposals(state)
-                state.total_input_tokens = 15000
-                state.total_output_tokens = 8000
+            state = await _execute_agent_pipeline(state, config, mode, event_logger)
         except Exception as e:
             err_msg = str(e)
             print(f"❌ Error during agent execution: {err_msg}")
@@ -135,28 +187,7 @@ async def agent_worker(
                 await event_logger.log_error(state.run_id, err_msg)
             queue.task_done()
             continue
-
-        # Log proposals and verdicts
-        if event_logger:
-            for proposal in state.proposals:
-                desc = proposal.target_conflict.description[:80] if proposal.target_conflict else "Unknown"
-                await event_logger.log_proposal(state.run_id, desc, len(proposal.strategies))
-            for verdict in state.verdicts:
-                await event_logger.log_verdict(
-                    state.run_id, verdict.verdict.value, verdict.architectural_integrity_score
-                )
             
-        # Layer 2: CRR
-        crr_engine = CRREngine(config)
-        state.crr = crr_engine.calculate(state.debt_report, state.total_input_tokens, state.total_output_tokens)
-
-        if event_logger and state.crr:
-            await event_logger.log_crr(
-                state.run_id, state.crr.crr,
-                state.crr.total_ai_cost_usd, state.crr.estimated_rework_cost_usd,
-            )
-            await event_logger.log_pipeline_end(state.run_id, state.crr.crr)
-
         # Push state to web dashboard if connected
         if dashboard_state:
             await dashboard_state.update_state(state)
@@ -214,14 +245,16 @@ async def run_pipeline(
     config: PWMConfig,
     mode: str = "demo",
     ingestion_mode: str = "mock",
+    event_logger: EventLogger | None = None,
 ) -> PWMPipelineState:
     """
-    Execute the full PWM pipeline.
+    Execute the full PWM pipeline (linear single-shot mode).
 
     Args:
         config: PWM configuration
         mode: "demo" (no LLM) or "analyze" (with Gemini agents)
         ingestion_mode: "mock", "mcp", or "api"
+        event_logger: Optional shared event logger for audit trail
 
     Returns:
         Complete PWMPipelineState with all layers populated
@@ -270,89 +303,35 @@ async def run_pipeline(
     dashboard.console.print()
 
     # ── Layer 3 + 4: Worker + Critic Agents ─────────────────────
-    if mode == "analyze":
-        dashboard.console.print(
-            "[bold green]🤖 Layer 3+4: Running Worker & Critic agents...[/bold green]"
-        )
+    dashboard.console.print(
+        "[bold green]🤖 Layer 3+4: Running agents...[/bold green]"
+    )
 
-        # Import agents only when needed (requires google-genai)
-        from pwm.agents.worker_agent import WorkerAgent
-        from pwm.agents.critic_agent import CriticAgent
+    try:
+        state = await _execute_agent_pipeline(state, config, mode, event_logger)
+    except Exception as e:
+        err_msg = str(e)
+        dashboard.console.print(f"[bold red]❌ Error during agent execution: {err_msg}[/bold red]")
+        if event_logger:
+            await event_logger.log_error(state.run_id, err_msg)
+        raise
 
-        worker = WorkerAgent(config=config)
-        critic = CriticAgent(config=config)
-
-        data = {
-            "debt_report": state.debt_report,
-            "project_context": _build_project_context(state),
-            "worker_agent": worker,
-        }
-
-        try:
-            # Run worker
-            data = await worker.process(data)
-            state.proposals = data.get("proposals", [])
-            dashboard.console.print(
-                f"  ✓ Worker generated {len(state.proposals)} resolution proposals"
-            )
-
-            # Run critic
-            data["proposals"] = state.proposals
-            data = await critic.process(data)
-            state.proposals = data.get("proposals", [])
-            state.verdicts = data.get("verdicts", [])
-        except Exception as e:
-            err_msg = str(e)
-            dashboard.console.print(f"[bold red]❌ Error during agent execution: {err_msg}[/bold red]")
-            from pwm.logging.event_logger import EventLogger
-            logger = EventLogger(config=config)
-            await logger.log_error(state.run_id, err_msg)
-            raise
-
-        approved = sum(
-            1 for v in state.verdicts
-            if v.verdict == CriticVerdictStatus.APPROVED
-        )
-        dashboard.console.print(
-            f"  ✓ Critic reviewed: {approved}/{len(state.verdicts)} approved"
-        )
-
-        # Track tokens for CRR
-        worker_tokens = worker.token_usage
-        critic_tokens = critic.token_usage
-        state.total_input_tokens = (
-            worker_tokens["input_tokens"] + critic_tokens["input_tokens"]
-        )
-        state.total_output_tokens = (
-            worker_tokens["output_tokens"] + critic_tokens["output_tokens"]
-        )
-
-    elif mode == "demo":
-        dashboard.console.print(
-            "[bold green]🤖 Layer 3+4: Generating demo proposals...[/bold green]"
-        )
-        state.proposals, state.verdicts = _generate_demo_proposals(state)
-        # Simulated token usage for demo
-        state.total_input_tokens = 15_000
-        state.total_output_tokens = 8_000
-        dashboard.console.print(
-            f"  ✓ Demo: {len(state.proposals)} proposals with verdicts"
-        )
-
-    dashboard.console.print()
-
-    # ── CRR Calculation ─────────────────────────────────────────
-    dashboard.console.print("[bold]📈 Computing CRR metric...[/bold]")
-    crr_engine = CRREngine(config)
-    state.crr = crr_engine.calculate(
-        debt_report=state.debt_report,
-        input_tokens=state.total_input_tokens,
-        output_tokens=state.total_output_tokens,
+    approved = sum(
+        1 for v in state.verdicts
+        if v.verdict == CriticVerdictStatus.APPROVED
     )
     dashboard.console.print(
-        f"  ✓ CRR = {state.crr.crr:.4f} — {state.crr.crr_interpretation}"
+        f"  ✓ {len(state.proposals)} proposals, "
+        f"{approved}/{len(state.verdicts)} approved by Critic"
     )
     dashboard.console.print()
+
+    # ── CRR Display ─────────────────────────────────────────────
+    if state.crr:
+        dashboard.console.print(
+            f"[bold]📈 CRR = {state.crr.crr:.4f}[/bold] — {state.crr.crr_interpretation}"
+        )
+        dashboard.console.print()
 
     state.completed_at = datetime.now()
     return state
@@ -568,7 +547,7 @@ def main():
             )
         except KeyboardInterrupt:
             print("\n[dim]Async loop terminated by user.[/dim]")
-            return
+        return  # F5: Always return after loop/web mode — never fall through
 
     # Run the linear pipeline (Phase 2 PoC mode)
     state = asyncio.run(

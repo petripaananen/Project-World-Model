@@ -201,9 +201,14 @@ class WorkerAgent(BaseAgent):
                 )
             )
 
+        recommended_idx = parsed.get("recommended_strategy_index", 0)
+        # F7: Clamp to valid bounds — LLM may hallucinate an out-of-range index
+        if strategies:
+            recommended_idx = max(0, min(recommended_idx, len(strategies) - 1))
+
         return ResolutionProposal(
             target_conflict=conflict,
             strategies=strategies,
-            recommended_strategy_index=parsed.get("recommended_strategy_index", 0),
+            recommended_strategy_index=recommended_idx,
             worker_reasoning=parsed.get("reasoning", ""),
         )

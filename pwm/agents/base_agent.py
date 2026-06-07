@@ -14,8 +14,8 @@ Key differences from papervizagent:
 
 from __future__ import annotations
 
+import asyncio
 import json
-import time
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
@@ -42,6 +42,7 @@ class BaseAgent(ABC):
         # Token tracking for CRR
         self._total_input_tokens = 0
         self._total_output_tokens = 0
+        self._token_lock = asyncio.Lock()
 
         # Initialize Gemini client
         self._client = self._create_client()
@@ -176,11 +177,11 @@ class BaseAgent(ABC):
                     prompt_tokens = response.usage_metadata.prompt_token_count or 0
                     candidate_tokens = response.usage_metadata.candidates_token_count or 0
                     
-                    self._total_input_tokens += prompt_tokens
-                    self._total_output_tokens += candidate_tokens
-                    
-                    # Update global config cumulative tokens
-                    self.config.add_tokens(prompt_tokens, candidate_tokens)
+                    async with self._token_lock:
+                        self._total_input_tokens += prompt_tokens
+                        self._total_output_tokens += candidate_tokens
+                        # Update global config cumulative tokens
+                        self.config.add_tokens(prompt_tokens, candidate_tokens)
 
                 return response.text or ""
 
@@ -193,7 +194,7 @@ class BaseAgent(ABC):
                             f"⚠️ [{self.__class__.__name__}] "
                             f"Retry {attempt + 1}/{max_retries} after {wait:.1f}s: {e}"
                         )
-                    time.sleep(wait)
+                    await asyncio.sleep(wait)
 
         raise RuntimeError(
             f"[{self.__class__.__name__}] Failed after {max_retries} attempts: "

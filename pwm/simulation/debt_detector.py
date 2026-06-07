@@ -198,7 +198,7 @@ class DebtDetector:
 
             conflicts.append(
                 FileConflict(
-                    conflict_type=ConflictType.SEMANTIC_CONFLICT,
+                    conflict_type=ConflictType.LARGE_PR_RISK,
                     severity=severity,
                     description=(
                         f"PR #{pr.id} '{pr.title}' is very large "

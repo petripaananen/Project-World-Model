@@ -23,7 +23,7 @@ load_dotenv(_PROJECT_ROOT / ".env")
 
 class GCPConfig(BaseModel):
     """Google Cloud Platform configuration."""
-    project_id: str = Field(default="project-world-model", description="GCP project ID")
+    project_id: str = Field(default="", description="GCP project ID")
     location: str = Field(default="us-central1", description="GCP region")
 
 
@@ -190,7 +190,7 @@ class PWMConfig(BaseModel):
         return cls(
             google_api_key=os.getenv("GOOGLE_API_KEY", ""),
             gcp=GCPConfig(
-                project_id=os.getenv("GCP_PROJECT_ID", ""),
+                project_id=os.getenv("GCP_PROJECT_ID", "project-world-model"),
                 location=os.getenv("GCP_LOCATION", "us-central1"),
             ),
             ingestion=IngestionConfig(

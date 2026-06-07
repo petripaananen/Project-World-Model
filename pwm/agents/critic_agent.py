@@ -312,6 +312,17 @@ class CriticAgent(BaseAgent):
         if scope not in ("appropriate", "too_narrow", "too_broad"):
             scope = "appropriate"
 
+        # F7: Validate approved_strategy_index — LLM may return non-integer or out-of-range
+        raw_approved_idx = parsed.get("approved_strategy_index")
+        approved_strategy_index = None
+        if raw_approved_idx is not None:
+            try:
+                approved_strategy_index = int(raw_approved_idx)
+                if approved_strategy_index < 0:
+                    approved_strategy_index = None
+            except (ValueError, TypeError):
+                approved_strategy_index = None
+
         return CriticVerdict(
             verdict=verdict_status,
             round_number=round_number,
@@ -327,5 +338,5 @@ class CriticAgent(BaseAgent):
             scope_assessment=scope,
             critique=parsed.get("critique", ""),
             suggested_revisions=parsed.get("suggested_revisions", []),
-            approved_strategy_index=parsed.get("approved_strategy_index"),
+            approved_strategy_index=approved_strategy_index,
         )

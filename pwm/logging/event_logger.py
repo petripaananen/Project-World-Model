@@ -97,16 +97,25 @@ class EventLogger:
         """Check if Firestore client is initialized and active."""
         return self._db is not None
 
-    async def load_from_firestore(self) -> None:
-        """Load existing events from Firestore into the in-memory cache."""
+    async def load_from_firestore(self, limit: int = 500) -> None:
+        """Load existing events from Firestore into the in-memory cache.
+        
+        Note: This query requires a Firestore composite index on the 'events'
+        collection ordered by 'timestamp' ASC. Create it via:
+            gcloud firestore indexes composite create --collection-group=events \\
+                --field-config field-path=timestamp,order=ASCENDING
+        
+        Args:
+            limit: Maximum number of events to load (default 500).
+        """
         if not self._db:
             return
 
         async with self._lock:
             self._in_memory_events.clear()
             try:
-                # Retrieve last 500 events ordered by timestamp
-                docs = self._db.collection("events").order_by("timestamp", direction="ASCENDING").limit(500)
+                # Retrieve last N events ordered by timestamp
+                docs = self._db.collection("events").order_by("timestamp", direction="ASCENDING").limit(limit)
                 async for doc in docs.stream():
                     data = doc.to_dict()
                     # Convert Firestore Timestamp back to Python datetime

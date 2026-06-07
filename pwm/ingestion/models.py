@@ -49,6 +49,7 @@ class ConflictType(str, Enum):
     BRANCH_DIVERGENCE = "branch_divergence"   # Branch drifted too far from main
     SEMANTIC_CONFLICT = "semantic_conflict"   # Logically incompatible changes
     TEST_REGRESSION = "test_regression"       # Changes that break existing tests
+    LARGE_PR_RISK = "large_pr_risk"           # PR is too large, increasing integration risk
 
 
 # ──────────────────────────────────────────────────────────────
