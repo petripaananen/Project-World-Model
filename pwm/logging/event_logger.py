@@ -21,9 +21,12 @@ import uuid
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from pydantic import BaseModel, Field
+
+if TYPE_CHECKING:
+    from pwm.config import PWMConfig
 
 
 class EventType(str, Enum):
@@ -65,37 +68,98 @@ class EventLogger:
     to disk — no buffering, no data loss on crash.
     """
 
-    def __init__(self, log_path: Optional[Path] = None):
+    def __init__(self, log_path: Optional[Path] = None, config: Optional[PWMConfig] = None):
         self._log_path = log_path or Path("output/events.jsonl")
+        self.config = config
         self._lock = asyncio.Lock()
         self._in_memory_events: List[PWMEvent] = []
 
         # Ensure output directory exists
         self._log_path.parent.mkdir(parents=True, exist_ok=True)
 
+        # Initialize Firestore client if project_id is available
+        self._db = None
+        if config and config.gcp.project_id:
+            try:
+                from google.cloud import firestore
+                self._db = firestore.AsyncClient(project=config.gcp.project_id)
+                if config.verbose:
+                    print(f"🌲 [EventLogger] Initialized Firestore client for project: {config.gcp.project_id}")
+            except Exception as e:
+                if config.verbose:
+                    print(f"⚠️ [EventLogger] Failed to initialize Firestore client: {e}")
+
     @property
     def log_path(self) -> Path:
         return self._log_path
+
+    def has_firestore(self) -> bool:
+        """Check if Firestore client is initialized and active."""
+        return self._db is not None
+
+    async def load_from_firestore(self) -> None:
+        """Load existing events from Firestore into the in-memory cache."""
+        if not self._db:
+            return
+
+        async with self._lock:
+            self._in_memory_events.clear()
+            try:
+                # Retrieve last 500 events ordered by timestamp
+                docs = self._db.collection("events").order_by("timestamp", direction="ASCENDING").limit(500)
+                async for doc in docs.stream():
+                    data = doc.to_dict()
+                    # Convert Firestore Timestamp back to Python datetime
+                    if "timestamp" in data and not isinstance(data["timestamp"], datetime):
+                        try:
+                            data["timestamp"] = data["timestamp"].as_datetime()
+                        except AttributeError:
+                            pass
+                    self._in_memory_events.append(PWMEvent(**data))
+                
+                if self.config and self.config.verbose:
+                    print(f"🌲 [EventLogger] Loaded {len(self._in_memory_events)} events from Firestore.")
+            except Exception as e:
+                if self.config and self.config.verbose:
+                    print(f"⚠️ [EventLogger] Failed to load events from Firestore: {e}")
 
     async def log(self, event: PWMEvent) -> None:
         """
         Append an event to the immutable log.
 
-        Writes to disk immediately and keeps an in-memory copy
+        Writes to disk immediately, logs to Firestore, and keeps an in-memory copy
         for fast dashboard queries.
         """
         async with self._lock:
-            # Append to file (immutable — never overwrite)
-            with open(self._log_path, "a", encoding="utf-8") as f:
-                f.write(event.to_log_line())
+            # Append to local file as backup (immutable — never overwrite)
+            try:
+                with open(self._log_path, "a", encoding="utf-8") as f:
+                    f.write(event.to_log_line())
+            except Exception as e:
+                if self.config and self.config.verbose:
+                    print(f"⚠️ [EventLogger] Failed to write local log backup: {e}")
 
             # Keep in memory for fast access
             self._in_memory_events.append(event)
 
+            # Write to Firestore if client is initialized
+            if self._db:
+                try:
+                    data = json.loads(event.model_dump_json())
+                    # Convert timestamp back to datetime so Firestore stores it as Timestamp
+                    data["timestamp"] = event.timestamp
+                    await self._db.collection("events").document(event.event_id).set(data)
+                except Exception as e:
+                    if self.config and self.config.verbose:
+                        print(f"⚠️ [EventLogger] Failed to write event to Firestore: {e}")
+
     def log_sync(self, event: PWMEvent) -> None:
         """Synchronous version for non-async contexts."""
-        with open(self._log_path, "a", encoding="utf-8") as f:
-            f.write(event.to_log_line())
+        try:
+            with open(self._log_path, "a", encoding="utf-8") as f:
+                f.write(event.to_log_line())
+        except Exception:
+            pass
         self._in_memory_events.append(event)
 
     async def log_pipeline_start(self, run_id: str) -> None:

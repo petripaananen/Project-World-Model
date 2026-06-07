@@ -48,17 +48,18 @@ class BaseAgent(ABC):
 
     def _create_client(self) -> genai.Client:
         """Create the appropriate Gemini client based on config."""
-        if self.config.google_api_key:
-            return genai.Client(api_key=self.config.google_api_key)
-        elif self.config.gcp.project_id:
+        # Prioritize Vertex AI if GCP project is configured (Phase 6 transition)
+        if self.config.gcp.project_id:
             return genai.Client(
                 vertexai=True,
                 project=self.config.gcp.project_id,
                 location=self.config.gcp.location,
             )
+        elif self.config.google_api_key:
+            return genai.Client(api_key=self.config.google_api_key)
         else:
             raise ValueError(
-                "No API access configured. Set GOOGLE_API_KEY or GCP_PROJECT_ID."
+                "No API access configured. Set GCP_PROJECT_ID or GOOGLE_API_KEY."
             )
 
     @property

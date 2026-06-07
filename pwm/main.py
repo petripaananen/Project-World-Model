@@ -168,8 +168,11 @@ async def run_async_architecture(
 ):
     """Deploys the full async Team of Rivals architecture with event queues."""
     queue = asyncio.Queue()
-    event_logger = EventLogger(config.dashboard.event_log_path)
-    event_logger.load_from_disk()
+    event_logger = EventLogger(config.dashboard.event_log_path, config=config)
+    if event_logger.has_firestore():
+        await event_logger.load_from_firestore()
+    else:
+        event_logger.load_from_disk()
     dashboard_state = None
     
     print("\n🌍 Deploying Async Team of Rivals Architecture...")
