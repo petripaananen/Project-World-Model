@@ -167,7 +167,7 @@ This document serves as a checklist and draft space for the **Additional Info** 
   *Note*: The repository must contain all necessary source code. The repository must be either public (with relevant licensing) or private and shared with testing@devpost.com and judging@hacker.fund.
   *Draft*: 
   ```text
-  https://github.com/petri-paananen/project-world-model
+  https://github.com/petripaananen/Project-World-Model
   ```
 
 - [ ] **GitHub Verification Confirmation** `*`
@@ -179,7 +179,7 @@ This document serves as a checklist and draft space for the **Additional Info** 
   *Note*: Includes agent execution logs, API usage records, screenshots of dashboards. Anything that strengthens the case that playbooks are running in production continuously.
   *Draft*: 
   ```text
-  https://github.com/petri-paananen/project-world-model/blob/main/walkthrough.md
+  https://github.com/petripaananen/Project-World-Model/blob/main/walkthrough.md
   ```
 
 - [ ] **Evidence of Profit URL** `*`
@@ -187,7 +187,7 @@ This document serves as a checklist and draft space for the **Additional Info** 
   *Note*: Stripe dashboard export, bank statement, or simple P&L.
   *Draft*: 
   ```text
-  https://github.com/petri-paananen/project-world-model/blob/main/Docs/evidence_of_profit.pdf
+  https://github.com/petripaananen/Project-World-Model/blob/main/Docs/evidence_of_profit.pdf
   ```
 
 ---
