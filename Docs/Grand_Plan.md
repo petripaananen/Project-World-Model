@@ -65,8 +65,9 @@ The PWM framework addresses the **"Paradox of Agility"** – the phenomenon wher
 *   **Objective**: Transition to highly scalable production infrastructure and justify the enterprise ROI.
 *   **Environment**: Google Vertex AI Agent Engine & Cloud Run.
 *   **Tasks**:
-    - [🔄] Migrate ADK agents to Vertex AI for 24-hour asynchronous operations. *(In Progress: Dockerfile and deploy.sh created, pending GCP project setup)*
-    - [ ] Operationalize the **CRR Metric (Compute-to-Rework Ratio)** to mathematically prove ROI to CFOs.
+    - [x] Migrate web dashboard and orchestrator to Google Cloud Run for continuous, serverless execution. *(Completed: Deployed successfully to Cloud Run under project `project-world-model`)*
+    - [x] Operationalize the **CRR Metric (Compute-to-Rework Ratio)** to mathematically prove ROI to CFOs. *(Completed: CRR engine calculates and logs AI-to-rework cost ratios)*
+    - [🔄] Transition agent execution to Vertex AI API and integrate GCP Firestore for serverless log auditing. *(In Progress)*
     - [ ] Implement **Management Control of Compute** (cognitive budgeting tools) to prevent the *Jevons Paradox* (hallucination loops inflating cloud bills).
 
 ### Phase 7: First Commercial Version (V1.0) and Go-to-Market Strategy
