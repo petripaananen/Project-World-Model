@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 
 # Load .env from project root
@@ -43,6 +43,14 @@ class ModelConfig(BaseModel):
     max_output_tokens: int = Field(default=8192, description="Max output tokens")
     max_critic_rounds: int = Field(
         default=3, description="Max Worker→Critic iteration rounds"
+    )
+    max_run_cost_usd: float = Field(
+        default=0.50,
+        description="Maximum USD cost budget per pipeline run",
+    )
+    max_run_tokens: int = Field(
+        default=100000,
+        description="Maximum cumulative tokens budget per pipeline run",
     )
 
 
@@ -128,6 +136,10 @@ class PWMConfig(BaseModel):
     )
     verbose: bool = Field(default=True, description="Enable verbose logging")
 
+    # Private attributes for tracking compute usage
+    _cumulative_input_tokens: int = PrivateAttr(default=0)
+    _cumulative_output_tokens: int = PrivateAttr(default=0)
+
     class Config:
         arbitrary_types_allowed = True
 
@@ -136,6 +148,32 @@ class PWMConfig(BaseModel):
         if self.google_api_key:
             return True
         if self.gcp.project_id:
+            return True
+        return False
+
+    def add_tokens(self, input_tokens: int, output_tokens: int):
+        """Accumulate token counts across all agent execution threads."""
+        self._cumulative_input_tokens += input_tokens
+        self._cumulative_output_tokens += output_tokens
+
+    def get_cumulative_tokens(self) -> dict[str, int]:
+        """Get the current run's total token consumption."""
+        return {
+            "input_tokens": self._cumulative_input_tokens,
+            "output_tokens": self._cumulative_output_tokens,
+        }
+
+    def get_cumulative_cost_usd(self) -> float:
+        """Calculate cumulative run cost based on configured Gemini rates."""
+        input_cost = (self._cumulative_input_tokens / 1_000_000) * self.crr.token_cost_per_million_input
+        output_cost = (self._cumulative_output_tokens / 1_000_000) * self.crr.token_cost_per_million_output
+        return input_cost + output_cost
+
+    def is_budget_exhausted(self) -> bool:
+        """Check if token counts or financial costs exceed limits."""
+        if self._cumulative_input_tokens + self._cumulative_output_tokens >= self.models.max_run_tokens:
+            return True
+        if self.get_cumulative_cost_usd() >= self.models.max_run_cost_usd:
             return True
         return False
 

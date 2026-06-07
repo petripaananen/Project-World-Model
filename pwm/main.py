@@ -100,28 +100,41 @@ async def agent_worker(
             continue
             
         # Layer 3/4: Agents
-        if mode == "analyze":
-            from pwm.agents.worker_agent import WorkerAgent
-            from pwm.agents.critic_agent import CriticAgent
-            
-            worker = WorkerAgent(config=config)
-            critic = CriticAgent(config=config)
-            
-            data = {"debt_report": state.debt_report, "project_context": _build_project_context(state)}
-            data = await worker.process(data)
-            state.proposals = data.get("proposals", [])
-            data["proposals"] = state.proposals
-            data = await critic.process(data)
-            state.verdicts = data.get("verdicts", [])
-            
-            worker_tokens = worker.token_usage
-            critic_tokens = critic.token_usage
-            state.total_input_tokens = worker_tokens["input_tokens"] + critic_tokens["input_tokens"]
-            state.total_output_tokens = worker_tokens["output_tokens"] + critic_tokens["output_tokens"]
-        else:
-            state.proposals, state.verdicts = _generate_demo_proposals(state)
-            state.total_input_tokens = 15000
-            state.total_output_tokens = 8000
+        try:
+            if mode == "analyze":
+                from pwm.agents.worker_agent import WorkerAgent
+                from pwm.agents.critic_agent import CriticAgent
+                
+                worker = WorkerAgent(config=config)
+                critic = CriticAgent(config=config)
+                
+                data = {
+                    "debt_report": state.debt_report,
+                    "project_context": _build_project_context(state),
+                    "worker_agent": worker,
+                }
+                data = await worker.process(data)
+                state.proposals = data.get("proposals", [])
+                data["proposals"] = state.proposals
+                data = await critic.process(data)
+                state.proposals = data.get("proposals", [])
+                state.verdicts = data.get("verdicts", [])
+                
+                worker_tokens = worker.token_usage
+                critic_tokens = critic.token_usage
+                state.total_input_tokens = worker_tokens["input_tokens"] + critic_tokens["input_tokens"]
+                state.total_output_tokens = worker_tokens["output_tokens"] + critic_tokens["output_tokens"]
+            else:
+                state.proposals, state.verdicts = _generate_demo_proposals(state)
+                state.total_input_tokens = 15000
+                state.total_output_tokens = 8000
+        except Exception as e:
+            err_msg = str(e)
+            print(f"❌ Error during agent execution: {err_msg}")
+            if event_logger:
+                await event_logger.log_error(state.run_id, err_msg)
+            queue.task_done()
+            continue
 
         # Log proposals and verdicts
         if event_logger:
@@ -272,19 +285,29 @@ async def run_pipeline(
         data = {
             "debt_report": state.debt_report,
             "project_context": _build_project_context(state),
+            "worker_agent": worker,
         }
 
-        # Run worker
-        data = await worker.process(data)
-        state.proposals = data.get("proposals", [])
-        dashboard.console.print(
-            f"  ✓ Worker generated {len(state.proposals)} resolution proposals"
-        )
+        try:
+            # Run worker
+            data = await worker.process(data)
+            state.proposals = data.get("proposals", [])
+            dashboard.console.print(
+                f"  ✓ Worker generated {len(state.proposals)} resolution proposals"
+            )
 
-        # Run critic
-        data["proposals"] = state.proposals
-        data = await critic.process(data)
-        state.verdicts = data.get("verdicts", [])
+            # Run critic
+            data["proposals"] = state.proposals
+            data = await critic.process(data)
+            state.proposals = data.get("proposals", [])
+            state.verdicts = data.get("verdicts", [])
+        except Exception as e:
+            err_msg = str(e)
+            dashboard.console.print(f"[bold red]❌ Error during agent execution: {err_msg}[/bold red]")
+            from pwm.logging.event_logger import EventLogger
+            logger = EventLogger(config=config)
+            await logger.log_error(state.run_id, err_msg)
+            raise
 
         approved = sum(
             1 for v in state.verdicts

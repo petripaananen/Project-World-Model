@@ -252,6 +252,16 @@ class EventLogger:
             },
         ))
 
+    async def log_error(self, run_id: str, error_msg: str) -> None:
+        """Convenience: log a pipeline error (e.g. budget exceeded or loop detected)."""
+        await self.log(PWMEvent(
+            event_type=EventType.ERROR,
+            run_id=run_id,
+            actor="system",
+            summary=f"Error: {error_msg}",
+            details={"error": error_msg},
+        ))
+
     def get_events(
         self,
         run_id: Optional[str] = None,

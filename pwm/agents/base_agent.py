@@ -125,6 +125,13 @@ class BaseAgent(ABC):
         temp = temperature if temperature is not None else self.config.models.temperature
         max_tokens = max_output_tokens or self.config.models.max_output_tokens
 
+        # Check budget limits before calling (Management Control of Compute)
+        if self.config.is_budget_exhausted():
+            raise RuntimeError(
+                f"Compute budget exhausted: cumulative cost ${self.config.get_cumulative_cost_usd():.4f} "
+                f"or tokens exceed limits ({self.config._cumulative_input_tokens + self.config._cumulative_output_tokens} total tokens)."
+            )
+
         # Strict safety settings (SAIF compliance)
         safety_settings = [
             types.SafetySetting(
@@ -166,12 +173,14 @@ class BaseAgent(ABC):
 
                 # Track tokens
                 if response.usage_metadata:
-                    self._total_input_tokens += (
-                        response.usage_metadata.prompt_token_count or 0
-                    )
-                    self._total_output_tokens += (
-                        response.usage_metadata.candidates_token_count or 0
-                    )
+                    prompt_tokens = response.usage_metadata.prompt_token_count or 0
+                    candidate_tokens = response.usage_metadata.candidates_token_count or 0
+                    
+                    self._total_input_tokens += prompt_tokens
+                    self._total_output_tokens += candidate_tokens
+                    
+                    # Update global config cumulative tokens
+                    self.config.add_tokens(prompt_tokens, candidate_tokens)
 
                 return response.text or ""
 

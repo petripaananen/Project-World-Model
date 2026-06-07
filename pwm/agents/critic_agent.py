@@ -20,6 +20,7 @@ the Critic approves or the maximum rounds are exhausted.
 from __future__ import annotations
 
 import json
+import difflib
 from typing import Any, Dict, Optional
 
 from pwm.agents.base_agent import BaseAgent
@@ -113,14 +114,31 @@ class CriticAgent(BaseAgent):
             data["verdicts"] = []
             return data
 
-        verdicts = []
-        for proposal in proposals:
-            verdict = await self.audit_proposal(
-                proposal=proposal,
-                project_context=data.get("project_context", ""),
-            )
-            verdicts.append(verdict)
+        worker_agent = data.get("worker_agent")
+        project_context = data.get("project_context", "")
 
+        verdicts = []
+        final_proposals = []
+        for proposal in proposals:
+            if worker_agent and proposal.target_conflict:
+                final_prop, verdict = await self.run_critique_loop(
+                    proposal=proposal,
+                    worker_agent=worker_agent,
+                    conflict=proposal.target_conflict,
+                    project_context=project_context,
+                )
+                final_proposals.append(final_prop)
+                verdicts.append(verdict)
+            else:
+                verdict = await self.audit_proposal(
+                    proposal=proposal,
+                    project_context=project_context,
+                )
+                final_proposals.append(proposal)
+                verdicts.append(verdict)
+
+        if worker_agent:
+            data["proposals"] = final_proposals
         data["verdicts"] = verdicts
         return data
 
@@ -169,6 +187,7 @@ class CriticAgent(BaseAgent):
             Tuple of (final_proposal, final_verdict)
         """
         current_proposal = proposal
+        critique_history: list[str] = []
 
         for round_num in range(self.max_rounds):
             verdict = await self.audit_proposal(
@@ -182,6 +201,19 @@ class CriticAgent(BaseAgent):
                     f"  🔍 Critic Round {round_num + 1}/{self.max_rounds}: "
                     f"{verdict.verdict.value}"
                 )
+
+            # Check for text similarity with previous critiques to detect loops
+            for prev_idx, prev_critique in enumerate(critique_history):
+                similarity = difflib.SequenceMatcher(None, verdict.critique, prev_critique).ratio()
+                if similarity > 0.90:
+                    loop_msg = f"[Loop Detected: {similarity:.1%} similarity to Round {prev_idx + 1}]"
+                    if self.config.verbose:
+                        print(f"  ⚠️ {loop_msg} Terminating loop and REJECTING proposal.")
+                    verdict.verdict = CriticVerdictStatus.REJECTED
+                    verdict.critique = f"{loop_msg} {verdict.critique}"
+                    return current_proposal, verdict
+
+            critique_history.append(verdict.critique)
 
             # If approved or rejected (not fixable), stop
             if verdict.verdict in (
