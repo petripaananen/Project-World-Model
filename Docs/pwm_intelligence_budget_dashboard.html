@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#ffffff",
+                    "on-surface-variant": "#454652",
+                    "on-surface": "#1b1c1c",
+                    "surface-container": "#f0eded",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed-variant": "#484743",
+                    "on-tertiary-container": "#fdfbff",
+                    "outline": "#767684",
+                    "on-primary-container": "#fdfaff",
+                    "surface-bright": "#fbf9f8",
+                    "inverse-on-surface": "#f3f0f0",
+                    "on-primary-fixed-variant": "#2e3aa2",
+                    "inverse-surface": "#303030",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#e6e2dd",
+                    "surface-variant": "#e4e2e1",
+                    "on-secondary-fixed": "#1c1c19",
+                    "background": "#fbf9f8",
+                    "surface-tint": "#4854bb",
+                    "inverse-primary": "#bdc2ff",
+                    "primary-fixed-dim": "#bdc2ff",
+                    "primary-fixed": "#dfe0ff",
+                    "tertiary-container": "#6d7487",
+                    "tertiary-fixed": "#dbe2f8",
+                    "on-background": "#1b1c1c",
+                    "surface-container-highest": "#e4e2e1",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#000965",
+                    "surface": "#fbf9f8",
+                    "on-secondary": "#ffffff",
+                    "surface-container-low": "#f6f3f2",
+                    "secondary": "#605e5a",
+                    "surface-dim": "#dcd9d9",
+                    "secondary-fixed": "#e6e2dd",
+                    "outline-variant": "#c6c5d5",
+                    "tertiary": "#545b6e",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#5e6ad2",
+                    "on-tertiary-fixed-variant": "#3f4758",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed-dim": "#bfc6dc",
+                    "primary": "#4450b7",
+                    "on-secondary-container": "#666460",
+                    "on-tertiary-fixed": "#141b2b",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed-dim": "#c9c6c1",
+                    "surface-container-high": "#eae8e7"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "20px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "base": "4px",
+                    "xl": "48px",
+                    "md": "16px",
+                    "container-margin": "32px"
+            },
+            "fontFamily": {
+                    "h3": ["Manrope"],
+                    "label-caps": ["Inter"],
+                    "button": ["Inter"],
+                    "h2": ["Manrope"],
+                    "h1": ["Manrope"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "h3": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "button": ["14px", {"lineHeight": "1", "fontWeight": "500"}],
+                    "h2": ["32px", {"lineHeight": "1.25", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "h1": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #FBF9F6;
+            color: #1b1c1c;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-background">
+<!-- TopAppBar Shell -->
+<header class="bg-[#FBF9F6] dark:bg-slate-950 font-['Manrope'] text-sm tracking-tight docked full-width top-0 z-40 border-b border-[#E8E4DF] dark:border-slate-800 shadow-[0px_4px_20px_rgba(51,51,51,0.04)] flex justify-between items-center w-full px-8 py-3 sticky">
+<div class="flex items-center gap-8">
+<h1 class="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tighter">IntelBudget</h1>
+<nav class="hidden md:flex gap-6">
+<a class="text-[#5E6AD2] border-b-2 border-[#5E6AD2] pb-1 font-medium" href="#">Overview</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#5E6AD2] transition-all duration-200" href="#">History</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#5E6AD2] transition-all duration-200" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:text-[#5E6AD2] transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:text-[#5E6AD2] transition-colors">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-[#E8E4DF]">
+<img alt="Strategist Profile" data-alt="A professional headshot of a financial strategist in a bright, modern office. The lighting is soft and natural, emphasizing a warm minimalism aesthetic. The background is a clean, slightly out-of-focus workspace with neutral tones and a touch of greenery, perfectly aligning with the high-end IntelBudget interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLT96OeHaWZNuIhy7rO5nKfOK8McuqEoFrn3fSvFPWdoh16OrEtFxkrEn-0mf335HjZZ4piuQZGy3j8kBhfh8GLkgbbYjVamUBCknLqdBn_GTSaFSNRpjIvhXmr9RWvY-1daRL7RDHhet8LyAiboBRVLxMGHUgpvksqNRbL7Pr_TkMFjsVABdVnk2svC1ur5_zbyVT-JAx6_-Cbi-TqPJm0jlcMVELAH6Wz-yow38WfO0m6epr2jr0glFcvYEOFPUoBdELvGBnbyU0"/>
+</div>
+</div>
+</header>
+<div class="flex">
+<!-- SideNavBar Shell -->
+<aside class="bg-white dark:bg-slate-900 font-['Manrope'] text-sm font-medium h-screen w-64 border-r border-[#E8E4DF] dark:border-slate-800 flat no shadows flex flex-col fixed left-0 top-14 p-4 gap-2">
+<div class="mb-6 px-2">
+<div class="text-lg font-bold text-slate-900 dark:text-slate-100">Scenario Unit</div>
+<div class="text-xs text-slate-400 font-normal">Intelligence Budget</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-[#5E6AD2] bg-indigo-50/50 dark:bg-indigo-900/20 font-bold rounded-lg duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined">alt_route</span>
+<span>Scenarios</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>CRR Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined">database</span>
+<span>Token Usage</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-[#E8E4DF] pt-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Help Center</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-64 flex-1 p-8 pt-12 overflow-y-auto min-h-screen">
+<div class="max-w-[1200px] mx-auto">
+<!-- Metric Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg mb-xl">
+<div class="bg-white p-lg rounded-xl shadow-[0px_4px_20px_rgba(51,51,51,0.04)] border border-transparent hover:border-[#E8E4DF] transition-all">
+<div class="text-slate-500 text-label-caps font-label-caps uppercase mb-sm">Compute-to-Rework Ratio (CRR)</div>
+<div class="flex items-end justify-between">
+<div class="text-h2 font-h2 text-on-surface">4.2x</div>
+<div class="flex items-center text-emerald-600 font-semibold mb-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs ml-1">+12%</span>
+</div>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl shadow-[0px_4px_20px_rgba(51,51,51,0.04)] border border-transparent hover:border-[#E8E4DF] transition-all">
+<div class="text-slate-500 text-label-caps font-label-caps uppercase mb-sm">Daily Token Burn</div>
+<div class="flex items-end justify-between">
+<div class="text-h2 font-h2 text-on-surface">14.5M</div>
+<div class="text-slate-400 text-xs mb-1 font-medium">/ 20M cap</div>
+</div>
+<div class="w-full bg-slate-100 h-1 rounded-full mt-4 overflow-hidden">
+<div class="bg-[#5E6AD2] h-full w-[72%]"></div>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl shadow-[0px_4px_20px_rgba(51,51,51,0.04)] border border-transparent hover:border-[#E8E4DF] transition-all">
+<div class="text-slate-500 text-label-caps font-label-caps uppercase mb-sm">Human Hours Saved</div>
+<div class="flex items-end justify-between">
+<div class="text-h2 font-h2 text-on-surface">1,240 <span class="text-body-sm font-normal text-slate-400">hrs</span></div>
+<span class="material-symbols-outlined text-[#5E6AD2] mb-1">bolt</span>
+</div>
+</div>
+</div>
+<!-- Content Grid (Central Chart + Side Panel) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Chart Area -->
+<div class="lg:col-span-8 bg-white p-lg rounded-xl shadow-[0px_4px_20px_rgba(51,51,51,0.04)]">
+<div class="flex justify-between items-center mb-xl">
+<h2 class="text-h3 font-h3 text-on-surface">Cost Analysis: Simulation vs Manual Rework</h2>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-[#5E6AD2]"></div>
+<span class="text-xs font-medium text-slate-500">Simulation</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-slate-300"></div>
+<span class="text-xs font-medium text-slate-500">Manual</span>
+</div>
+</div>
+</div>
+<div class="relative h-[400px] w-full flex items-end gap-1">
+<!-- Visual Chart Mockup -->
+<div class="absolute inset-0 flex flex-col justify-between py-2 border-b border-l border-[#E8E4DF]">
+<div class="w-full h-[1px] bg-slate-50"></div>
+<div class="w-full h-[1px] bg-slate-50"></div>
+<div class="w-full h-[1px] bg-slate-50"></div>
+<div class="w-full h-[1px] bg-slate-50"></div>
+</div>
+<!-- Asymmetric SVG Curve for "Manual Rework" -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none">
+<path d="M0,350 Q100,320 200,360 T400,300 T600,340 T800,280" fill="none" stroke="#E8E4DF" stroke-dasharray="4" stroke-width="2"></path>
+<path d="M0,380 L100,340 L200,310 L300,280 L400,220 L500,180 L600,140 L700,110 L800,90" fill="none" stroke="#5E6AD2" stroke-width="3"></path>
+</svg>
+<div class="absolute bottom-0 left-0 w-full flex justify-between px-2 pt-4 translate-y-full text-[10px] text-slate-400 font-medium">
+<span>Day 01</span>
+<span>Day 10</span>
+<span>Day 20</span>
+<span>Day 30</span>
+</div>
+</div>
+</div>
+<!-- Side Panel: Controls -->
+<div class="lg:col-span-4 flex flex-col gap-lg">
+<div class="bg-white p-lg rounded-xl shadow-[0px_4px_20px_rgba(51,51,51,0.04)]">
+<div class="flex items-center gap-2 mb-lg border-b border-[#E8E4DF] pb-4">
+<span class="material-symbols-outlined text-on-surface-variant">tune</span>
+<h3 class="text-body-lg font-bold text-on-surface">Cognitive Budget Controls</h3>
+</div>
+<div class="space-y-xl">
+<div class="space-y-md">
+<div class="flex justify-between items-center">
+<label class="text-sm font-semibold text-slate-700">QA Agent Limit</label>
+<span class="text-xs font-mono bg-indigo-50 text-[#5E6AD2] px-2 py-1 rounded">2M tokens</span>
+</div>
+<input class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#5E6AD2]" max="100" min="0" type="range" value="40"/>
+<p class="text-[11px] text-slate-400">Controls maximum concurrency for quality assurance verification cycles.</p>
+</div>
+<div class="space-y-md">
+<div class="flex justify-between items-center">
+<label class="text-sm font-semibold text-slate-700">Art Agent Limit</label>
+<span class="text-xs font-mono bg-slate-50 text-slate-500 px-2 py-1 rounded">500k tokens</span>
+</div>
+<input class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#5E6AD2]" max="100" min="0" type="range" value="15"/>
+<p class="text-[11px] text-slate-400">Restricts synthetic asset generation across creative simulation scenarios.</p>
+</div>
+<button class="w-full bg-[#5E6AD2] text-white font-button text-button py-4 rounded-lg shadow-lg shadow-indigo-200 hover:shadow-indigo-300 active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2">
+<span>Enforce Limits</span>
+<span class="material-symbols-outlined text-sm">lock</span>
+</button>
+</div>
+</div>
+<!-- System Status Card -->
+<div class="bg-indigo-50/30 border border-indigo-100 p-lg rounded-xl">
+<div class="flex items-start gap-4">
+<div class="bg-white p-2 rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-[#5E6AD2]" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div>
+<div class="text-sm font-bold text-slate-900 mb-1">Intelligence Guardrails</div>
+<p class="text-xs text-slate-600 leading-relaxed">System is currently operating under "Efficiency Protocol 4.2". No anomalies detected in current token allocation patterns.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Section: Recent Scenarios (Bento Style) -->
+<div class="mt-xl grid grid-cols-1 md:grid-cols-4 gap-lg">
+<div class="md:col-span-2 bg-white p-lg rounded-xl shadow-[0px_4px_20px_rgba(51,51,51,0.04)] flex flex-col justify-between group cursor-pointer hover:bg-slate-50 transition-colors">
+<div>
+<div class="text-xs font-bold text-[#5E6AD2] mb-2 uppercase tracking-widest">Active Scenario</div>
+<h4 class="text-h3 font-h3 mb-2">Alpha Stream Integration</h4>
+<p class="text-body-sm text-slate-500">Live simulation analyzing the budget impact of multi-modal agent deployment across region 4.</p>
+</div>
+<div class="flex items-center justify-between mt-8">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold">JD</div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-300 flex items-center justify-center text-[10px] font-bold">MK</div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-[#5E6AD2] text-white flex items-center justify-center text-[10px] font-bold">+3</div>
+</div>
+<span class="material-symbols-outlined text-slate-300 group-hover:text-[#5E6AD2] transition-colors">arrow_forward</span>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl shadow-[0px_4px_20px_rgba(51,51,51,0.04)] relative overflow-hidden">
+<img class="absolute inset-0 w-full h-full object-cover opacity-10 group-hover:opacity-20 transition-opacity" data-alt="A highly detailed close-up of high-speed fiber optic cables glowing with soft blue and indigo light in a dark, sophisticated server room. The lighting is low-key and professional, emphasizing the speed and reliability of the intelligence network. This visual symbolizes the core technology behind the IntelBudget dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxclDdGFeLFPUONOu-GGUlZ7g_-ZOnPVM-laN-BKocOuh8icDjR-wjJnRFMh3wv8Bg-YEQT06LhYbiQZYMxB_HAKQcLVOf38_zOmPqEIECQVm7CYVuGra9mjVJGeRJmqZEtid4DaSk42icKqDaHzbGslfZizrzc57faxCLANmZplhFHyVGqFXb7obAaI3iHVSFySasfx6sCtShXzTf-qxvOlSdEJwOzM8rTcTRPWHShbIIITI1d4UoFnbKkrNcRX_QhQhgcoHaFVTW"/>
+<div class="relative z-10 flex flex-col h-full justify-between">
+<div class="text-xs font-bold text-slate-400 mb-2 uppercase">Infrastructure</div>
+<div class="text-h2 font-h2 text-on-surface">99.9%</div>
+<div class="text-xs text-slate-500 font-medium">Uptime efficiency</div>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl shadow-[0px_4px_20px_rgba(51,51,51,0.04)] flex flex-col justify-between border-t-4 border-[#5E6AD2]">
+<div class="text-xs font-bold text-slate-400 mb-2 uppercase">Risk Level</div>
+<div class="flex items-center gap-3">
+<div class="p-2 bg-emerald-50 rounded-full">
+<div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+</div>
+<span class="text-h3 font-h3 text-on-surface">Low</span>
+</div>
+<div class="text-xs text-slate-400">All limits verified</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
