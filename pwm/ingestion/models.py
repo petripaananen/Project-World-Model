@@ -50,6 +50,7 @@ class ConflictType(str, Enum):
     SEMANTIC_CONFLICT = "semantic_conflict"   # Logically incompatible changes
     TEST_REGRESSION = "test_regression"       # Changes that break existing tests
     LARGE_PR_RISK = "large_pr_risk"           # PR is too large, increasing integration risk
+    ORGANIZATIONAL_BOTTLENECK = "organizational_bottleneck" # Sprint task delays cascading into PR integration failures
 
 
 # ──────────────────────────────────────────────────────────────
@@ -183,6 +184,7 @@ class FileConflict(BaseModel):
     affected_files: list[str] = Field(default_factory=list)
     involved_prs: list[int] = Field(default_factory=list)
     involved_branches: list[str] = Field(default_factory=list)
+    involved_issues: list[str] = Field(default_factory=list)
     estimated_rework_hours: float = 0.0
 
 

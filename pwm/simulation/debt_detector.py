@@ -15,8 +15,9 @@ Detection patterns:
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Dict, Optional
 
+from pwm.agents.base_agent import BaseAgent
 from pwm.config import PWMConfig
 from pwm.ingestion.models import (
     BranchInfo,
@@ -29,22 +30,50 @@ from pwm.ingestion.models import (
 )
 
 
-class DebtDetector:
+class DebtDetector(BaseAgent):
     """
     Layer 2 integration debt detection engine.
 
     Operates in two modes:
       - Deterministic: File collisions, branch divergence (no LLM needed)
-      - Semantic: Deep conflict analysis using Gemini (future — Week 3)
+      - Semantic: Deep conflict analysis using Gemini (causal world model)
     """
 
     def __init__(self, config: PWMConfig):
-        self.config = config
+        system_prompt = (
+            "You are the Causal Simulation Engine (Latent Core) acting as the Digital Twin of the Organization (DTO).\n"
+            "Your task is to detect semantic integration debt and organizational bottlenecks using Level 3 Counterfactual reasoning.\n"
+            "Analyze the provided Project State (open Pull Requests) and Sprint State (issues, priorities, blocked status) "
+            "to determine if there are hidden logical conflicts or cascading workflow delays.\n\n"
+            "Output your findings as a strict JSON array of conflict objects matching this schema:\n"
+            "[\n"
+            "  {\n"
+            '    "conflict_type": "semantic_conflict", // or "organizational_bottleneck"\n'
+            '    "severity": "high",\n'
+            '    "description": "Explanation of the causal consequence or bottleneck...",\n'
+            '    "affected_files": ["path/to/file.ext"],\n'
+            '    "involved_prs": [123, 456],\n'
+            '    "involved_issues": ["ENG-123"],\n'
+            '    "estimated_rework_hours": 4.0\n'
+            "  }\n"
+            "]\n"
+            "If there are no conflicts or bottlenecks, return an empty array: []"
+        )
+        super().__init__(config=config, system_prompt=system_prompt)
 
-    def analyze(
+    async def process(self, data: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+        """Implement abstract method from BaseAgent."""
+        project_state = data.get("project_state")
+        sprint_state = data.get("sprint_state")
+        if project_state:
+            data["debt_report"] = await self.analyze(project_state, sprint_state)
+        return data
+
+    async def analyze(
         self,
         project_state: ProjectState,
         sprint_state: Optional[SprintState] = None,
+        mode: str = "analyze",
     ) -> IntegrationDebtReport:
         """
         Run all detection patterns against the project state.
@@ -52,6 +81,7 @@ class DebtDetector:
         Args:
             project_state: GitHub data snapshot from Layer 1
             sprint_state: Optional Linear/Jira data for cross-referencing
+            mode: "demo" or "analyze". Skips Gemini if "demo".
 
         Returns:
             IntegrationDebtReport with all detected conflicts
@@ -66,6 +96,24 @@ class DebtDetector:
 
         # Pattern 3: Large PR risk
         conflicts.extend(self._detect_large_pr_risk(project_state))
+
+        if mode == "analyze":
+            # Pattern 4: Semantic conflicts (Causal World Model)
+            try:
+                semantic_conflicts = await self._detect_semantic_conflicts(project_state)
+                conflicts.extend(semantic_conflicts)
+            except Exception as e:
+                if self.config.verbose:
+                    print(f"⚠️ [DebtDetector] Semantic conflict detection failed: {e}")
+
+            # Pattern 5: Organizational Bottlenecks (DTO Simulation)
+            if sprint_state:
+                try:
+                    bottlenecks = await self._simulate_dto_bottlenecks(project_state, sprint_state)
+                    conflicts.extend(bottlenecks)
+                except Exception as e:
+                    if self.config.verbose:
+                        print(f"⚠️ [DebtDetector] DTO simulation failed: {e}")
 
         # Build the report
         report = IntegrationDebtReport(
@@ -214,6 +262,132 @@ class DebtDetector:
                 )
             )
 
+        return conflicts
+
+    async def _detect_semantic_conflicts(
+        self, state: ProjectState
+    ) -> list[FileConflict]:
+        """
+        Use the Gemini API to perform causal reasoning on the project state.
+        Detects hidden semantic conflicts between PRs.
+        """
+        # If there are fewer than 2 PRs, semantic conflicts are unlikely
+        if len(state.open_pull_requests) < 2:
+            return []
+
+        # Build context
+        context_parts = ["Current Open Pull Requests:\n"]
+        for pr in state.open_pull_requests:
+            context_parts.append(
+                f"PR #{pr.id}: '{pr.title}' by {pr.author}\n"
+                f"  Changes: +{pr.additions} -{pr.deletions}\n"
+                f"  Files modified: {', '.join(pr.files_changed[:10])}"
+            )
+            
+        prompt = (
+            "Analyze the following open pull requests for potential semantic conflicts.\n"
+            "Use Level 3 Counterfactual reasoning: 'If PR A is merged, how does it affect the assumptions of PR B?'\n\n"
+            f"{chr(10).join(context_parts)}\n\n"
+            "Return a JSON array of semantic conflicts."
+        )
+
+        response_text = await self.call_gemini(prompt)
+        parsed_data = self.parse_json_response(response_text)
+        
+        conflicts = []
+        items = parsed_data if isinstance(parsed_data, list) else parsed_data.get("conflicts", [])
+        if isinstance(items, dict) and "raw" in items:
+             return []
+             
+        for item in items:
+            if isinstance(item, dict) and not item.get("_parse_error"):
+                try:
+                    severity_str = str(item.get("severity", "medium")).lower()
+                    if severity_str not in [s.value for s in DebtSeverity]:
+                        severity_str = "medium"
+                        
+                    conflicts.append(
+                        FileConflict(
+                            conflict_type=ConflictType.SEMANTIC_CONFLICT,
+                            severity=DebtSeverity(severity_str),
+                            description=item.get("description", "Semantic conflict detected."),
+                            affected_files=item.get("affected_files", []),
+                            involved_prs=item.get("involved_prs", []),
+                            involved_issues=item.get("involved_issues", []),
+                            estimated_rework_hours=float(item.get("estimated_rework_hours", 4.0)),
+                        )
+                    )
+                except Exception as e:
+                    if self.config.verbose:
+                         print(f"⚠️ [DebtDetector] Error parsing semantic conflict item: {e}")
+        return conflicts
+
+    async def _simulate_dto_bottlenecks(
+        self, state: ProjectState, sprint_state: SprintState
+    ) -> list[FileConflict]:
+        """
+        Use the Gemini API to simulate organizational bottlenecks (DTO).
+        Predicts cascading delays between blocked tasks and active PRs.
+        """
+        if not sprint_state.issues:
+            return []
+
+        # Build context
+        context_parts = ["Current Sprint Issues:\n"]
+        for issue in sprint_state.issues:
+            status_flag = "[BLOCKED] " if issue.id in sprint_state.blocked_issues else ""
+            context_parts.append(
+                f"Issue {issue.id}: {status_flag}'{issue.title}' "
+                f"(Status: {issue.status}, Priority: {issue.priority}, Assignee: {issue.assignee})"
+            )
+            
+        context_parts.append("\nCurrent Open Pull Requests:\n")
+        for pr in state.open_pull_requests:
+            context_parts.append(
+                f"PR #{pr.id}: '{pr.title}' by {pr.author} "
+                f"({len(pr.files_changed)} files changed)"
+            )
+
+        prompt = (
+            "Analyze the following sprint issues and open pull requests as a Digital Twin of the Organization.\n"
+            "Use Level 3 Counterfactual reasoning: 'If Issue X is blocked or delayed, how does it cascade into PR integration and overall project delivery?'\n\n"
+            f"{chr(10).join(context_parts)}\n\n"
+            "Identify any organizational bottlenecks and return them as a JSON array of conflict objects with conflict_type 'organizational_bottleneck'."
+        )
+
+        response_text = await self.call_gemini(prompt)
+        parsed_data = self.parse_json_response(response_text)
+        
+        conflicts = []
+        items = parsed_data if isinstance(parsed_data, list) else parsed_data.get("conflicts", [])
+        if isinstance(items, dict) and "raw" in items:
+             return []
+             
+        for item in items:
+            if isinstance(item, dict) and not item.get("_parse_error"):
+                try:
+                    severity_str = str(item.get("severity", "medium")).lower()
+                    if severity_str not in [s.value for s in DebtSeverity]:
+                        severity_str = "medium"
+                        
+                    c_type = str(item.get("conflict_type", "organizational_bottleneck"))
+                    if c_type not in [c.value for c in ConflictType]:
+                        c_type = "organizational_bottleneck"
+                        
+                    conflicts.append(
+                        FileConflict(
+                            conflict_type=ConflictType(c_type),
+                            severity=DebtSeverity(severity_str),
+                            description=item.get("description", "Organizational bottleneck detected."),
+                            affected_files=item.get("affected_files", []),
+                            involved_prs=item.get("involved_prs", []),
+                            involved_issues=item.get("involved_issues", []),
+                            estimated_rework_hours=float(item.get("estimated_rework_hours", 4.0)),
+                        )
+                    )
+                except Exception as e:
+                    if self.config.verbose:
+                         print(f"⚠️ [DebtDetector] Error parsing DTO bottleneck item: {e}")
         return conflicts
 
     def _generate_summary(self, report: IntegrationDebtReport) -> str:

@@ -30,6 +30,7 @@ from pwm.dashboard.cli_dashboard import CLIDashboard
 from pwm.ingestion.github_ingest import GitHubIngestor
 from pwm.ingestion.linear_ingest import LinearIngestor
 from pwm.ingestion.models import (
+    ConflictType,
     CriticVerdict,
     CriticVerdictStatus,
     CRRResult,
@@ -48,6 +49,8 @@ async def _execute_agent_pipeline(
     config: PWMConfig,
     mode: str,
     event_logger: EventLogger | None = None,
+    detector: DebtDetector | None = None,
+    scenario_id: int = 0,
 ) -> PWMPipelineState:
     """
     Shared Layer 3/4 agent execution step.
@@ -61,6 +64,8 @@ async def _execute_agent_pipeline(
         config: PWM configuration
         mode: "demo" or "analyze"
         event_logger: Optional event logger for audit trail
+        detector: Optional DebtDetector instance to capture its token usage
+        scenario_id: XPRIZE scenario ID (default: 0)
 
     Returns:
         Updated PWMPipelineState with proposals, verdicts, and CRR
@@ -86,10 +91,17 @@ async def _execute_agent_pipeline(
 
         worker_tokens = worker.token_usage
         critic_tokens = critic.token_usage
-        state.total_input_tokens = worker_tokens["input_tokens"] + critic_tokens["input_tokens"]
-        state.total_output_tokens = worker_tokens["output_tokens"] + critic_tokens["output_tokens"]
+        layer2_input = detector.token_usage["input_tokens"] if detector else 0
+        layer2_output = detector.token_usage["output_tokens"] if detector else 0
+        
+        state.total_input_tokens = worker_tokens["input_tokens"] + critic_tokens["input_tokens"] + layer2_input
+        state.total_output_tokens = worker_tokens["output_tokens"] + critic_tokens["output_tokens"] + layer2_output
     else:
-        state.proposals, state.verdicts = _generate_demo_proposals(state)
+        if scenario_id > 0:
+            from pwm.scenarios import get_scenario
+            _, state.proposals, state.verdicts = get_scenario(scenario_id)
+        else:
+            state.proposals, state.verdicts = _generate_demo_proposals(state)
         state.total_input_tokens = 15_000
         state.total_output_tokens = 8_000
 
@@ -163,7 +175,7 @@ async def agent_worker(
             await event_logger.log_pipeline_start(state.run_id)
         
         # Layer 2: Detect
-        state.debt_report = detector.analyze(p_state, s_state)
+        state.debt_report = await detector.analyze(p_state, s_state, mode=mode)
 
         if event_logger and state.debt_report:
             await event_logger.log_debt_detected(
@@ -179,7 +191,7 @@ async def agent_worker(
             
         # Layer 3/4: Agents (shared pipeline step)
         try:
-            state = await _execute_agent_pipeline(state, config, mode, event_logger)
+            state = await _execute_agent_pipeline(state, config, mode, event_logger, detector)
         except Exception as e:
             err_msg = str(e)
             print(f"❌ Error during agent execution: {err_msg}")
@@ -246,6 +258,7 @@ async def run_pipeline(
     mode: str = "demo",
     ingestion_mode: str = "mock",
     event_logger: EventLogger | None = None,
+    scenario_id: int = 0,
 ) -> PWMPipelineState:
     """
     Execute the full PWM pipeline (linear single-shot mode).
@@ -255,6 +268,7 @@ async def run_pipeline(
         mode: "demo" (no LLM) or "analyze" (with Gemini agents)
         ingestion_mode: "mock", "mcp", or "api"
         event_logger: Optional shared event logger for audit trail
+        scenario_id: XPRIZE scenario ID to load
 
     Returns:
         Complete PWMPipelineState with all layers populated
@@ -293,13 +307,18 @@ async def run_pipeline(
     dashboard.console.print("[bold yellow]🔍 Layer 2: Analyzing integration debt...[/bold yellow]")
 
     detector = DebtDetector(config)
-    state.debt_report = detector.analyze(
-        project_state=state.project_state,
-        sprint_state=state.sprint_state,
-    )
-    dashboard.console.print(
-        f"  ✓ {state.debt_report.executive_summary}"
-    )
+    if scenario_id > 0:
+        from pwm.scenarios import get_scenario
+        state.debt_report, _, _ = get_scenario(scenario_id)
+        dashboard.console.print(f"  ✓ Loaded XPRIZE Scenario {scenario_id} Mock Debt Report")
+    else:
+        state.debt_report = await detector.analyze(
+            project_state=state.project_state,
+            sprint_state=state.sprint_state,
+        )
+        dashboard.console.print(
+            f"  ✓ {state.debt_report.executive_summary}"
+        )
     dashboard.console.print()
 
     # ── Layer 3 + 4: Worker + Critic Agents ─────────────────────
@@ -308,7 +327,7 @@ async def run_pipeline(
     )
 
     try:
-        state = await _execute_agent_pipeline(state, config, mode, event_logger)
+        state = await _execute_agent_pipeline(state, config, mode, event_logger, detector, scenario_id=scenario_id)
     except Exception as e:
         err_msg = str(e)
         dashboard.console.print(f"[bold red]❌ Error during agent execution: {err_msg}[/bold red]")
@@ -353,7 +372,8 @@ def _build_project_context(state: PWMPipelineState) -> str:
         parts.append(
             f"\nSprint: {ss.cycle_name}\n"
             f"Total Issues: {ss.total_issues}\n"
-            f"Status breakdown: {json.dumps(ss.issues_by_status)}"
+            f"Status breakdown: {json.dumps(ss.issues_by_status)}\n"
+            f"Blocked Issues: {len(ss.blocked_issues)} ({', '.join(ss.blocked_issues)})"
         )
     return "\n".join(parts)
 
@@ -368,7 +388,58 @@ def _generate_demo_proposals(
     if not state.debt_report:
         return proposals, verdicts
 
+    # Inject a mock DTO bottleneck if missing for the demo
+    has_dto = any(c.conflict_type == ConflictType.ORGANIZATIONAL_BOTTLENECK for c in state.debt_report.conflicts)
+    if not has_dto:
+        from pwm.ingestion.models import ConflictType, DebtSeverity, FileConflict
+        dto_conflict = FileConflict(
+            conflict_type=ConflictType.ORGANIZATIONAL_BOTTLENECK,
+            severity=DebtSeverity.HIGH,
+            description="DTO Simulation: Issue ENG-404 is blocked, which will delay PR #12 and cause a cascading failure for the physics team's milestone.",
+            affected_files=[],
+            involved_prs=[12],
+            involved_issues=["ENG-404"],
+            estimated_rework_hours=12.0,
+        )
+        state.debt_report.conflicts.append(dto_conflict)
+        state.debt_report.compute_stats()
+
     for conflict in state.debt_report.conflicts:
+        if conflict.conflict_type == ConflictType.ORGANIZATIONAL_BOTTLENECK:
+            proposal = ResolutionProposal(
+                target_conflict=conflict,
+                strategies=[
+                    ResolutionStrategy(
+                        title="Resource Reallocation (DTO Optimal)",
+                        description="Temporarily reallocate 1 senior developer to unblock ENG-404.",
+                        steps=[
+                            "Pause low-priority tasks for Team Alpha",
+                            "Assign Dev to ENG-404 for 2 days",
+                            "Merge PR #12 immediately after unblocking"
+                        ],
+                        estimated_effort_hours=4.0,
+                        risk_level=DebtSeverity.LOW,
+                    )
+                ],
+                recommended_strategy_index=0,
+                worker_reasoning="Simulations show that reallocating resources to unblock ENG-404 avoids 12 hours of cascading delay for the physics milestone."
+            )
+            proposals.append(proposal)
+
+            verdict = CriticVerdict(
+                verdict=CriticVerdictStatus.APPROVED,
+                round_number=0,
+                architectural_integrity_score=0.95,
+                strategic_dishonesty_detected=False,
+                test_coverage_adequate=True,
+                scope_assessment="appropriate",
+                critique="Reallocating resources is the optimal move to prevent the cascading failure. Good organizational optimization.",
+                suggested_revisions=[],
+                approved_strategy_index=0,
+            )
+            verdicts.append(verdict)
+            continue
+
         # Create a plausible demo proposal
         proposal = ResolutionProposal(
             target_conflict=conflict,
@@ -481,6 +552,13 @@ def main():
         help="Data ingestion mode (default: mock)",
     )
     parser.add_argument(
+        "--scenario",
+        type=int,
+        choices=[0, 1, 2, 3],
+        default=0,
+        help="Load a specific XPRIZE mock scenario (1=DTO, 2=NemoClaw Sandbox, 3=CRR ROI)",
+    )
+    parser.add_argument(
         "--no-interactive",
         action="store_true",
         help="Skip the interactive Scenario Strategist prompt",
@@ -555,6 +633,7 @@ def main():
             config=config,
             mode=args.mode,
             ingestion_mode=args.ingestion,
+            scenario_id=args.scenario,
         )
     )
 

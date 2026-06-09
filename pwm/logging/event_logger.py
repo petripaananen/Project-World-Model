@@ -79,7 +79,7 @@ class EventLogger:
 
         # Initialize Firestore client if project_id is available
         self._db = None
-        if config and config.gcp.project_id:
+        if config and config.gcp.project_id and config.gcp.project_id != "project-world-model":
             try:
                 from google.cloud import firestore
                 self._db = firestore.AsyncClient(project=config.gcp.project_id)

@@ -1,5 +1,5 @@
 """
-PWM Web Dashboard — Layer 5: Scenario Strategist Web Interface
+PWM Web Dashboard — Scenario Strategist Web Interface
 ================================================================
 
 FastAPI-powered web dashboard with WebSocket real-time updates.

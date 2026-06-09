@@ -1,5 +1,5 @@
 """
-PWM CLI Dashboard — Layer 5: Scenario Strategist Interface
+PWM CLI Dashboard — Scenario Strategist Interface
 ============================================================
 
 Rich-powered terminal dashboard that presents the complete PWM pipeline
@@ -7,10 +7,10 @@ output to the human Scenario Strategist. This is the "last mile" of
 the framework — where AI analysis becomes human decision.
 
 Features:
-  - Project state summary (Layer 1)
-  - Integration debt report with severity indicators (Layer 2)
-  - Worker proposals with Critic verdicts (Layers 3+4)
-  - CRR metric visualization (Layer 2)
+  - Project state summary
+  - Integration debt report with severity indicators
+  - Worker proposals with Critic verdicts
+  - CRR metric visualization
   - Veto controls (approve/reject/request re-analysis)
 """
 
@@ -56,7 +56,7 @@ VERDICT_ICONS = {
 
 class CLIDashboard:
     """
-    Layer 5 CLI Dashboard for the Scenario Strategist.
+    CLI Dashboard for the Scenario Strategist.
 
     Renders the full PWM pipeline state in a scannable terminal format.
     """
@@ -106,9 +106,9 @@ class CLIDashboard:
         self.console.print()
 
     def _render_project_state(self, state: ProjectState) -> None:
-        """Render Layer 1: Project State summary."""
+        """Render Project State summary."""
         table = Table(
-            title="📡 Layer 1: Project State",
+            title="📡 Project State",
             box=box.ROUNDED,
             title_style="bold blue",
             border_style="blue",
@@ -129,7 +129,7 @@ class CLIDashboard:
         self.console.print()
 
     def _render_sprint_state(self, state: SprintState) -> None:
-        """Render Layer 1: Sprint State summary."""
+        """Render Sprint State summary."""
         table = Table(
             title=f"📋 Sprint: {state.cycle_name}",
             box=box.ROUNDED,
@@ -153,12 +153,12 @@ class CLIDashboard:
         self.console.print()
 
     def _render_debt_report(self, report: IntegrationDebtReport) -> None:
-        """Render Layer 2: Integration Debt Report."""
+        """Render Integration Debt Report."""
         # Summary panel
         self.console.print(
             Panel(
                 report.executive_summary,
-                title="🔍 Layer 2: Integration Debt Analysis",
+                title="🔍 Integration Debt Analysis",
                 border_style="yellow",
                 title_align="left",
             )
@@ -192,9 +192,9 @@ class CLIDashboard:
         self.console.print()
 
     def _render_proposals(self, proposals: list[ResolutionProposal]) -> None:
-        """Render Layer 3: Worker proposals without verdicts."""
+        """Render Worker proposals without verdicts."""
         self.console.print(
-            Text("🤖 Layer 3: Worker Agent Proposals", style="bold green")
+            Text("🤖 Worker Agent Proposals", style="bold green")
         )
         for i, proposal in enumerate(proposals, 1):
             self._render_single_proposal(i, proposal)
@@ -204,10 +204,10 @@ class CLIDashboard:
         proposals: list[ResolutionProposal],
         verdicts: list[CriticVerdict],
     ) -> None:
-        """Render Layers 3+4: Proposals with Critic verdicts."""
+        """Render Proposals with Critic verdicts."""
         self.console.print(
             Text(
-                "🤖 Layer 3+4: Proposals & Critic Verdicts",
+                "🤖 Proposals & Critic Verdicts",
                 style="bold green",
             )
         )
@@ -266,7 +266,7 @@ class CLIDashboard:
         )
 
     def _render_crr(self, crr: CRRResult) -> None:
-        """Render Layer 2: CRR Metric."""
+        """Render CRR Metric."""
         # Color based on CRR value
         if crr.crr < 0.1:
             color = "green"
@@ -310,7 +310,7 @@ class CLIDashboard:
                 "  [red][V][/red] Veto — reject all proposals\n"
                 "  [blue][D][/blue] Drill down into a specific conflict\n"
                 "  [dim][Q][/dim] Quit",
-                title="🎯 Layer 5: Scenario Strategist",
+                title="🎯 Scenario Strategist",
                 border_style="magenta",
                 title_align="left",
             )

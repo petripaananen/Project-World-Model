@@ -1,4 +1,4 @@
-"""PWM Dashboard implementations — Layer 5."""
+"""PWM Dashboard implementations."""
 
 from .cli_dashboard import CLIDashboard
 
