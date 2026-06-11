@@ -1,9 +1,9 @@
 # Project World Model (PWM)
 
-Eradicating integration debt via **L3 Causal Digital Twins** and a 'Team of Rivals' counterfactual simulation architecture. Stop reacting, start predicting.
+Eradicating integration debt via **Causal Digital Twins** and a 'Team of Rivals' simulation-driven architecture. Stop reacting, start predicting.
 
 ## Overview
-The Project World Model (PWM) framework represents a fundamental paradigm shift in enterprise software engineering and complex production management. By evolving the technological infrastructure from the L1 stage of isolated generative asset creation to the L3 stage of causal, latent-space simulation, the PWM structurally eradicates the "Paradox of Agility" and the crushing weight of integration debt.
+The Project World Model (PWM) framework represents a fundamental paradigm shift in enterprise software engineering and complex production management. By evolving the technological infrastructure from reactive code generation tracking to predictive, latent-space causal simulation, the PWM structurally eradicates the "Paradox of Agility" and the crushing weight of integration debt.
 
 ## Gemini XPRIZE Submission Details
 This project is entered in the **Build with Gemini XPRIZE Hackathon** under the **Small Business Services** and **Entrepreneurship & Job Creation** categories.
@@ -14,7 +14,7 @@ This project is entered in the **Build with Gemini XPRIZE Hackathon** under the 
 ## Architecture
 ![PWM Architecture Diagram](Docs/pwm_architecture_diagram.png)
 
-The PWM operates as a Level 3 (L3) Causal Digital Twin, structured across 5 core layers:
+The PWM operates as a Causal Digital Twin, structured across 5 core layers:
 1. **Layer 1: Observation & Ingestion**: Real-time telemetry ingestion using Model Context Protocol (MCP) integrations connecting JIRA, GitHub, Slack, and Google Cloud Data.
 2. **Layer 2: Latent Simulation Core**: Deep causal reasoning predicting cascading integration failures in a computationally optimized latent space using Gemini.
 3. **Layer 3: Agentic Orchestration**: Asynchronous parallel resolution streams powered by Gemini-based worker agents.

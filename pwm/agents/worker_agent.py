@@ -212,3 +212,67 @@ class WorkerAgent(BaseAgent):
             recommended_strategy_index=recommended_idx,
             worker_reasoning=parsed.get("reasoning", ""),
         )
+
+
+class WorkerAgentFactory:
+    """
+    Factory that routes conflicts to the appropriate specialist Worker Agent.
+
+    Implements the thesis's specialized worker architecture (Kuvio 7):
+      - QA Agent for test regression conflicts
+      - Build Agent for dependency break conflicts
+      - Art Integration Agent for asset pipeline conflicts
+      - General Worker Agent as the default fallback
+
+    Usage:
+        agent = WorkerAgentFactory.create(conflict, config)
+        proposal = await agent.resolve_conflict(conflict, context)
+    """
+
+    # Agent type labels for dashboard display
+    AGENT_TYPE_QA = "qa_agent"
+    AGENT_TYPE_BUILD = "build_agent"
+    AGENT_TYPE_ART = "art_agent"
+    AGENT_TYPE_GENERAL = "general_agent"
+
+    @classmethod
+    def create(
+        cls,
+        conflict: FileConflict,
+        config: PWMConfig,
+    ) -> tuple[BaseAgent, str]:
+        """
+        Create the appropriate specialist agent for a given conflict.
+
+        Args:
+            conflict: The conflict to resolve
+            config: PWM configuration
+
+        Returns:
+            Tuple of (agent_instance, agent_type_label)
+        """
+        from pwm.agents.qa_agent import QAAgent
+        from pwm.agents.build_agent import BuildAgent
+        from pwm.agents.art_agent import ArtIntegrationAgent, is_art_file
+        from pwm.ingestion.models import ConflictType
+
+        # Route based on conflict type
+        if conflict.conflict_type == ConflictType.TEST_REGRESSION:
+            return QAAgent(config=config), cls.AGENT_TYPE_QA
+
+        if conflict.conflict_type == ConflictType.DEPENDENCY_BREAK:
+            return BuildAgent(config=config), cls.AGENT_TYPE_BUILD
+
+        # For file collisions and large PRs, check if art assets are involved
+        if conflict.conflict_type in (
+            ConflictType.FILE_COLLISION,
+            ConflictType.LARGE_PR_RISK,
+        ):
+            art_files = [f for f in conflict.affected_files if is_art_file(f)]
+            if art_files and len(art_files) >= len(conflict.affected_files) * 0.5:
+                # Majority art files → dispatch to Art Agent
+                return ArtIntegrationAgent(config=config), cls.AGENT_TYPE_ART
+
+        # Default: General Worker Agent
+        return WorkerAgent(config=config), cls.AGENT_TYPE_GENERAL
+

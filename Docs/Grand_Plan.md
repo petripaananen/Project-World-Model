@@ -11,9 +11,9 @@
 
 ## 1. Executive Summary
 
-The PWM framework addresses the **"Paradox of Agility" (Ketteryyden paradoksi)** — the phenomenon where exponential asset generation by L1 AI models creates massive "integration debt," completely overwhelming linear, human-driven Agile/Scrum pipelines (Thesis §1.1). PWM solves this by acting as a **Level 3 (L3) Causal Digital Twin of the Organization (DTO)** (Thesis §5.2), orchestrating an asynchronous **Team of Rivals** (Thesis §5.5) to resolve embedded integration debt before it hits production.
+The PWM framework addresses the **"Paradox of Agility" (Ketteryyden paradoksi)** — the phenomenon where exponential asset generation by L1 AI models creates massive "integration debt," completely overwhelming linear, human-driven Agile/Scrum pipelines (Thesis §1.1). PWM solves this by acting as a **Causal Digital Twin (CDT)** (Thesis §5.2), orchestrating an asynchronous **Team of Rivals** (Thesis §5.5) to resolve embedded integration debt before it hits production.
 
-The system operates at **Pearl's Level 3 Counterfactual Reasoning** (Thesis §2.2), enabling "what if we had done X differently?" scenario analysis in latent space — a capability fundamentally beyond traditional Agile tools that operate only at Level 1 (Association/correlation).
+The system operates using **Causal Counterfactual Reasoning** (Thesis §2.2), enabling "what if we had done X differently?" scenario analysis in latent space — a capability fundamentally beyond traditional Agile tools that operate only at Level 1 (Association/correlation).
 
 **Academic Foundation**: The theoretical and conceptual framework of PWM is validated by Petri Paananen's Master's Thesis: *"Itseohjautuvat työnkulut videopeliteollisuudessa: tekoälyn maailmanmallit tuotannon johtamisen viitekehyksenä"* (JAMK, 2026), published at URN: [https://urn.fi/URN:NBN:fi:amk-2026052919003](https://urn.fi/URN:NBN:fi:amk-2026052919003). Full text: [Petri_Paananen_thesis.md](./Petri_Paananen_thesis.md).
 
@@ -23,7 +23,7 @@ The system operates at **Pearl's Level 3 Counterfactual Reasoning** (Thesis §2.
 
 ## 2. The 5-Layer Architecture (Thesis §5.2)
 
-To fulfill the requirements of a true Digital Twin of the Organization (DTO), the architecture implements the 5-layer vertical structure defined in the thesis (Kuvio 4). Each layer maps to specific open-source AI models selected in the thesis technology survey (Taulukko 4):
+To fulfill the requirements of a true Causal Digital Twin (CDT), the architecture implements the 5-layer vertical structure defined in the thesis (Kuvio 4). Each layer maps to specific open-source AI models selected in the thesis technology survey (Taulukko 4):
 
 ### 🔵 Layer 1: Observation & Spatial Understanding (Thesis §5.2)
 
@@ -33,7 +33,7 @@ Ingests three parallel data streams — version control telemetry, task manageme
 
 ### 🧠 Layer 2: The Latent Core & Simulation Engine (Thesis §5.2)
 
-The predictive cognitive engine performing **action-conditioned simulation** in latent space. Executes deep causal reasoning and parallel "what-if" counterfactuals (Pearl Level 3) without requiring heavy pixel-level rendering. Uses **SIGReg regularization** to prevent representation collapse, ensuring the simulation reliably distinguishes between different production risk scenarios. Produces **causal evidence** ("kausaalinen todiste") — probability distributions, not binary pass/fail — for the Scenario Strategist. Compute scales linearly with problem size, keeping CRR ratios economically viable.
+The predictive cognitive engine performing **action-conditioned simulation** in latent space. Executes deep causal reasoning and parallel "what-if" counterfactuals (Causal Impact Prediction) without requiring heavy pixel-level rendering. Uses **SIGReg regularization** to prevent representation collapse, ensuring the simulation reliably distinguishes between different production risk scenarios. Produces **causal evidence** ("kausaalinen todiste") — probability distributions, not binary pass/fail — for the Scenario Strategist. Compute scales linearly with problem size, keeping CRR ratios economically viable.
 
 - **Selected Model (Primary)**: LeWorldModel / LeWM — stable end-to-end JEPA from pixels, runnable on a single GPU.
 - **Selected Model (Multi-Agent Alternative)**: Solaris (solaris-wm) — multiplayer DiT for parallel workflow simulation.
@@ -88,7 +88,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 - **Thesis example** (§5.8.2): 2M tokens @ €10 inference → detects critical memory leak → saves 15h senior dev time (€1,200) → **CRR = 0.008** (125x return)
 
 > [!WARNING]
-> **Jevons Paradox** (Thesis §5.8.1): As inference costs plummet, total compute consumption explodes. The Scenario Strategist must enforce **token budget ceilings** to prevent hallucination loops inflating cloud bills.
+> **Compute Runaway Alert (Jevons Paradox)** (Thesis §5.8.1): As inference costs plummet, total compute consumption explodes. The Scenario Strategist must enforce **token budget ceilings** to prevent hallucination loops inflating cloud bills.
 
 ### 📏 CRR Interpretation Thresholds
 
@@ -97,7 +97,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 | < 0.01 | Exceptional — AI costs negligible vs. rework |
 | < 0.10 | Excellent — AI is 10x+ cheaper than human rework |
 | < 0.50 | Good — Significant savings |
-| < 1.00 | Warning — Margins thin, approaching Jevons Paradox territory |
+| < 1.00 | Warning — Margins thin, approaching Compute Runaway territory |
 | ≥ 1.00 | Danger — AI costs exceed human rework value; recalibrate |
 
 ---
@@ -211,6 +211,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 | 7.3 | Launch Scenario Strategist marketing campaign (§5.3) | ❌ Not started |
 | 7.4 | Establish Subscription Pricing Tiers: Basic ($19.99), Pro ($49.99), Enterprise ($99.99) | ❌ Not started |
 | 7.5 | Execute localized Finnish game dev ecosystem launch (§6.5) | ❌ Not started |
+| 7.6 | De-academicization & Commercial Rebranding: Remove thesis academicisms (Pearl L3, Jevons Paradox) from UI/UX and documentation to prepare the product for commercial launch. | ✅ Done |
 
 ---
 

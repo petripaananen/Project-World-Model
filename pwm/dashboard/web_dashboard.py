@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
@@ -94,12 +95,55 @@ class DashboardState:
 
     def _serialize_state(self, state: PWMPipelineState) -> dict:
         """Serialize pipeline state for JSON transmission."""
+        import pytz
+        from datetime import datetime
+
         data = json.loads(state.model_dump_json())
         data["events"] = [
             json.loads(e.model_dump_json())
             for e in self.event_logger.get_events(run_id=state.run_id, limit=50)
         ]
         data["crr_history"] = self.crr_history[-20:]  # Last 20 CRR values
+
+        # Embed cycle data directly into state (Thesis Kuvio 8)
+        try:
+            # Assuming config is available globally or we can import it
+            from pwm.config import PWMConfig
+            config = PWMConfig() # We can recreate default config or pass it in. For simplicity, reading env here:
+            tz_str = os.getenv("PWM_TIMEZONE", "Europe/Helsinki")
+            tz = pytz.timezone(tz_str)
+        except Exception:
+            tz = pytz.UTC
+            tz_str = "UTC"
+            
+        now = datetime.now(tz)
+        hour = now.hour
+        
+        if 22 <= hour or hour < 6:
+            phase = "night"
+            title = "Agent Simulation"
+            desc = "Asynchronous models running background validation."
+        elif 6 <= hour < 10:
+            phase = "morning"
+            title = "Review & Triage"
+            desc = "Scenario Strategist reviews overnight conflict reports."
+        elif 10 <= hour < 18:
+            phase = "day"
+            title = "Human-in-the-Loop"
+            desc = "Collaborative refinement of integration strategies."
+        else: # 18 <= hour < 22
+            phase = "evening"
+            title = "Objective Setting"
+            desc = "Setting parameters for the next overnight cycle."
+
+        data["cycle"] = {
+            "phase": phase,
+            "title": title,
+            "description": desc,
+            "local_time": now.strftime("%H:%M"),
+            "timezone": tz_str,
+        }
+
         return data
 
 
@@ -113,7 +157,7 @@ def create_app(
 
     app = FastAPI(
         title="Project World Model — Scenario Strategist",
-        description="L3 Causal Digital Twin Dashboard",
+        description="Causal Digital Twin Dashboard",
         version="0.5.0",
     )
 
@@ -151,6 +195,48 @@ def create_app(
     async def get_crr_history():
         """Get CRR calculation history."""
         return dashboard_state.crr_history
+
+    @app.get("/api/cycle")
+    async def get_cycle_phase():
+        """
+        Get the current 24h async cycle phase (Thesis Kuvio 8).
+        Uses the timezone configured in DashboardConfig.
+        """
+        import pytz
+        
+        try:
+            tz = pytz.timezone(config.dashboard.timezone)
+        except Exception:
+            tz = pytz.UTC
+            
+        now = datetime.now(tz)
+        hour = now.hour
+        
+        # 24h Async Cycle Phases (Thesis Kuvio 8)
+        if 22 <= hour or hour < 6:
+            phase = "night"
+            title = "Agent Simulation"
+            desc = "Asynchronous models running background validation."
+        elif 6 <= hour < 10:
+            phase = "morning"
+            title = "Review & Triage"
+            desc = "Scenario Strategist reviews overnight conflict reports."
+        elif 10 <= hour < 18:
+            phase = "day"
+            title = "Human-in-the-Loop"
+            desc = "Collaborative refinement of integration strategies."
+        else: # 18 <= hour < 22
+            phase = "evening"
+            title = "Objective Setting"
+            desc = "Setting parameters for the next overnight cycle."
+            
+        return {
+            "phase": phase,
+            "title": title,
+            "description": desc,
+            "local_time": now.strftime("%H:%M"),
+            "timezone": config.dashboard.timezone,
+        }
 
     @app.post("/api/decision")
     async def submit_decision(approved: bool, notes: str = ""):

@@ -38,6 +38,7 @@ from pwm.ingestion.models import (
     ResolutionProposal,
     ResolutionStrategy,
     DebtSeverity,
+    FileConflict,
 )
 from pwm.logging.event_logger import EventLogger
 from pwm.simulation.crr_engine import CRREngine
@@ -71,31 +72,58 @@ async def _execute_agent_pipeline(
         Updated PWMPipelineState with proposals, verdicts, and CRR
     """
     if mode == "analyze":
-        from pwm.agents.worker_agent import WorkerAgent
+        from pwm.agents.worker_agent import WorkerAgentFactory
         from pwm.agents.critic_agent import CriticAgent
 
-        worker = WorkerAgent(config=config)
         critic = CriticAgent(config=config)
 
-        data = {
+        # Dispatch each conflict to the appropriate specialist agent (Thesis Kuvio 7)
+        all_proposals = []
+        all_worker_tokens = {"input_tokens": 0, "output_tokens": 0}
+
+        for conflict in state.debt_report.conflicts:
+            agent, agent_type = WorkerAgentFactory.create(conflict, config)
+
+            data = {
+                "debt_report": state.debt_report,
+                "project_context": _build_project_context(state),
+                "worker_agent": agent,
+            }
+            data = await agent.process(data)
+            proposals_for_conflict = data.get("proposals", [])
+
+            # Tag each proposal with the agent type
+            for p in proposals_for_conflict:
+                p.agent_type = agent_type
+
+            all_proposals.extend(proposals_for_conflict)
+
+            # Accumulate tokens from this specialist agent
+            usage = agent.token_usage
+            all_worker_tokens["input_tokens"] += usage["input_tokens"]
+            all_worker_tokens["output_tokens"] += usage["output_tokens"]
+
+            if config.verbose:
+                print(f"  🏷️ [{agent_type}] handled: {conflict.conflict_type.value}")
+
+        state.proposals = all_proposals
+
+        # Run critic on all proposals
+        critic_data = {
+            "proposals": state.proposals,
             "debt_report": state.debt_report,
             "project_context": _build_project_context(state),
-            "worker_agent": worker,
         }
-        data = await worker.process(data)
-        state.proposals = data.get("proposals", [])
-        data["proposals"] = state.proposals
-        data = await critic.process(data)
-        state.proposals = data.get("proposals", [])
-        state.verdicts = data.get("verdicts", [])
+        critic_data = await critic.process(critic_data)
+        state.proposals = critic_data.get("proposals", [])
+        state.verdicts = critic_data.get("verdicts", [])
 
-        worker_tokens = worker.token_usage
         critic_tokens = critic.token_usage
         layer2_input = detector.token_usage["input_tokens"] if detector else 0
         layer2_output = detector.token_usage["output_tokens"] if detector else 0
         
-        state.total_input_tokens = worker_tokens["input_tokens"] + critic_tokens["input_tokens"] + layer2_input
-        state.total_output_tokens = worker_tokens["output_tokens"] + critic_tokens["output_tokens"] + layer2_output
+        state.total_input_tokens = all_worker_tokens["input_tokens"] + critic_tokens["input_tokens"] + layer2_input
+        state.total_output_tokens = all_worker_tokens["output_tokens"] + critic_tokens["output_tokens"] + layer2_output
     else:
         if scenario_id > 0:
             from pwm.scenarios import get_scenario
@@ -205,14 +233,11 @@ async def agent_worker(
             await dashboard_state.update_state(state)
         
         # Layer 5: CLI Dashboard
-        dashboard.render_full_report(state)
-        
         if not no_interactive:
-            decision = dashboard.prompt_decision()
-            if decision == 'Q':
-                import sys
-                sys.exit(0)
-                
+            dashboard.render_full_report(state)
+        else:
+            print(f"[🤖 Agent Worker] Pipeline run {state.run_id} completed successfully (no-interactive).")
+        
         queue.task_done()
 
 async def run_async_architecture(
@@ -388,14 +413,13 @@ def _generate_demo_proposals(
     if not state.debt_report:
         return proposals, verdicts
 
-    # Inject a mock DTO bottleneck if missing for the demo
+    # Inject a mock Causal bottleneck if missing for the demo
     has_dto = any(c.conflict_type == ConflictType.ORGANIZATIONAL_BOTTLENECK for c in state.debt_report.conflicts)
     if not has_dto:
-        from pwm.ingestion.models import ConflictType, DebtSeverity, FileConflict
         dto_conflict = FileConflict(
             conflict_type=ConflictType.ORGANIZATIONAL_BOTTLENECK,
             severity=DebtSeverity.HIGH,
-            description="DTO Simulation: Issue ENG-404 is blocked, which will delay PR #12 and cause a cascading failure for the physics team's milestone.",
+            description="Causal Simulation: Issue ENG-404 is blocked, which will delay PR #12 and cause a cascading failure for the physics team's milestone.",
             affected_files=[],
             involved_prs=[12],
             involved_issues=["ENG-404"],
@@ -410,7 +434,7 @@ def _generate_demo_proposals(
                 target_conflict=conflict,
                 strategies=[
                     ResolutionStrategy(
-                        title="Resource Reallocation (DTO Optimal)",
+                        title="Resource Reallocation (Causal Optimal)",
                         description="Temporarily reallocate 1 senior developer to unblock ENG-404.",
                         steps=[
                             "Pause low-priority tasks for Team Alpha",
@@ -556,7 +580,7 @@ def main():
         type=int,
         choices=[0, 1, 2, 3],
         default=0,
-        help="Load a specific XPRIZE mock scenario (1=DTO, 2=NemoClaw Sandbox, 3=CRR ROI)",
+        help="Load a specific XPRIZE mock scenario (1=Causal Simulation, 2=NemoClaw Sandbox, 3=CRR ROI)",
     )
     parser.add_argument(
         "--no-interactive",

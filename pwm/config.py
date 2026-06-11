@@ -79,6 +79,10 @@ class DashboardConfig(BaseModel):
         default_factory=lambda: Path("output/events.jsonl"),
         description="Path to immutable event log",
     )
+    timezone: str = Field(
+        default_factory=lambda: os.getenv("PWM_TIMEZONE", "Europe/Helsinki"),
+        description="Timezone for 24h async cycle (Thesis Kuvio 8)",
+    )
 
 
 class CRRConfig(BaseModel):
@@ -103,6 +107,24 @@ class CRRConfig(BaseModel):
             "low": 1.0,         # quick fix
         },
         description="Estimated rework hours per debt severity level",
+    )
+    # GPU & infrastructure costs (Thesis §5.8.2 — "tokens per watt")
+    gpu_hourly_rate: float = Field(
+        default=0.35, description="USD/hour for GPU compute (e.g., GCP T4)",
+    )
+    gpu_hours_per_run: float = Field(
+        default=0.0, description="GPU hours consumed per pipeline run (0 = CPU-only)",
+    )
+    electricity_rate_kwh: float = Field(
+        default=0.12, description="USD per kWh (average commercial rate)",
+    )
+    gpu_power_watts: float = Field(
+        default=70.0, description="GPU TDP in watts (T4 = 70W, A100 = 250W)",
+    )
+    # Jevons Paradox detection (Thesis §5.8.1)
+    jevons_paradox_threshold: float = Field(
+        default=0.80,
+        description="CRR threshold above which Jevons Paradox alert fires",
     )
 
 

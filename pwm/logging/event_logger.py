@@ -11,11 +11,17 @@ and pipeline state change. This is the foundation for:
 
 Events are stored as JSON Lines (.jsonl) for simplicity and
 streamability. Each line is a self-contained JSON object.
+
+Cryptographic Chaining (Thesis §5.2 — "muuttumaton liikkuja"):
+  Every event is chained to its predecessor via SHA-256 hash,
+  creating a tamper-evident Merkle chain. If any historical event
+  is modified, verify_chain() will detect the break.
 """
 
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import uuid
 from datetime import datetime
@@ -55,9 +61,33 @@ class PWMEvent(BaseModel):
     summary: str = ""
     details: Dict[str, Any] = Field(default_factory=dict)
 
+    # Cryptographic chain fields (Thesis §5.2 — "muuttumaton liikkuja")
+    previous_hash: str = Field(
+        default="",
+        description="SHA-256 hash of the previous event's canonical JSON",
+    )
+    event_hash: str = Field(
+        default="",
+        description="SHA-256 hash of this event (computed after serialization)",
+    )
+
     def to_log_line(self) -> str:
         """Serialize to a single JSON line for append-only storage."""
         return self.model_dump_json() + "\n"
+
+    def compute_hash(self) -> str:
+        """
+        Compute the SHA-256 hash of this event's canonical content.
+
+        The hash covers all fields EXCEPT event_hash itself (to avoid
+        circular dependency). This is the value that the NEXT event
+        will store as its previous_hash.
+        """
+        # Serialize without the event_hash field to get canonical content
+        data = self.model_dump()
+        data.pop("event_hash", None)
+        canonical = json.dumps(data, sort_keys=True, default=str)
+        return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 class EventLogger:
@@ -66,13 +96,21 @@ class EventLogger:
 
     Thread/async-safe via asyncio.Lock. Events are written immediately
     to disk — no buffering, no data loss on crash.
+
+    Implements SHA-256 Merkle chaining (Thesis §5.2) — each event
+    stores the hash of the previous event, creating a tamper-evident
+    chain. Call verify_chain() to validate integrity.
     """
+
+    # The genesis hash — used as previous_hash for the first event in the chain
+    GENESIS_HASH = "GENESIS"
 
     def __init__(self, log_path: Optional[Path] = None, config: Optional[PWMConfig] = None):
         self._log_path = log_path or Path("output/events.jsonl")
         self.config = config
         self._lock = asyncio.Lock()
         self._in_memory_events: List[PWMEvent] = []
+        self._last_event_hash: str = self.GENESIS_HASH
 
         # Ensure output directory exists
         self._log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -132,14 +170,26 @@ class EventLogger:
                 if self.config and self.config.verbose:
                     print(f"⚠️ [EventLogger] Failed to load events from Firestore: {e}")
 
+    def _chain_event(self, event: PWMEvent) -> None:
+        """
+        Chain an event to the Merkle chain by setting its previous_hash
+        and computing its own event_hash. Must be called under _lock.
+        """
+        event.previous_hash = self._last_event_hash
+        event.event_hash = event.compute_hash()
+        self._last_event_hash = event.event_hash
+
     async def log(self, event: PWMEvent) -> None:
         """
         Append an event to the immutable log.
 
-        Writes to disk immediately, logs to Firestore, and keeps an in-memory copy
-        for fast dashboard queries.
+        Chains the event to the Merkle chain, writes to disk immediately,
+        logs to Firestore, and keeps an in-memory copy for fast dashboard queries.
         """
         async with self._lock:
+            # Chain to previous event (Thesis §5.2 — Merkle chain)
+            self._chain_event(event)
+
             # Append to local file as backup (immutable — never overwrite)
             try:
                 with open(self._log_path, "a", encoding="utf-8") as f:
@@ -164,6 +214,8 @@ class EventLogger:
 
     def log_sync(self, event: PWMEvent) -> None:
         """Synchronous version for non-async contexts."""
+        # Chain to previous event
+        self._chain_event(event)
         try:
             with open(self._log_path, "a", encoding="utf-8") as f:
                 f.write(event.to_log_line())
@@ -320,6 +372,80 @@ class EventLogger:
                     continue
                 try:
                     data = json.loads(line)
-                    self._in_memory_events.append(PWMEvent(**data))
+                    event = PWMEvent(**data)
+                    self._in_memory_events.append(event)
+                    # Restore chain state from the last event's hash
+                    if event.event_hash:
+                        self._last_event_hash = event.event_hash
                 except (json.JSONDecodeError, Exception):
                     continue  # Skip corrupted lines gracefully
+
+    def verify_chain(self) -> dict:
+        """
+        Verify the integrity of the entire Merkle chain.
+
+        Walks every event in order and checks:
+        1. Each event's event_hash matches its recomputed hash
+        2. Each event's previous_hash matches the prior event's event_hash
+
+        Returns:
+            dict with 'valid' (bool), 'total_events', 'verified_events',
+            'legacy_events' (pre-chain), 'broken_at_index' (if invalid),
+            and 'integrity_score' (0.0–1.0).
+        """
+        total = len(self._in_memory_events)
+        if total == 0:
+            return {
+                "valid": True,
+                "total_events": 0,
+                "verified_events": 0,
+                "legacy_events": 0,
+                "broken_at_index": None,
+                "integrity_score": 1.0,
+            }
+
+        verified = 0
+        legacy = 0
+        expected_prev_hash = self.GENESIS_HASH
+
+        for i, event in enumerate(self._in_memory_events):
+            # Legacy events (pre-chain) have no hashes — skip gracefully
+            if not event.event_hash and not event.previous_hash:
+                legacy += 1
+                continue
+
+            # Check that previous_hash matches what we expect
+            if event.previous_hash != expected_prev_hash:
+                return {
+                    "valid": False,
+                    "total_events": total,
+                    "verified_events": verified,
+                    "legacy_events": legacy,
+                    "broken_at_index": i,
+                    "integrity_score": verified / max(total - legacy, 1),
+                }
+
+            # Recompute hash and verify
+            recomputed = event.compute_hash()
+            if recomputed != event.event_hash:
+                return {
+                    "valid": False,
+                    "total_events": total,
+                    "verified_events": verified,
+                    "legacy_events": legacy,
+                    "broken_at_index": i,
+                    "integrity_score": verified / max(total - legacy, 1),
+                }
+
+            verified += 1
+            expected_prev_hash = event.event_hash
+
+        chained_total = total - legacy
+        return {
+            "valid": True,
+            "total_events": total,
+            "verified_events": verified,
+            "legacy_events": legacy,
+            "broken_at_index": None,
+            "integrity_score": verified / max(chained_total, 1),
+        }

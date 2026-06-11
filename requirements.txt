@@ -1,0 +1,40 @@
+# Unified Requirements for Project World Model (PWM) Workspace
+
+# Core & API
+google-genai>=1.0.0
+google-auth>=2.0.0
+python-dotenv>=1.0.0
+mcp>=1.0.0
+httpx>=0.27.0
+anthropic
+openai
+
+# Data & Models
+pydantic>=2.0.0
+numpy
+pillow
+python-dateutil>=2.8.0
+pyyaml
+
+# Asynchronous operations
+asyncio
+aiofiles>=24.0.0
+
+# CLI & Visualization
+rich>=13.0.0
+streamlit
+matplotlib
+tqdm
+
+# JSON parsing & repair
+json-repair>=0.30.0
+
+# Web Dashboard (FastAPI)
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+websockets>=13.0
+jinja2>=3.1.0
+pytz>=2024.1
+
+# GCP Services
+google-cloud-firestore>=2.11.0

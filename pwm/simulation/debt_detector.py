@@ -21,6 +21,7 @@ from pwm.agents.base_agent import BaseAgent
 from pwm.config import PWMConfig
 from pwm.ingestion.models import (
     BranchInfo,
+    CausalEvidence,
     ConflictType,
     DebtSeverity,
     FileConflict,
@@ -41,8 +42,8 @@ class DebtDetector(BaseAgent):
 
     def __init__(self, config: PWMConfig):
         system_prompt = (
-            "You are the Causal Simulation Engine (Latent Core) acting as the Digital Twin of the Organization (DTO).\n"
-            "Your task is to detect semantic integration debt and organizational bottlenecks using Level 3 Counterfactual reasoning.\n"
+            "You are the Causal Simulation Engine (Latent Core) acting as the Causal Digital Twin (CDT).\n"
+            "Your task is to detect semantic integration debt and organizational bottlenecks using Causal Counterfactual reasoning.\n"
             "Analyze the provided Project State (open Pull Requests) and Sprint State (issues, priorities, blocked status) "
             "to determine if there are hidden logical conflicts or cascading workflow delays.\n\n"
             "Output your findings as a strict JSON array of conflict objects matching this schema:\n"
@@ -106,14 +107,14 @@ class DebtDetector(BaseAgent):
                 if self.config.verbose:
                     print(f"⚠️ [DebtDetector] Semantic conflict detection failed: {e}")
 
-            # Pattern 5: Organizational Bottlenecks (DTO Simulation)
+            # Pattern 5: Organizational Bottlenecks (Causal Simulation)
             if sprint_state:
                 try:
-                    bottlenecks = await self._simulate_dto_bottlenecks(project_state, sprint_state)
+                    bottlenecks = await self._simulate_causal_bottlenecks(project_state, sprint_state)
                     conflicts.extend(bottlenecks)
                 except Exception as e:
                     if self.config.verbose:
-                        print(f"⚠️ [DebtDetector] DTO simulation failed: {e}")
+                        print(f"⚠️ [DebtDetector] Causal simulation failed: {e}")
 
         # Build the report
         report = IntegrationDebtReport(
@@ -159,6 +160,30 @@ class DebtDetector(BaseAgent):
                 if pr.id in pr_ids:
                     pr_titles.append(f"PR #{pr.id}: {pr.title}")
 
+            # Heuristic causal risk forecast (Thesis §5.2)
+            pr_count = len(pr_ids)
+            probability = min(0.3 + (pr_count - 2) * 0.2, 0.95)
+            causal_evidence = CausalEvidence(
+                probability=probability,
+                confidence=0.85,
+                counterfactual=(
+                    f"If {pr_titles[0]} merges first, the remaining "
+                    f"{pr_count - 1} PRs will require manual conflict resolution "
+                    f"on '{filepath}'."
+                ),
+                causal_chain=[
+                    f"{pr_count} PRs modify '{filepath}' concurrently",
+                    "First merge locks the file state",
+                    "Subsequent PRs face textual conflicts",
+                    "Manual resolution required per remaining PR",
+                ],
+                impact_distribution={
+                    "critical": probability * 0.3 if pr_count >= 4 else 0.0,
+                    "high": probability * 0.5,
+                    "medium": probability * 0.2,
+                },
+            )
+
             conflicts.append(
                 FileConflict(
                     conflict_type=ConflictType.FILE_COLLISION,
@@ -173,6 +198,7 @@ class DebtDetector(BaseAgent):
                     estimated_rework_hours=self.config.crr.severity_hours.get(
                         severity.value, 4.0
                     ),
+                    causal_evidence=causal_evidence,
                 )
             )
 
@@ -203,6 +229,28 @@ class DebtDetector(BaseAgent):
             else:
                 continue  # Not significant enough to report
 
+            # Heuristic causal evidence for branch divergence
+            probability = min(0.2 + (branch.behind_main / 200.0), 0.90)
+            causal_evidence = CausalEvidence(
+                probability=probability,
+                confidence=0.75,
+                counterfactual=(
+                    f"If '{branch.name}' is merged now with {branch.behind_main} "
+                    f"commits of divergence, merge complexity is exponential."
+                ),
+                causal_chain=[
+                    f"Branch '{branch.name}' diverged {branch.behind_main} commits",
+                    "Main branch accumulated changes not in this branch",
+                    "Merge will produce conflicts proportional to divergence",
+                    "Post-merge regression risk increases with divergence",
+                ],
+                impact_distribution={
+                    "critical": probability * 0.2 if branch.behind_main >= 100 else 0.0,
+                    "high": probability * 0.4,
+                    "medium": probability * 0.4,
+                },
+            )
+
             conflicts.append(
                 FileConflict(
                     conflict_type=ConflictType.BRANCH_DIVERGENCE,
@@ -217,6 +265,7 @@ class DebtDetector(BaseAgent):
                     estimated_rework_hours=self.config.crr.severity_hours.get(
                         severity.value, 4.0
                     ),
+                    causal_evidence=causal_evidence,
                 )
             )
 
@@ -322,11 +371,11 @@ class DebtDetector(BaseAgent):
                          print(f"⚠️ [DebtDetector] Error parsing semantic conflict item: {e}")
         return conflicts
 
-    async def _simulate_dto_bottlenecks(
+    async def _simulate_causal_bottlenecks(
         self, state: ProjectState, sprint_state: SprintState
     ) -> list[FileConflict]:
         """
-        Use the Gemini API to simulate organizational bottlenecks (DTO).
+        Use the Gemini API to simulate organizational bottlenecks.
         Predicts cascading delays between blocked tasks and active PRs.
         """
         if not sprint_state.issues:
@@ -387,7 +436,7 @@ class DebtDetector(BaseAgent):
                     )
                 except Exception as e:
                     if self.config.verbose:
-                         print(f"⚠️ [DebtDetector] Error parsing DTO bottleneck item: {e}")
+                          print(f"⚠️ [DebtDetector] Error parsing causal bottleneck item: {e}")
         return conflicts
 
     def _generate_summary(self, report: IntegrationDebtReport) -> str:

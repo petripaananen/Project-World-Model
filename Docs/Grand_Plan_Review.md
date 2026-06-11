@@ -9,9 +9,9 @@
 
 ## 1. The Big Picture
 
-PWM is an **L3 Causal Digital Twin of the Organization (DTO)** (Thesis §5.2) that solves the **"Paradox of Agility"** (Thesis §1.1) — where AI-generated assets overwhelm human-driven Agile pipelines. It uses a **Team of Rivals** architecture (Thesis §5.5) with specialized Worker + Critic agents to autonomously detect and resolve integration debt *before* it reaches production.
+PWM is a **Causal Digital Twin (CDT)** (Thesis §5.2) that solves the **"Paradox of Agility"** (Thesis §1.1) — where AI-generated assets overwhelm human-driven Agile pipelines. It uses a **Team of Rivals** architecture (Thesis §5.5) with specialized Worker + Critic agents to autonomously detect and resolve integration debt *before* it reaches production.
 
-The system targets **Pearl's Level 3 Counterfactual Reasoning** (Thesis §2.2), enabling "what if?" scenario analysis in latent space — beyond the Level 1 (Association) capabilities of traditional Agile dashboards.
+The system targets **Causal Counterfactual Reasoning** (Thesis §2.2), enabling "what if?" scenario analysis in latent space — beyond the Level 1 (Association) capabilities of traditional Agile dashboards.
 
 **Target**: [Gemini XPRIZE Hackathon](./XPRIZE_INSTRUCTIONS.md) — Small Business Services & Entrepreneurship categories.
 
@@ -42,7 +42,7 @@ The system targets **Pearl's Level 3 Counterfactual Reasoning** (Thesis §2.2), 
 |--------------------|-----------------|----|
 | Three input streams: version control, task management, team communication (Thesis §5.2) | GitHub MCP ✅, Linear MCP ✅ | ❌ Team communication (Slack/Discord) not connected |
 | V-JEPA 2.1 encoding of telemetry into latent embeddings | Raw data passed to Gemini API as text | ❌ No V-JEPA encoder |
-| Immutable event log as "muuttumaton liikkuja" (Thesis §5.2) | JSON Lines event logger | 🟡 Log exists but lacks cryptographic chaining (SHA-256 Merkle chain) |
+| Immutable event log as "muuttumaton liikkuja" (Thesis §5.2) | JSON Lines event logger with SHA-256 Merkle chain | ✅ Done |
 | LingBot-World for local edge inference | Not implemented | ❌ Future phase |
 
 ### Layer 2: Latent Simulation Core (Thesis §5.2)
@@ -51,16 +51,16 @@ The system targets **Pearl's Level 3 Counterfactual Reasoning** (Thesis §2.2), 
 |--------------------|-----------------|----|
 | LeWM action-conditioned latent simulation | Gemini API semantic analysis in `debt_detector.py` | ❌ No latent-space model |
 | SIGReg regularization preventing representation collapse | Not applicable (no latent model) | ❌ Requires LeWM/LeJEPA |
-| Causal evidence with probability distributions (Thesis §5.2) | Binary debt severity (high/medium/low) | ❌ No probabilistic output |
-| CRR tracking GPU + electricity costs | Token-only cost tracking | 🟡 Missing GPU/infra cost component |
-| Jevons Paradox detection (Thesis §5.8.1) | Not implemented | ❌ No alert when CRR approaches 1.0 |
+| Causal evidence with probability distributions (Thesis §5.2) | Probabilistic counterfactuals and chains | ✅ Done |
+| CRR tracking GPU + electricity costs | Token, GPU, and electricity cost tracking | ✅ Done |
+| Jevons Paradox detection (Thesis §5.8.1) | Dashboard threshold alerts | ✅ Done |
 
 ### Layer 3: Agentic Orchestration (Thesis §2.3, §5.2)
 
 | Thesis Requirement | Implementation | Gap |
 |--------------------|-----------------|----|
 | AsyncThink Fork-Delegate-Join | Single Worker agent + asyncio.Queue | 🟡 Queue-based, but not true fork-delegate-join |
-| Specialized workers: QA, Build, Art Integration (Thesis Kuvio 7) | Single generic WorkerAgent | ❌ No domain specialization |
+| Specialized workers: QA, Build, Art Integration (Thesis Kuvio 7) | WorkerAgentFactory with domain specialists | ✅ Done |
 | LMMs-Engine visual pipeline parsing | Not implemented | ❌ Future phase |
 | Muse Spark multimodal orchestration | Not implemented | ❌ Future phase |
 
@@ -77,10 +77,10 @@ The system targets **Pearl's Level 3 Counterfactual Reasoning** (Thesis §2.2), 
 
 | Thesis Requirement | Implementation | Gap |
 |--------------------|-----------------|----|
-| Dashboard with CRR intelligence budget gauge | CRR display in dashboard | 🟡 Needs Jevons Paradox alerts |
-| 24h async cycle visualization (Thesis Kuvio 8) | Not implemented | ❌ No day/night phase indicator |
-| Team of Rivals debate log (Thesis Kuvio 7) | Pipeline events shown | 🟡 Not structured as Worker↔Critic debate |
-| Causal evidence cards with probability distributions | Conflict resolution cards | 🟡 Shows severity, not probability distributions |
+| Dashboard with CRR intelligence budget gauge | CRR display with Compute Runaway alerts | ✅ Done |
+| 24h async cycle visualization (Thesis Kuvio 8) | Day/night phase indicator via /api/cycle | ✅ Done |
+| Team of Rivals debate log (Thesis Kuvio 7) | Negotiation tree with specialist agent verdicts | ✅ Done |
+| Causal evidence cards with probability distributions | Conflict cards with Causal Risk Forecast probability bars | ✅ Done |
 | Qualitative objective function editor (Thesis §5.3) | Not implemented | ❌ Future phase |
 
 ---

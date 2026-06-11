@@ -15,7 +15,7 @@ Interpretation:
     CRR < 1.00  → Acceptable (AI is cheaper, margins thin)
     CRR ≥ 1.00  → Warning (AI costs exceed rework value)
 
-This metric directly addresses the Jevons Paradox — as AI becomes
+This metric directly addresses compute efficiency — as AI becomes
 cheaper, teams may use more of it. CRR ensures the compute budget
 stays proportional to actual value generated.
 """
@@ -61,18 +61,31 @@ class CRREngine:
         """
         Calculate the CRR for the current session.
 
+        Now includes GPU and electricity costs in the numerator (Thesis §5.8.2)
+        and compute runaway alert detection (Thesis §5.8.1).
+
         Args:
             debt_report: The integration debt report (provides rework hours)
             input_tokens: Override session input tokens (if tracking externally)
             output_tokens: Override session output tokens
 
         Returns:
-            CRRResult with the computed ratio and breakdown
+            CRRResult with the computed ratio, GPU costs, and compute runaway alert
         """
         in_tokens = input_tokens if input_tokens is not None else self._session_input_tokens
         out_tokens = output_tokens if output_tokens is not None else self._session_output_tokens
 
         result = CRRResult()
+
+        # Compute GPU and electricity costs (Thesis §5.8.2 — "tokens per watt")
+        gpu_cost = self.config.crr.gpu_hours_per_run * self.config.crr.gpu_hourly_rate
+        electricity_kwh = (
+            self.config.crr.gpu_power_watts
+            * self.config.crr.gpu_hours_per_run
+            / 1000.0  # W → kW
+        )
+        electricity_cost = electricity_kwh * self.config.crr.electricity_rate_kwh
+
         result.compute(
             input_tokens=in_tokens,
             output_tokens=out_tokens,
@@ -80,7 +93,19 @@ class CRREngine:
             token_cost_input_per_m=self.config.crr.token_cost_per_million_input,
             token_cost_output_per_m=self.config.crr.token_cost_per_million_output,
             developer_hourly_rate=self.config.crr.developer_hourly_rate,
+            gpu_cost_usd=gpu_cost,
+            electricity_cost_usd=electricity_cost,
         )
+
+        # Compute runaway warning detection (Thesis §5.8.1)
+        if result.crr >= self.config.crr.jevons_paradox_threshold:
+            result.jevons_paradox_alert = True
+            result.jevons_paradox_message = (
+                f"⚠️ Compute Runaway Warning: CRR={result.crr:.4f} "
+                f"exceeds efficiency threshold {self.config.crr.jevons_paradox_threshold:.2f}. "
+                f"AI costs are approaching human rework value. "
+                f"The Scenario Strategist should enforce token budget ceilings."
+            )
 
         self._history.append(result)
         return result

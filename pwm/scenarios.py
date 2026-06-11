@@ -23,11 +23,11 @@ def get_scenario(scenario_id: int) -> tuple[IntegrationDebtReport, list[Resoluti
     raise ValueError(f"Unknown scenario ID: {scenario_id}")
 
 def _scenario_1_cascading_failure() -> tuple[IntegrationDebtReport, list[ResolutionProposal], list[CriticVerdict]]:
-    """Scenario 1: Organizational Bottleneck (DTO Simulation)"""
+    """Scenario 1: Organizational Bottleneck (Causal Simulation)"""
     conflict = FileConflict(
         conflict_type=ConflictType.ORGANIZATIONAL_BOTTLENECK,
         severity=DebtSeverity.HIGH,
-        description="DTO Simulation: Issue ENG-404 is blocked, which will delay PR #12 and cause a cascading failure for the physics team's milestone.",
+        description="Causal Simulation: Issue ENG-404 is blocked, which will delay PR #12 and cause a cascading failure for the physics team's milestone.",
         affected_files=["src/physics/collision.cpp"],
         involved_prs=[12],
         involved_issues=["ENG-404"],
@@ -41,7 +41,7 @@ def _scenario_1_cascading_failure() -> tuple[IntegrationDebtReport, list[Resolut
         target_conflict=conflict,
         strategies=[
             ResolutionStrategy(
-                title="Resource Reallocation (DTO Optimal)",
+                title="Resource Reallocation (Causal Optimal)",
                 description="Temporarily reallocate 1 senior developer to unblock ENG-404.",
                 steps=[
                     "Pause low-priority tasks for Team Alpha",

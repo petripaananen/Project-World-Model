@@ -176,6 +176,36 @@ class SprintState(BaseModel):
 # Layer 2: Simulation Models
 # ──────────────────────────────────────────────────────────────
 
+class CausalEvidence(BaseModel):
+    """
+    Probabilistic causal risk forecast.
+
+    Instead of binary severity, this provides probability distributions
+    and counterfactual reasoning chains — the thesis's "kausaalinen todiste".
+    (Thesis §5.2)
+    """
+    probability: float = Field(
+        default=0.0, ge=0.0, le=1.0,
+        description="P(failure | no intervention) — probability of production failure",
+    )
+    confidence: float = Field(
+        default=0.0, ge=0.0, le=1.0,
+        description="Model confidence in this probability estimate",
+    )
+    counterfactual: str = Field(
+        default="",
+        description="Causal counterfactual forecast: 'If PR #X merged without #Y...'",
+    )
+    causal_chain: list[str] = Field(
+        default_factory=list,
+        description="Step-by-step causal propagation chain",
+    )
+    impact_distribution: dict[str, float] = Field(
+        default_factory=dict,
+        description="Severity → probability mapping (e.g., {'critical': 0.3, 'high': 0.5})",
+    )
+
+
 class FileConflict(BaseModel):
     """A specific integration conflict between PRs or branches."""
     conflict_type: ConflictType
@@ -186,6 +216,8 @@ class FileConflict(BaseModel):
     involved_branches: list[str] = Field(default_factory=list)
     involved_issues: list[str] = Field(default_factory=list)
     estimated_rework_hours: float = 0.0
+    # Causal evidence (Thesis §5.2)
+    causal_evidence: Optional[CausalEvidence] = None
 
 
 class IntegrationDebtReport(BaseModel):
@@ -254,6 +286,16 @@ class CRRResult(BaseModel):
     crr: float = 0.0
     crr_interpretation: str = ""
 
+    # GPU & infrastructure costs (Thesis §5.8.2 — "tokens per watt")
+    gpu_cost_usd: float = 0.0
+    electricity_cost_usd: float = 0.0
+
+    # Jevons Paradox detection (Thesis §5.8.1)
+    jevons_paradox_alert: bool = Field(
+        default=False,
+        description="True when CRR approaches 1.0 — AI costs nearing rework value",
+    )
+    jevons_paradox_message: str = ""
     def compute(
         self,
         input_tokens: int,
@@ -262,16 +304,22 @@ class CRRResult(BaseModel):
         token_cost_input_per_m: float = 1.25,
         token_cost_output_per_m: float = 10.0,
         developer_hourly_rate: float = 75.0,
+        gpu_cost_usd: float = 0.0,
+        electricity_cost_usd: float = 0.0,
     ) -> None:
-        """Calculate the CRR from raw inputs."""
+        """Calculate the CRR from raw inputs including GPU/electricity costs."""
         self.total_input_tokens = input_tokens
         self.total_output_tokens = output_tokens
         self.estimated_rework_hours = rework_hours
+        self.gpu_cost_usd = gpu_cost_usd
+        self.electricity_cost_usd = electricity_cost_usd
 
-        self.total_ai_cost_usd = (
+        # Total AI cost = token costs + GPU costs + electricity (Thesis §5.8.2)
+        token_cost = (
             (input_tokens / 1_000_000) * token_cost_input_per_m
             + (output_tokens / 1_000_000) * token_cost_output_per_m
         )
+        self.total_ai_cost_usd = token_cost + gpu_cost_usd + electricity_cost_usd
         self.estimated_rework_cost_usd = rework_hours * developer_hourly_rate
 
         if self.estimated_rework_cost_usd > 0:
@@ -318,6 +366,11 @@ class ResolutionProposal(BaseModel):
     strategies: list[ResolutionStrategy] = Field(default_factory=list)
     recommended_strategy_index: int = 0
     worker_reasoning: str = ""
+    # Which specialist agent generated this proposal (Thesis Kuvio 7)
+    agent_type: str = Field(
+        default="general_agent",
+        description="Agent type: general_agent, qa_agent, build_agent, art_agent",
+    )
 
 
 # ──────────────────────────────────────────────────────────────

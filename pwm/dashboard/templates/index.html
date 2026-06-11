@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project World Model — Scenario Strategist</title>
-    <meta name="description" content="L3 Causal Digital Twin Dashboard — Team of Rivals Architecture">
+    <meta name="description" content="Causal Digital Twin Dashboard — Team of Rivals Architecture">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -698,7 +698,7 @@
             <div class="header-left">
                 <div>
                     <div class="logo">🌍 Project World Model</div>
-                    <div class="logo-sub">L3 Causal Digital Twin • Team of Rivals</div>
+                    <div class="logo-sub">Causal Digital Twin • Team of Rivals</div>
                 </div>
             </div>
             <div class="header-right">
@@ -822,8 +822,12 @@
         }
 
         dash.innerHTML = `
-            <!-- Row 1: Project Overview (full width) -->
-            <div class="card full-width" id="overviewCard">
+            <!-- Row 1: 24h Cycle + Project Overview -->
+            <div class="card" id="cycleCard">
+                <div class="card-title"><span class="icon">🕰️</span> 24h Async Cycle</div>
+                ${renderCyclePhase(state)}
+            </div>
+            <div class="card" id="overviewCard">
                 <div class="card-title"><span class="icon">📡</span> Project State</div>
                 ${renderStats(state)}
             </div>
@@ -882,8 +886,34 @@
                 <div class="stat-label">AI Cost</div>
                 <div class="stat-value" style="color:var(--accent-emerald)">$${crr ? crr.total_ai_cost_usd.toFixed(4) : '—'}</div>
             </div>
+            ${crr && crr.jevons_paradox_alert ? `
+            <div class="stat full-width" style="border-color:var(--accent-amber);background:var(--accent-amber-dim);">
+                <div class="stat-label" style="color:var(--accent-amber);">⚠️ Compute Runaway Warning</div>
+                <div style="font-size:0.85rem;color:var(--text-primary);">${crr.jevons_paradox_message}</div>
+            </div>` : ''}
             ${renderCRRChart(state)}
         </div>`;
+    }
+
+    function renderCyclePhase(state) {
+        if (!state.cycle) return '<div class="waiting-text">Loading cycle data...</div>';
+        
+        const c = state.cycle;
+        const isNight = c.phase === 'night';
+        
+        return `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;">
+            <div style="font-size:3rem;margin-bottom:12px;">${isNight ? '🌙' : c.phase === 'morning' ? '🌅' : c.phase === 'day' ? '☀️' : '🌆'}</div>
+            <div style="font-family:var(--font-heading);font-size:1.4rem;font-weight:800;margin-bottom:8px;">${c.title}</div>
+            <div style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:16px;">${c.description}</div>
+            
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 24px;background:var(--bg-secondary);border-radius:var(--radius-sm);border:1px solid var(--border-glass);">
+                <div style="font-family:var(--font-mono);font-size:1.2rem;font-weight:700;">${c.local_time}</div>
+                <div style="width:1px;height:24px;background:var(--border-glass);"></div>
+                <div style="font-size:0.8rem;color:var(--text-dim);">${c.timezone}</div>
+            </div>
+        </div>
+        `;
     }
 
     function renderCRRChart(state) {
@@ -919,6 +949,23 @@
                     </div>
                     <div class="conflict-desc">${c.description.substring(0, 120)}${c.description.length > 120 ? '...' : ''}</div>
                     <div class="conflict-meta">⏱ ${c.estimated_rework_hours.toFixed(1)}h rework</div>
+                    
+                    ${c.causal_evidence ? `
+                    <div style="margin-top:12px;padding:10px;background:var(--bg-secondary);border-left:3px solid var(--accent-violet);border-radius:4px;">
+                        <div style="font-size:0.75rem;font-weight:700;color:var(--accent-violet);margin-bottom:4px;text-transform:uppercase;">Causal Risk Forecast</div>
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                            <div style="flex:1;height:6px;background:var(--border-glass);border-radius:3px;overflow:hidden;">
+                                <div style="height:100%;width:${c.causal_evidence.probability * 100}%;background:var(--accent-violet);"></div>
+                            </div>
+                            <span style="font-family:var(--font-mono);font-size:0.75rem;font-weight:700;">${(c.causal_evidence.probability * 100).toFixed(0)}% Probability</span>
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--text-secondary);font-style:italic;margin-bottom:6px;">"${c.causal_evidence.counterfactual}"</div>
+                        <ul style="padding-left:16px;margin:0;font-size:0.75rem;color:var(--text-dim);">
+                            ${c.causal_evidence.causal_chain.map(step => `<li>${step}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+
                     <div class="conflict-details">
                         <div style="font-size:0.75rem;color:var(--text-dim);margin-bottom:8px;">AFFECTED FILES</div>
                         <div class="file-chips">
@@ -945,9 +992,15 @@
                 const verdictIcon = v ? (v.verdict === 'approved' ? '✅' : v.verdict === 'rejected' ? '❌' : '🔄') : '⏳';
                 const verdictColor = v ? (v.verdict === 'approved' ? 'var(--accent-emerald)' : v.verdict === 'rejected' ? 'var(--accent-rose)' : 'var(--accent-amber)') : 'var(--text-dim)';
 
+                let agentName = "General Worker";
+                let agentIcon = "🛠️";
+                if (p.agent_type === 'qa_agent') { agentName = "QA Specialist"; agentIcon = "🧪"; }
+                else if (p.agent_type === 'build_agent') { agentName = "Build Specialist"; agentIcon = "🏗️"; }
+                else if (p.agent_type === 'art_agent') { agentName = "Art Integration Specialist"; agentIcon = "🎨"; }
+
                 return `<div class="negotiation-item">
                     <div class="agent-node worker">
-                        <div class="agent-label">Worker Agent</div>
+                        <div class="agent-label">${agentIcon} ${agentName}</div>
                         <div class="strategy-title">★ ${recStrat ? recStrat.title : 'No strategy'}</div>
                         <div class="strategy-meta">${recStrat ? recStrat.estimated_effort_hours.toFixed(1) + 'h effort • ' + recStrat.risk_level + ' risk' : ''}</div>
                         <div style="margin-top:6px;font-size:0.75rem;color:var(--text-dim);">${p.worker_reasoning ? p.worker_reasoning.substring(0, 100) + '...' : ''}</div>

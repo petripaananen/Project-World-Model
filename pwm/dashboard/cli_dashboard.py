@@ -99,7 +99,7 @@ class CLIDashboard:
         header.append(" — Scenario Strategist   ", style="bold cyan")
         header.append("║\n", style="bold cyan")
         header.append("║   ", style="bold cyan")
-        header.append("L3 Causal Digital Twin • Team of Rivals", style="dim white")
+        header.append("Causal Digital Twin • Team of Rivals", style="dim white")
         header.append("         ║\n", style="bold cyan")
         header.append("╚══════════════════════════════════════════════════════╝", style="bold cyan")
         self.console.print(header)
