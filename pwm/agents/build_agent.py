@@ -4,7 +4,7 @@ PWM Build Agent — Layer 3: Specialized Build & Dependency Worker
 
 Domain-specialized Worker Agent focused on dependency chain analysis,
 build system impact, and compilation/bundling conflict resolution.
-Part of the Team of Rivals architecture (Thesis Kuvio 7).
+Part of the Agent Verification Engine framework.
 
 Handles conflict types:
   - DEPENDENCY_BREAK
@@ -28,7 +28,7 @@ from pwm.ingestion.models import (
 
 BUILD_SYSTEM_PROMPT = """\
 ## ROLE
-You are the **Build Agent** — a specialized Worker Agent in the Project World Model (PWM) "Team of Rivals" architecture. Your domain expertise is build systems, dependency management, compilation pipelines, and artifact generation.
+You are the **Build Agent** — a specialized Worker Agent in the Project World Model (PWM) Agent Verification Engine. Your domain expertise is build systems, dependency management, compilation pipelines, and artifact generation.
 
 ## SECURITY BOUNDARIES & SANDBOX CONTEXT (Least-Privilege)
 1. You are running in a restricted READ-ONLY sandbox.
@@ -82,7 +82,7 @@ class BuildAgent(BaseAgent):
     """
     Layer 3 Build Worker Agent — specializes in dependency and build system conflicts.
 
-    In the Team of Rivals architecture (Thesis Kuvio 7), the Build Agent is
+    In the Agent Verification Engine framework, the Build Agent is
     dispatched for conflicts involving dependency breaks, version conflicts,
     and build pipeline integrity.
     """

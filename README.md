@@ -1,6 +1,6 @@
 # Project World Model (PWM)
 
-Eradicating integration debt via **Causal Digital Twins** and a 'Team of Rivals' simulation-driven architecture. Stop reacting, start predicting.
+Eradicating integration debt via **Causal Digital Twins** and an Agent Verification Engine simulation-driven architecture. Stop reacting, start predicting.
 
 ## Overview
 The Project World Model (PWM) framework represents a fundamental paradigm shift in enterprise software engineering and complex production management. By evolving the technological infrastructure from reactive code generation tracking to predictive, latent-space causal simulation, the PWM structurally eradicates the "Paradox of Agility" and the crushing weight of integration debt.
@@ -18,7 +18,7 @@ The PWM operates as a Causal Digital Twin, structured across 5 core layers:
 1. **Layer 1: Observation & Ingestion**: Real-time telemetry ingestion using Model Context Protocol (MCP) integrations connecting JIRA, GitHub, Slack, and Google Cloud Data.
 2. **Layer 2: Latent Simulation Core**: Deep causal reasoning predicting cascading integration failures in a computationally optimized latent space using Gemini.
 3. **Layer 3: Agentic Orchestration**: Asynchronous parallel resolution streams powered by Gemini-based worker agents.
-4. **Layer 4: Validation (Team of Rivals)**: An architectural firewall where Critic Agents audit Worker Agents to prevent pseudo-alignment and adversarial inputs before code reaches production.
+4. **Layer 4: Validation (Agent Verification Engine)**: An architectural firewall where Critic Agents audit Worker Agents to prevent pseudo-alignment and adversarial inputs before code reaches production.
 5. **Layer 5: The Scenario Strategist**: The human-in-the-loop executive layer for setting objective functions, managing the intelligence budget, and maintaining absolute veto power.
 
 ## Value Proposition

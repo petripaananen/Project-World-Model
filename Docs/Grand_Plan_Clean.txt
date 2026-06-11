@@ -4,7 +4,7 @@ Document Type: Master Blueprint
 Status: ACTIVE
 
 1.0 EXECUTIVE SUMMARY
-The PWM framework addresses the "Paradox of Agility" – the phenomenon where exponential asset generation by L1 AI models creates massive "integration debt," completely overwhelming linear, human-driven Agile/Scrum pipelines. PWM solves this by acting as a Level 3 (L3) Causal Digital Twin, orchestrating an asynchronous "Team of Rivals" to resolve embedded integration debt before it hits production.
+The PWM framework addresses the "Paradox of Agility" – the phenomenon where exponential asset generation by L1 AI models creates massive "integration debt," completely overwhelming linear, human-driven Agile/Scrum pipelines. PWM solves this by acting as a Level 3 (L3) Causal Digital Twin, orchestrating an asynchronous Agent Verification Engine to resolve embedded integration debt before it hits production.
 
 Academic Foundation: The theoretical and conceptual framework of PWM is validated by Petri Paananen's Master's Thesis: "Itseohjautuvat työnkulut videopeliteollisuudessa: tekoälyn maailmanmallit tuotannon johtamisen viitekehyksenä" (AMK, 2026), published at URN: https://urn.fi/URN:NBN:fi:amk-2026052919003.
 
@@ -20,7 +20,7 @@ Gemini XPRIZE Alignment: Deployed on Google Cloud (Cloud Run, AlloyDB, BigQuery)
     2.3 Layer 3: Agentic Orchestration
         Description: Uses the AsyncThink protocol to dynamically delegate sub-tasks to specialized worker agents in parallel via the Gemini API.
     
-    2.4 Layer 4: Validation (Team of Rivals)
+    2.4 Layer 4: Validation (Agent Verification Engine)
         Description: The architectural firewall. Critic agents audit worker agents to prevent "strategic dishonesty" and Algorithmic Value Capture.
     
     2.5 Layer 5: The Scenario Strategist
@@ -47,7 +47,7 @@ Gemini XPRIZE Alignment: Deployed on Google Cloud (Cloud Run, AlloyDB, BigQuery)
     Objective: Scale into a standalone, continuously operating prototype.
     Environment: Google Agent Development Kit (ADK).
     Action Items:
-        3.1 Deploy the asynchronous "Team of Rivals" architecture using ADK. (Status: PENDING)
+        3.1 Deploy the asynchronous Agent Verification Engine using ADK. (Status: PENDING)
         3.2 Implement architecture similar to papervizagent with Planner, Worker, and Critic agents. (Status: PENDING)
         3.3 Integrate LingBot-World simulator to run localized "what-if" scenarios for Layer 2. (Status: PENDING)
 

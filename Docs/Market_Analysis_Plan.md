@@ -8,7 +8,7 @@
 ## 2. Core Value Differentiators (Marketing & Sales)
 *   [ ] **Ecological & Social Sustainability**: Build marketing collateral emphasizing PWM as the structural solution to "crunch culture" burnout and excessive GPU "rendering waste".
 *   [ ] **The Scenario Strategist**: Create campaign materials that champion and glamorize the evolution of the traditional Project Manager/Producer to the executive "Scenario Strategist".
-*   [ ] **The "Team of Rivals" as a Creative Safety Net**: Draft messaging to alleviate fears of Algorithmic Value Capture and reassure developers that their psychological ownership is protected.
+*   [ ] **The Agent Verification Engine as a Creative Safety Net**: Draft messaging to alleviate fears of Algorithmic Value Capture and reassure developers that their psychological ownership is protected.
 
 ## 3. Go-to-Market (GTM) Execution Roadmap
 *   [ ] **Launchpad Selection**: Establish the Finnish Game Ecosystem (€3.17B turnover) as the primary early-adopter testbed due to its operational maturity.

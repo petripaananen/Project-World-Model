@@ -38,7 +38,7 @@ The diagram illustrates the vertical 5-layer architecture of the Project World M
 - **Activity:** "Asynchronous Negotiation" between agents (represented by dashed arrows and description text).
 - **Technical References:** [Muse Spark, AsyncThink].
 
-### Layer 4: Validation & Auditor Firewall (Team of Rivals)
+### Layer 4: Validation & Auditor Firewall (Agent Verification Engine)
 - **Location:** Top-most technical layer.
 - **Identifier:** "Layer 4" in the top-left corner.
 - **Color:** Light green background with dark green borders.

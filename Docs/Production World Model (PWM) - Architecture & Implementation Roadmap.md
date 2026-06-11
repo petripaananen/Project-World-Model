@@ -38,7 +38,7 @@ The following framework maps the discussed open-source models directly to the sp
 
 ## **Layer 4: Validation & Audit**
 
-**Function:** The "Team of Rivals" environment. Here, asynchronous agents rigorously audit each other's outputs inside isolated sandboxes to ensure technical optimizations do not override the project's creative vision or violate production constraints.
+**Function:** The Agent Verification Engine environment. Here, asynchronous agents rigorously audit each other's outputs inside isolated sandboxes to ensure technical optimizations do not override the project's creative vision or violate production constraints.
 
 * **Selected Framework:** NVIDIA NemoClaw  
 * **GitHub Link:** [GitHub \- NVIDIA/NemoClaw: Run agents like Hermes and OpenClaw more securely inside NVIDIA OpenShell with managed inference](https://github.com/NVIDIA/NemoClaw)  

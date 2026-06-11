@@ -20,7 +20,7 @@ By operating as an **L3 Causal Digital Twin**, PWM shifts project management fro
 *   **Goal**: Asynchronous execution of parallel resolution streams.
 *   **Implementation**: Utilize Google Agent Development Kit (ADK) and the `AsyncThink` protocol. We will spawn specialized worker agents (e.g., Code Refactor Agent, Dependency Resolver).
 
-### Layer 4: Validation / "Team of Rivals" (The Immune System)
+### Layer 4: Validation / Agent Verification Engine (The Immune System)
 *   **Goal**: Prevent *Algorithmic Value Capture* and *Strategic Dishonesty*.
 *   **Implementation**: We will build independent **Critic Agents** that audit the Worker Agents. If a worker degrades code quality to hit a deadline, the Critic unilaterally vetoes the action. 
 
@@ -36,7 +36,7 @@ By operating as an **L3 Causal Digital Twin**, PWM shifts project management fro
 *   Initialize the core repository structure.
 *   Set up a mock environment mapping (simulating GitHub, Slack, and Jira inputs) to test data ingestion.
 
-**Phase 2: Baseline "Team of Rivals" Prompting (Layer 3 & 4)**
+**Phase 2: Baseline Agent Verification Engine Prompting (Layer 3 & 4)**
 *   Draft the system prompts for our first two agents:
     1.  `Worker_Agent_Alpha`: Tasked with resolving a simulated code integration conflict.
     2.  `Critic_Agent_Beta`: Tasked with auditing Alpha's solution for architectural integrity and "strategic dishonesty".

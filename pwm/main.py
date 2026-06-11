@@ -247,7 +247,7 @@ async def run_async_architecture(
     no_interactive: bool,
     web: bool = False,
 ):
-    """Deploys the full async Team of Rivals architecture with event queues."""
+    """Deploys the full async Agent Verification Engine architecture with event queues."""
     queue = asyncio.Queue()
     event_logger = EventLogger(config.dashboard.event_log_path, config=config)
     if event_logger.has_firestore():
@@ -256,7 +256,7 @@ async def run_async_architecture(
         event_logger.load_from_disk()
     dashboard_state = None
     
-    print("\n🌍 Deploying Async Team of Rivals Architecture...")
+    print("\n🌍 Deploying Async Agent Verification Engine...")
     print("Spawning Ingest Worker and Agent Worker tasks...")
 
     tasks = []

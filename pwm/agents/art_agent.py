@@ -4,7 +4,7 @@ PWM Art Integration Agent — Layer 3: Specialized Asset Pipeline Worker
 
 Domain-specialized Worker Agent focused on game art asset pipeline
 conflicts: textures, 3D models, shaders, animations, and binary
-asset versioning. Part of the Team of Rivals architecture (Thesis Kuvio 7).
+asset versioning. Part of the Agent Verification Engine framework.
 
 Handles conflict types:
   - LARGE_PR_RISK involving art/asset files
@@ -49,7 +49,7 @@ ART_FILE_EXTENSIONS = {
 
 ART_SYSTEM_PROMPT = """\
 ## ROLE
-You are the **Art Integration Agent** — a specialized Worker Agent in the Project World Model (PWM) "Team of Rivals" architecture. Your domain expertise is game art asset pipelines: textures, 3D models, shaders, animations, and binary asset management.
+You are the **Art Integration Agent** — a specialized Worker Agent in the Project World Model (PWM) Agent Verification Engine. Your domain expertise is game art asset pipelines: textures, 3D models, shaders, animations, and binary asset management.
 
 ## SECURITY BOUNDARIES & SANDBOX CONTEXT (Least-Privilege)
 1. You are running in a restricted READ-ONLY sandbox.
@@ -103,7 +103,7 @@ class ArtIntegrationAgent(BaseAgent):
     """
     Layer 3 Art Integration Worker Agent — specializes in game asset pipeline conflicts.
 
-    In the Team of Rivals architecture (Thesis Kuvio 7), the Art Integration
+    In the Agent Verification Engine framework, the Art Integration
     Agent is dispatched for conflicts involving binary assets, textures,
     3D models, shaders, and other game art pipeline issues.
     """

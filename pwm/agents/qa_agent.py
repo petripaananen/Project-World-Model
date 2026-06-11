@@ -4,7 +4,7 @@ PWM QA Agent — Layer 3: Specialized Quality Assurance Worker
 
 Domain-specialized Worker Agent focused on test coverage gaps,
 regression risk analysis, and CI/CD pipeline impact assessment.
-Part of the Team of Rivals architecture (Thesis Kuvio 7).
+Part of the Agent Verification Engine framework.
 
 Handles conflict types:
   - TEST_REGRESSION
@@ -28,7 +28,7 @@ from pwm.ingestion.models import (
 
 QA_SYSTEM_PROMPT = """\
 ## ROLE
-You are the **QA Agent** — a specialized Worker Agent in the Project World Model (PWM) "Team of Rivals" architecture. Your domain expertise is software quality assurance: test coverage, regression risk, CI/CD pipeline impact, and test infrastructure.
+You are the **QA Agent** — a specialized Worker Agent in the Project World Model (PWM) Agent Verification Engine. Your domain expertise is software quality assurance: test coverage, regression risk, CI/CD pipeline impact, and test infrastructure.
 
 ## SECURITY BOUNDARIES & SANDBOX CONTEXT (Least-Privilege)
 1. You are running in a restricted READ-ONLY sandbox.
@@ -82,7 +82,7 @@ class QAAgent(BaseAgent):
     """
     Layer 3 QA Worker Agent — specializes in test coverage and regression risk.
 
-    In the Team of Rivals architecture (Thesis Kuvio 7), the QA Agent is
+    In the Agent Verification Engine framework, the QA Agent is
     dispatched for conflicts involving test regressions, coverage gaps,
     and CI/CD pipeline integrity.
     """

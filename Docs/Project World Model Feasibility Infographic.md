@@ -11,7 +11,7 @@
          1\. Hook: The systemic inflection point in enterprise production (Agility Paradox).  
          2\. Problem: GenAI accelerates component creation but shatters traditional integration pipelines.  
          3\. Solution: Introduction of the Project World Model (PWM) \- a universal L3 Causal Digital Twin.  
-         4\. Mechanics: The "Team of Rivals" architecture mapped via HTML CSS flow.  
+         4\. Mechanics: The Agent Verification Engine architecture mapped via HTML CSS flow.  
          5\. Feasibility Data: Expected ROI, risk reduction, and cross-industry viability.  
          6\. Next Steps: Roadmap to Product-Market Fit (PMF). \--\>  
     \<\!-- Visualization Choices:  
@@ -49,7 +49,7 @@
             \<div class="hidden md:flex space-x-6 text-sm font-semibold text-slate-600"\>  
                 \<a href="\#paradox" class="hover:text-primary transition-colors"\>The Agility Paradox\</a\>  
                 \<a href="\#solution" class="hover:text-primary transition-colors"\>L3 Architecture\</a\>  
-                \<a href="\#validation" class="hover:text-primary transition-colors"\>Team of Rivals\</a\>  
+                \<a href="\#validation" class="hover:text-primary transition-colors"\>Verification Engine\</a\>  
                 \<a href="\#feasibility" class="hover:text-primary transition-colors"\>Feasibility & PMF\</a\>  
             \</div\>  
         \</div\>  
@@ -133,7 +133,7 @@
                 \<div class="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-800 font-bold text-sm uppercase tracking-wide mb-4"\>  
                     Architectural Framework  
                 \</div\>  
-                \<h2 class="text-3xl md:text-4xl font-bold mb-6"\>The "Team of Rivals" Validation Matrix\</h2\>  
+                \<h2 class="text-3xl md:text-4xl font-bold mb-6"\>The Agent Verification Engine Matrix\</h2\>  
                 \<p class="text-lg text-slate-600"\>  
                     To actively combat the fear of algorithmic hallucinations and retain creative/technical control, the PWM framework utilizes an asynchronous multi-agent system. Structural guarantees ensure human veto power remains absolute.  
                 \</p\>  

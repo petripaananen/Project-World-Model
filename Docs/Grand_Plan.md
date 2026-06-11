@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary
 
-The PWM framework addresses the **"Paradox of Agility" (Ketteryyden paradoksi)** — the phenomenon where exponential asset generation by L1 AI models creates massive "integration debt," completely overwhelming linear, human-driven Agile/Scrum pipelines (Thesis §1.1). PWM solves this by acting as a **Causal Digital Twin (CDT)** (Thesis §5.2), orchestrating an asynchronous **Team of Rivals** (Thesis §5.5) to resolve embedded integration debt before it hits production.
+The PWM framework addresses the **"Paradox of Agility" (Ketteryyden paradoksi)** — the phenomenon where exponential asset generation by L1 AI models creates massive "integration debt," completely overwhelming linear, human-driven Agile/Scrum pipelines (Thesis §1.1). PWM solves this by acting as a **Causal Digital Twin (CDT)** (Thesis §5.2), orchestrating an asynchronous **Agent Verification Engine** (Thesis §5.5) to resolve embedded integration debt before it hits production.
 
 The system operates using **Causal Counterfactual Reasoning** (Thesis §2.2), enabling "what if we had done X differently?" scenario analysis in latent space — a capability fundamentally beyond traditional Agile tools that operate only at Level 1 (Association/correlation).
 
@@ -44,7 +44,7 @@ The asynchronous routing layer implementing the **AsyncThink Fork-Delegate-Join 
 
 - **Selected Framework**: LMMs-Engine for visual pipeline parsing of Gantt charts and dependency graphs.
 
-### 🛡️ Layer 4: Validation & Audit — Team of Rivals (Thesis §5.5, §5.2.1)
+### 🛡️ Layer 4: Validation & Audit — Agent Verification Engine (Thesis §5.5, §5.2.1)
 
 The architectural firewall. Independent critic agents audit worker proposals through **hierarchical debate and veto**. Critics run in secure, air-gapped sandboxes to prevent **strategic dishonesty** and **Algorithmic Value Capture**. The thesis defines a **hallinta- ja linjausarkkitehti** (governance & alignment architect) — a supervisory AI instance that monitors agent cascading effects and hidden intentions.
 
@@ -109,7 +109,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 
 | Phase | Name | Status | Thesis Grounding |
 |-------|------|--------|-----------------|
-| **1** | Conceptualization & Architecture | ✅ **DONE** | L3 causal reasoning & L4 Team of Rivals validated via thesis (§3, §4) |
+| **1** | Conceptualization & Architecture | ✅ **DONE** | L3 causal reasoning & L4 Agent Verification Engine validated via thesis (§3, §4) |
 | **2** | Proof of Concept (PoC) | ✅ **DONE** | L1 observation via MCP (§5.2), L3/L4 Worker/Critic agents |
 | **3** | Prototype & OSS Orchestration | 🟡 **PARTIAL** | Thesis model stack (Taulukko 4) not yet deployed |
 | **4** | Security & Compliance (SAIF) | 🟡 **PARTIAL** | Prompt-based sandboxing only; NemoClaw not deployed (§6.3.2) |
@@ -127,7 +127,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 | Task | Description | Status |
 |------|-------------|--------|
 | 1.1 | Test baseline logic and agentic reasoning | ✅ Done |
-| 1.2 | Refine L4 Team of Rivals critique patterns for pseudo-alignment detection | ✅ Done |
+| 1.2 | Refine L4 Agent Verification Engine critique patterns for pseudo-alignment detection | ✅ Done |
 
 ---
 
@@ -151,7 +151,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 
 | Task | Description | Status |
 |------|-------------|--------|
-| 3.1 | Deploy async Team of Rivals architecture prototype | ✅ Done |
+| 3.1 | Deploy async Agent Verification Engine prototype | ✅ Done |
 | 3.2 | Deploy LMMs-Engine for L3 visual pipeline delegations (§2.3) | ❌ Not started |
 | 3.3 | Integrate LeWM / Solaris as L2 Latent Simulation Core (§5.2) | ❌ Not started |
 | 3.4 | Upgrade DebtDetector with causal evidence (probability distributions) | ❌ Not started |

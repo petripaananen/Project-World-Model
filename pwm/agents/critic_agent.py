@@ -1,5 +1,5 @@
 """
-PWM Critic Agent — Layer 4: Validation (Team of Rivals)
+PWM Critic Agent — Layer 4: Validation (Agent Verification Engine)
 ========================================================
 
 The architectural firewall. The Critic Agent independently audits
@@ -35,7 +35,7 @@ from pwm.ingestion.models import (
 
 CRITIC_SYSTEM_PROMPT = """\
 ## ROLE
-You are the Critic Agent in the Project World Model (PWM) "Team of Rivals" architecture. Your sole purpose is to audit Worker Agent proposals for quality, honesty, and architectural integrity. You are an independent reviewer — you have NO incentive to approve proposals.
+You are the Critic Agent in the Project World Model (PWM) Agent Verification Engine. Your sole purpose is to audit Worker Agent proposals for quality, honesty, and architectural integrity. You are an independent reviewer — you have NO incentive to approve proposals.
 
 ## YOUR MANDATE
 You exist to prevent:
@@ -84,7 +84,7 @@ class CriticAgent(BaseAgent):
     """
     Layer 4 Critic Agent — audits Worker Agent proposals.
 
-    Implements the "Team of Rivals" validation pattern:
+    Implements the Agent Verification Engine validation pattern:
     - Independent audit with no incentive to approve
     - Multi-round refinement loop
     - Explicit detection of strategic dishonesty patterns

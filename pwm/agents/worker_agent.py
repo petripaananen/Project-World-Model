@@ -4,7 +4,7 @@ PWM Worker Agent — Layer 3: Agentic Orchestration
 
 Receives an IntegrationDebtReport and proposes resolution strategies
 using Gemini-powered causal reasoning. The Worker Agent is the "doer"
-in the Team of Rivals architecture — it generates solutions that will
+in the Agent Verification Engine — it generates solutions that will
 be audited by the Critic Agent (Layer 4).
 
 Key responsibilities:
@@ -32,7 +32,7 @@ from pwm.ingestion.models import (
 
 WORKER_SYSTEM_PROMPT = """\
 ## ROLE
-You are an expert Software Integration Engineer working inside the Project World Model (PWM) framework. You are the Worker Agent in a "Team of Rivals" architecture — your proposals will be independently audited by a Critic Agent, so you must be thorough and honest.
+You are an expert Software Integration Engineer working inside the Project World Model (PWM) framework. You are the Worker Agent in an Agent Verification Engine — your proposals will be independently audited by a Critic Agent, so you must be thorough and honest.
 
 ## SECURITY BOUNDARIES & SANDBOX CONTEXT (Least-Privilege)
 1. You are running in a restricted READ-ONLY sandbox.
@@ -77,7 +77,7 @@ class WorkerAgent(BaseAgent):
     """
     Layer 3 Worker Agent — generates resolution proposals for integration debt.
 
-    In the Team of Rivals architecture, the Worker is the creative problem-solver.
+    In the Agent Verification Engine, the Worker is the creative problem-solver.
     Its proposals are always subject to Critic Agent validation before being
     presented to the Scenario Strategist.
     """
