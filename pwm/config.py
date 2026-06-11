@@ -25,6 +25,8 @@ class GCPConfig(BaseModel):
     """Google Cloud Platform configuration."""
     project_id: str = Field(default="", description="GCP project ID")
     location: str = Field(default="us-central1", description="GCP region")
+    gce_instance_name: str = Field(default="pwm-gpu-host", description="GCE VM instance name for GPU models")
+    gce_zone: str = Field(default="us-central1-a", description="GCE VM zone")
 
 
 class ModelConfig(BaseModel):
@@ -52,6 +54,11 @@ class ModelConfig(BaseModel):
         default=100000,
         description="Maximum cumulative tokens budget per pipeline run",
     )
+    # External model service endpoints
+    vjepa_endpoint_url: str = Field(default="", description="Layer 1 V-JEPA service endpoint")
+    lewm_endpoint_url: str = Field(default="", description="Layer 2 LeWM service endpoint")
+    lmms_engine_endpoint_url: str = Field(default="", description="Layer 3 LMMs-Engine service endpoint")
+    nemoclaw_endpoint_url: str = Field(default="", description="Layer 4 NemoClaw service endpoint")
 
 
 class IngestionConfig(BaseModel):
@@ -214,6 +221,14 @@ class PWMConfig(BaseModel):
             gcp=GCPConfig(
                 project_id=os.getenv("GCP_PROJECT_ID", "project-world-model"),
                 location=os.getenv("GCP_LOCATION", "us-central1"),
+                gce_instance_name=os.getenv("GCP_GCE_INSTANCE_NAME", "pwm-gpu-host"),
+                gce_zone=os.getenv("GCP_GCE_ZONE", "us-central1-a"),
+            ),
+            models=ModelConfig(
+                vjepa_endpoint_url=os.getenv("PWM_VJEPA_ENDPOINT_URL", ""),
+                lewm_endpoint_url=os.getenv("PWM_LEWM_ENDPOINT_URL", ""),
+                lmms_engine_endpoint_url=os.getenv("PWM_LMMS_ENGINE_ENDPOINT_URL", ""),
+                nemoclaw_endpoint_url=os.getenv("PWM_NEMOCLAW_ENDPOINT_URL", ""),
             ),
             ingestion=IngestionConfig(
                 github_owner=os.getenv("PWM_GITHUB_OWNER", ""),

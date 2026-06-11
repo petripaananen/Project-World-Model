@@ -15,10 +15,17 @@ import subprocess
 import time
 import argparse
 
-# Default Configuration
-DEFAULT_PROJECT = "project-world-model"
-DEFAULT_INSTANCE = "pwm-gpu-instance"
-DEFAULT_ZONE = "us-central1-a"
+try:
+    from pwm.config import PWMConfig
+    config = PWMConfig.from_env()
+    DEFAULT_PROJECT = config.gcp.project_id or "project-world-model"
+    DEFAULT_INSTANCE = config.gcp.gce_instance_name or "pwm-gpu-host"
+    DEFAULT_ZONE = config.gcp.gce_zone or "us-central1-a"
+except ImportError:
+    DEFAULT_PROJECT = "project-world-model"
+    DEFAULT_INSTANCE = "pwm-gpu-host"
+    DEFAULT_ZONE = "us-central1-a"
+
 DEFAULT_COMMAND = "cd ~/Project-World-Model && pytest"
 
 def run_command(cmd, shell=False, capture_output=False):

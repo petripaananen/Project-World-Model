@@ -43,6 +43,12 @@ from pwm.ingestion.models import (
 from pwm.logging.event_logger import EventLogger
 from pwm.simulation.crr_engine import CRREngine
 from pwm.simulation.debt_detector import DebtDetector
+from pwm.layers import (
+    Layer1Observation,
+    Layer2Simulation,
+    Layer3Orchestration,
+    Layer4Validation,
+)
 
 
 async def _execute_agent_pipeline(
@@ -50,7 +56,7 @@ async def _execute_agent_pipeline(
     config: PWMConfig,
     mode: str,
     event_logger: EventLogger | None = None,
-    detector: DebtDetector | None = None,
+    detector: DebtDetector | Layer2Simulation | None = None,
     scenario_id: int = 0,
 ) -> PWMPipelineState:
     """
@@ -65,71 +71,44 @@ async def _execute_agent_pipeline(
         config: PWM configuration
         mode: "demo" or "analyze"
         event_logger: Optional event logger for audit trail
-        detector: Optional DebtDetector instance to capture its token usage
+        detector: Optional DebtDetector or Layer2Simulation instance to capture its token usage
         scenario_id: XPRIZE scenario ID (default: 0)
 
     Returns:
         Updated PWMPipelineState with proposals, verdicts, and CRR
     """
+    # Instantiate Layer 3 and Layer 4
+    layer3 = Layer3Orchestration(config)
+    layer4 = Layer4Validation(config)
+
+    project_context = _build_project_context(state)
+
+    # Layer 3: Orchestrate Resolution
+    state.proposals = await layer3.orchestrate_resolution(
+        state=state,
+        project_context=project_context,
+        mode=mode,
+    )
+
+    # Layer 4: Validate Proposals
+    state.proposals, state.verdicts = await layer4.validate_proposals(
+        state=state,
+        project_context=project_context,
+        mode=mode,
+    )
+
     if mode == "analyze":
-        from pwm.agents.worker_agent import WorkerAgentFactory
-        from pwm.agents.critic_agent import CriticAgent
-
-        critic = CriticAgent(config=config)
-
-        # Dispatch each conflict to the appropriate specialist agent (Thesis Kuvio 7)
-        all_proposals = []
-        all_worker_tokens = {"input_tokens": 0, "output_tokens": 0}
-
-        for conflict in state.debt_report.conflicts:
-            agent, agent_type = WorkerAgentFactory.create(conflict, config)
-
-            data = {
-                "debt_report": state.debt_report,
-                "project_context": _build_project_context(state),
-                "worker_agent": agent,
-            }
-            data = await agent.process(data)
-            proposals_for_conflict = data.get("proposals", [])
-
-            # Tag each proposal with the agent type
-            for p in proposals_for_conflict:
-                p.agent_type = agent_type
-
-            all_proposals.extend(proposals_for_conflict)
-
-            # Accumulate tokens from this specialist agent
-            usage = agent.token_usage
-            all_worker_tokens["input_tokens"] += usage["input_tokens"]
-            all_worker_tokens["output_tokens"] += usage["output_tokens"]
-
-            if config.verbose:
-                print(f"  🏷️ [{agent_type}] handled: {conflict.conflict_type.value}")
-
-        state.proposals = all_proposals
-
-        # Run critic on all proposals
-        critic_data = {
-            "proposals": state.proposals,
-            "debt_report": state.debt_report,
-            "project_context": _build_project_context(state),
-        }
-        critic_data = await critic.process(critic_data)
-        state.proposals = critic_data.get("proposals", [])
-        state.verdicts = critic_data.get("verdicts", [])
-
-        critic_tokens = critic.token_usage
+        l3_tokens = layer3.token_usage
+        l4_tokens = layer4.token_usage
         layer2_input = detector.token_usage["input_tokens"] if detector else 0
         layer2_output = detector.token_usage["output_tokens"] if detector else 0
-        
-        state.total_input_tokens = all_worker_tokens["input_tokens"] + critic_tokens["input_tokens"] + layer2_input
-        state.total_output_tokens = all_worker_tokens["output_tokens"] + critic_tokens["output_tokens"] + layer2_output
+
+        state.total_input_tokens = l3_tokens["input_tokens"] + l4_tokens["input_tokens"] + layer2_input
+        state.total_output_tokens = l3_tokens["output_tokens"] + l4_tokens["output_tokens"] + layer2_output
     else:
         if scenario_id > 0:
             from pwm.scenarios import get_scenario
             _, state.proposals, state.verdicts = get_scenario(scenario_id)
-        else:
-            state.proposals, state.verdicts = _generate_demo_proposals(state)
         state.total_input_tokens = 15_000
         state.total_output_tokens = 8_000
 
@@ -187,7 +166,8 @@ async def agent_worker(
 ):
     """Layer 3-5: Consumes snapshots, detects debt, runs Agents, and renders Dashboard."""
     dashboard = CLIDashboard()
-    detector = DebtDetector(config)
+    layer1 = Layer1Observation(config)
+    layer2 = Layer2Simulation(config)
     
     while True:
         p_state, s_state = await queue.get()
@@ -202,8 +182,13 @@ async def agent_worker(
         if event_logger:
             await event_logger.log_pipeline_start(state.run_id)
         
-        # Layer 2: Detect
-        state.debt_report = await detector.analyze(p_state, s_state, mode=mode)
+        # Layer 1: Process telemetry (V-JEPA or raw fallback)
+        telemetry_result = await layer1.process_telemetry(p_state, s_state)
+        if config.verbose:
+            print(f"[🤖 Agent Worker] Layer 1 observation processed: status={telemetry_result.get('status')}")
+
+        # Layer 2: Run simulation (LeWM or local/Gemini fallback)
+        state.debt_report = await layer2.run_simulation(p_state, s_state, mode=mode)
 
         if event_logger and state.debt_report:
             await event_logger.log_debt_detected(
@@ -219,7 +204,13 @@ async def agent_worker(
             
         # Layer 3/4: Agents (shared pipeline step)
         try:
-            state = await _execute_agent_pipeline(state, config, mode, event_logger, detector)
+            state = await _execute_agent_pipeline(
+                state=state,
+                config=config,
+                mode=mode,
+                event_logger=event_logger,
+                detector=layer2,
+            )
         except Exception as e:
             err_msg = str(e)
             print(f"❌ Error during agent execution: {err_msg}")
@@ -326,20 +317,28 @@ async def run_pipeline(
         f"  ✓ Linear: {state.sprint_state.total_issues} issues in "
         f"'{state.sprint_state.cycle_name}'"
     )
+
+    # Route through Layer 1 Observation
+    layer1 = Layer1Observation(config)
+    telemetry_result = await layer1.process_telemetry(state.project_state, state.sprint_state)
+    dashboard.console.print(
+        f"  ✓ Observation processed: status={telemetry_result.get('status')}"
+    )
     dashboard.console.print()
 
     # ── Layer 2: Debt Detection ─────────────────────────────────
     dashboard.console.print("[bold yellow]🔍 Layer 2: Analyzing integration debt...[/bold yellow]")
 
-    detector = DebtDetector(config)
+    layer2 = Layer2Simulation(config)
     if scenario_id > 0:
         from pwm.scenarios import get_scenario
         state.debt_report, _, _ = get_scenario(scenario_id)
         dashboard.console.print(f"  ✓ Loaded XPRIZE Scenario {scenario_id} Mock Debt Report")
     else:
-        state.debt_report = await detector.analyze(
+        state.debt_report = await layer2.run_simulation(
             project_state=state.project_state,
             sprint_state=state.sprint_state,
+            mode=mode,
         )
         dashboard.console.print(
             f"  ✓ {state.debt_report.executive_summary}"
@@ -352,7 +351,14 @@ async def run_pipeline(
     )
 
     try:
-        state = await _execute_agent_pipeline(state, config, mode, event_logger, detector, scenario_id=scenario_id)
+        state = await _execute_agent_pipeline(
+            state=state,
+            config=config,
+            mode=mode,
+            event_logger=event_logger,
+            detector=layer2,
+            scenario_id=scenario_id,
+        )
     except Exception as e:
         err_msg = str(e)
         dashboard.console.print(f"[bold red]❌ Error during agent execution: {err_msg}[/bold red]")

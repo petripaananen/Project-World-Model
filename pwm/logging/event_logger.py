@@ -140,7 +140,7 @@ class EventLogger:
         
         Note: This query requires a Firestore composite index on the 'events'
         collection ordered by 'timestamp' ASC. Create it via:
-            gcloud firestore indexes composite create --collection-group=events \\
+            gcloud firestore indexes composite create --collection-group=events \
                 --field-config field-path=timestamp,order=ASCENDING
         
         Args:
@@ -151,24 +151,33 @@ class EventLogger:
 
         async with self._lock:
             self._in_memory_events.clear()
-            try:
-                # Retrieve last N events ordered by timestamp
-                docs = self._db.collection("events").order_by("timestamp", direction="ASCENDING").limit(limit)
-                async for doc in docs.stream():
-                    data = doc.to_dict()
-                    # Convert Firestore Timestamp back to Python datetime
-                    if "timestamp" in data and not isinstance(data["timestamp"], datetime):
-                        try:
-                            data["timestamp"] = data["timestamp"].as_datetime()
-                        except AttributeError:
-                            pass
-                    self._in_memory_events.append(PWMEvent(**data))
-                
-                if self.config and self.config.verbose:
-                    print(f"🌲 [EventLogger] Loaded {len(self._in_memory_events)} events from Firestore.")
-            except Exception as e:
-                if self.config and self.config.verbose:
-                    print(f"⚠️ [EventLogger] Failed to load events from Firestore: {e}")
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    # Retrieve last N events ordered by timestamp
+                    docs = self._db.collection("events").order_by("timestamp", direction="ASCENDING").limit(limit)
+                    async for doc in docs.stream():
+                        data = doc.to_dict()
+                        # Convert Firestore Timestamp back to Python datetime
+                        if "timestamp" in data and not isinstance(data["timestamp"], datetime):
+                            try:
+                                data["timestamp"] = data["timestamp"].as_datetime()
+                            except AttributeError:
+                                pass
+                        self._in_memory_events.append(PWMEvent(**data))
+                    
+                    if self.config and self.config.verbose:
+                        print(f"🌲 [EventLogger] Loaded {len(self._in_memory_events)} events from Firestore.")
+                    break  # Success
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        if self.config and self.config.verbose:
+                            print(f"⚠️ [EventLogger] Failed to load events from Firestore after {max_retries} attempts: {e}")
+                    else:
+                        backoff = 0.5 * (2 ** attempt)
+                        if self.config and self.config.verbose:
+                            print(f"⚠️ [EventLogger] Firestore load attempt {attempt + 1} failed: {e}. Retrying in {backoff}s...")
+                        await asyncio.sleep(backoff)
 
     def _chain_event(self, event: PWMEvent) -> None:
         """
@@ -203,14 +212,23 @@ class EventLogger:
 
             # Write to Firestore if client is initialized
             if self._db:
-                try:
-                    data = json.loads(event.model_dump_json())
-                    # Convert timestamp back to datetime so Firestore stores it as Timestamp
-                    data["timestamp"] = event.timestamp
-                    await self._db.collection("events").document(event.event_id).set(data)
-                except Exception as e:
-                    if self.config and self.config.verbose:
-                        print(f"⚠️ [EventLogger] Failed to write event to Firestore: {e}")
+                max_retries = 3
+                for attempt in range(max_retries):
+                    try:
+                        data = json.loads(event.model_dump_json())
+                        # Convert timestamp back to datetime so Firestore stores it as Timestamp
+                        data["timestamp"] = event.timestamp
+                        await self._db.collection("events").document(event.event_id).set(data)
+                        break  # Success
+                    except Exception as e:
+                        if attempt == max_retries - 1:
+                            if self.config and self.config.verbose:
+                                print(f"⚠️ [EventLogger] Failed to write event to Firestore after {max_retries} attempts: {e}")
+                        else:
+                            backoff = 0.5 * (2 ** attempt)
+                            if self.config and self.config.verbose:
+                                print(f"⚠️ [EventLogger] Firestore write attempt {attempt + 1} failed: {e}. Retrying in {backoff}s...")
+                            await asyncio.sleep(backoff)
 
     def log_sync(self, event: PWMEvent) -> None:
         """Synchronous version for non-async contexts."""
