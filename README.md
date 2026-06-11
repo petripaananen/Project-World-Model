@@ -7,7 +7,7 @@ The Project World Model (PWM) framework represents a fundamental paradigm shift 
 
 ## Gemini XPRIZE Submission Details
 This project is entered in the **Build with Gemini XPRIZE Hackathon** under the **Small Business Services** and **Entrepreneurship & Job Creation** categories.
-*   **The Mission**: Empower small business teams and startup founders to compete at AAA scale by automating integration, code validation, and QA.
+*   **The Mission**: Empower software development teams and organizations of all sizes by automating integration, code validation, and QA.
 *   **Google Cloud & Gemini Stack**: Deployed on **Google Cloud Platform** (Cloud Run, Firestore, Compute Engine) and powered by the **Gemini API (via Vertex AI)** for multi-agent reasoning, latent-space causal simulation, and conflict resolution.
 *   **AI-Native Operations**: The business is run entirely through AI-native operations where Gemini-powered worker and critic agents self-orchestrate task backlogs, run code validation playbooks, and manage the operational compute budget.
 
