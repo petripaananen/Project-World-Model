@@ -40,7 +40,7 @@ The system targets **Causal Counterfactual Reasoning** (Thesis §2.2), enabling 
 
 | Thesis Requirement | Implementation | Gap |
 |--------------------|-----------------|----|
-| Three input streams: version control, task management, team communication (Thesis §5.2) | GitHub MCP ✅, Linear MCP ✅ | ❌ Team communication (Slack/Discord) not connected |
+| Three input streams: version control, task management, team communication (Thesis §5.2) | GitHub MCP ✅, Linear MCP ✅, Slack Ingestor ✅ | ✅ Closed; supports drag-and-drop Slack JSON exports |
 | V-JEPA 2.1 encoding of telemetry into latent embeddings | V-JEPA REST service connector implemented at L1 (returns embeddings, falls back to raw logs) | ✅ Closed |
 | Immutable event log as "muuttumaton liikkuja" (Thesis §5.2) | JSON Lines event logger with SHA-256 Merkle chain and startup validation | ✅ Closed |
 | LingBot-World for local edge inference | Not implemented | ❌ Future phase |
@@ -140,7 +140,7 @@ Project World Model/
 - **Commercial Rebranding**: Successfully de-academicized all user-facing systems (e.g. Agent Verification Engine, Causal Risk Forecast, Compute Runaway Warning).
 
 ### ❌ Not Yet Implemented (Required by Thesis)
-- Team communication channel (Slack/Discord) MCP integration (L1)
+- Live Slack/Discord MCP OAuth integration (L1) (Drag-and-drop export JSON ingestion is completed)
 - LingBot-World local edge inference (L1)
 - Solaris multiplayer simulation engine (L2)
 - Muse Spark multimodal task planning (L3)

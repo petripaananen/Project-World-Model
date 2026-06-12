@@ -21,7 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile
 from fastapi.responses import HTMLResponse
 from starlette.websockets import WebSocketState
 
@@ -327,6 +327,189 @@ def create_app(
                 "remaining_rework_hours": remaining_rework,
             },
         }
+
+    # ── FTUE & Project Ingestion API ─────────────────────────────
+
+    @app.post("/api/config/mcp")
+    async def save_mcp_config(github_owner: str, github_repo: str, linear_team_id: str = ""):
+        # Save config
+        config.ingestion.github_owner = github_owner
+        config.ingestion.github_repo = github_repo
+        config.ingestion.linear_team_id = linear_team_id
+        
+        # Log event
+        await dashboard_state.event_logger.log(PWMEvent(
+            event_type=EventType.SYSTEM_START,
+            run_id="config",
+            actor="human",
+            summary=f"Configured Git/Linear: {github_owner}/{github_repo}",
+            details={"owner": github_owner, "repo": github_repo, "linear_team_id": linear_team_id}
+        ))
+        
+        # Initialize pipeline state from mock data
+        import uuid
+        from pwm.ingestion.models import ProjectState, SprintState
+        from pwm.simulation.debt_detector import DebtDetector
+        from pwm.main import _execute_agent_pipeline
+        
+        state = PWMPipelineState(
+            run_id=str(uuid.uuid4())[:8],
+            started_at=datetime.now(),
+        )
+        state.project_state = ProjectState(
+            repo_owner=github_owner,
+            repo_name=github_repo,
+            total_open_prs=3,
+            total_active_branches=2
+        )
+        state.sprint_state = SprintState(
+            team_name="Engineering",
+            cycle_name="Milestone Alpha",
+            total_issues=5
+        )
+        state.completed_at = datetime.now()
+        
+        # Detect conflicts & run pipeline
+        detector = DebtDetector(config)
+        state.debt_report = detector.detect(state.project_state, state.sprint_state)
+        state.debt_report.compute_stats()
+        
+        state = await _execute_agent_pipeline(state, config, mode="demo", event_logger=dashboard_state.event_logger)
+        
+        await dashboard_state.update_state(state)
+        return {"status": "ok", "message": "Config saved and project initialized"}
+
+    @app.post("/api/upload/msproject")
+    async def upload_msproject(file: UploadFile = File(...)):
+        content = await file.read()
+        
+        from pwm.ingestion.msproject_ingest import MSProjectIngestor
+        from pwm.simulation.debt_detector import DebtDetector
+        from pwm.main import _execute_agent_pipeline
+        import uuid
+        
+        ingestor = MSProjectIngestor(config)
+        sprint_state = ingestor.ingest_xml(content)
+        
+        state = dashboard_state.current_state or PWMPipelineState(
+            run_id=str(uuid.uuid4())[:8],
+            started_at=datetime.now(),
+        )
+        
+        if not state.project_state:
+            from pwm.ingestion.models import ProjectState
+            state.project_state = ProjectState(
+                repo_owner="uploaded",
+                repo_name=sprint_state.cycle_name or "msproject",
+                total_open_prs=2,
+                total_active_branches=3
+            )
+            
+        state.sprint_state = sprint_state
+        state.completed_at = datetime.now()
+        
+        # Run simulation/detector
+        detector = DebtDetector(config)
+        state.debt_report = detector.detect(state.project_state, state.sprint_state)
+        state.debt_report.compute_stats()
+        
+        state = await _execute_agent_pipeline(state, config, mode="demo", event_logger=dashboard_state.event_logger)
+        
+        await dashboard_state.update_state(state)
+        
+        await dashboard_state.event_logger.log(PWMEvent(
+            event_type=EventType.TELEMETRY_INGESTED,
+            run_id=state.run_id,
+            actor="human",
+            summary=f"Ingested MS Project XML: '{sprint_state.cycle_name}' with {len(sprint_state.issues)} tasks.",
+            details={"file_name": file.filename}
+        ))
+        
+        return {"status": "ok", "message": "MS Project XML parsed successfully"}
+
+    @app.post("/api/upload/slack")
+    async def upload_slack(file: UploadFile = File(...)):
+        content = await file.read()
+        
+        from pwm.ingestion.slack_ingest import SlackIngestor
+        import uuid
+        
+        ingestor = SlackIngestor(config)
+        channel_name = file.filename.split(".json")[0]
+        slack_state = ingestor.ingest_json(content, channel_name=channel_name)
+        
+        state = dashboard_state.current_state or PWMPipelineState(
+            run_id=str(uuid.uuid4())[:8],
+            started_at=datetime.now(),
+        )
+        state.slack_state = slack_state
+        
+        await dashboard_state.event_logger.log(PWMEvent(
+            event_type=EventType.TELEMETRY_INGESTED,
+            run_id=state.run_id,
+            actor="human",
+            summary=f"Ingested Slack channel '{channel_name}': {slack_state.total_messages} messages.",
+            details={"file_name": file.filename, "active_users": slack_state.active_users}
+        ))
+        
+        await dashboard_state.update_state(state)
+        return {"status": "ok", "message": "Slack JSON parsed successfully"}
+
+    @app.post("/api/sandbox/load")
+    async def load_sandbox_scenario(scenario_id: int):
+        from pwm.scenarios import get_scenario
+        import uuid
+        from pwm.simulation.crr_engine import CRREngine
+        
+        debt_report, proposals, verdicts = get_scenario(scenario_id)
+        
+        state = PWMPipelineState(
+            run_id=str(uuid.uuid4())[:8],
+            started_at=datetime.now(),
+        )
+        
+        from pwm.ingestion.models import ProjectState, SprintState
+        state.project_state = ProjectState(
+            repo_owner="xprize",
+            repo_name=f"scenario-{scenario_id}-sandbox",
+            total_open_prs=len(debt_report.conflicts),
+            total_active_branches=3
+        )
+        state.sprint_state = SprintState(
+            team_name="XPrize Core Team",
+            cycle_name=f"Scenario {scenario_id} Sandbox",
+            total_issues=5
+        )
+        
+        from pwm.ingestion.slack_ingest import SlackIngestor
+        slack_ingest = SlackIngestor(config)
+        state.slack_state = slack_ingest.generate_mock_slack_state()
+        
+        state.debt_report = debt_report
+        state.proposals = proposals
+        state.verdicts = verdicts
+        state.completed_at = datetime.now()
+        
+        state.total_input_tokens = 25_000
+        state.total_output_tokens = 12_000
+        
+        crr_engine = CRREngine(config)
+        state.crr = crr_engine.calculate(
+            debt_report=state.debt_report,
+            input_tokens=state.total_input_tokens,
+            output_tokens=state.total_output_tokens
+        )
+        
+        await dashboard_state.update_state(state)
+        
+        await dashboard_state.event_logger.log(PWMEvent(
+            event_type=EventType.PIPELINE_START,
+            run_id=state.run_id,
+            actor="system",
+            summary=f"Loaded Sandbox Scenario {scenario_id} for exploration."
+        ))
+        
+        return {"status": "ok", "message": f"Scenario {scenario_id} loaded"}
 
     # ── WebSocket ───────────────────────────────────────────────
 

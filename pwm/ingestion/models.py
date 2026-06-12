@@ -172,6 +172,30 @@ class SprintState(BaseModel):
         self.issues_by_status = status_counts
 
 
+class SlackMessage(BaseModel):
+    """A single Slack message from ingested channels."""
+    user: str
+    text: str
+    timestamp: datetime
+    channel: str
+    sentiment: Optional[str] = None
+    thread_ts: Optional[str] = None
+
+
+class SlackState(BaseModel):
+    """Snapshot of team communication telemetry from Slack."""
+    ingested_at: datetime = Field(default_factory=datetime.now)
+    channels: list[str] = Field(default_factory=list)
+    recent_messages: list[SlackMessage] = Field(default_factory=list)
+    total_messages: int = 0
+    active_users: list[str] = Field(default_factory=list)
+
+    def compute_stats(self) -> None:
+        """Compute aggregate stats from recent messages."""
+        self.total_messages = len(self.recent_messages)
+        self.active_users = list(set(m.user for m in self.recent_messages))
+
+
 # ──────────────────────────────────────────────────────────────
 # Layer 2: Simulation Models
 # ──────────────────────────────────────────────────────────────
@@ -422,6 +446,7 @@ class PWMPipelineState(BaseModel):
     # Layer 1 outputs
     project_state: Optional[ProjectState] = None
     sprint_state: Optional[SprintState] = None
+    slack_state: Optional[SlackState] = None
 
     # Layer 2 outputs
     debt_report: Optional[IntegrationDebtReport] = None

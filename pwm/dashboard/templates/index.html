@@ -674,6 +674,223 @@
         ::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
+        /* ── Onboarding FTUE ────────────────────────────────── */
+        .onboarding-container {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 0;
+            animation: fadeSlideIn 0.5s ease-out;
+        }
+        .onboarding-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .onboarding-title {
+            font-family: var(--font-heading);
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .onboarding-subtitle {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .onboarding-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 32px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .onboarding-grid { grid-template-columns: 1fr; }
+        }
+        .onboarding-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+        .onboarding-card:hover {
+            border-color: var(--border-glow);
+            box-shadow: var(--shadow), 0 12px 40px rgba(94, 106, 210, 0.08);
+        }
+        .onboarding-card-title {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .onboarding-card-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        .onboarding-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-glass);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .onboarding-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-family: var(--font-ui);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 8px 4px 12px 4px;
+            cursor: pointer;
+            position: relative;
+            transition: color var(--transition);
+        }
+        .onboarding-tab-btn:hover {
+            color: var(--accent-cyan);
+        }
+        .onboarding-tab-btn.active {
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+        .onboarding-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-cyan);
+            border-radius: 99px;
+        }
+        .onboarding-tab-content {
+            display: none;
+        }
+        .onboarding-tab-content.active {
+            display: block;
+            animation: fadeSlideIn 0.3s ease-out;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+        .form-input {
+            padding: 10px 14px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-ui);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+        .form-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px var(--accent-cyan-dim);
+        }
+        .drop-zone {
+            border: 2px dashed var(--border-glass);
+            border-radius: var(--radius-sm);
+            padding: 32px 20px;
+            text-align: center;
+            background: var(--bg-primary);
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent-cyan);
+            background: var(--accent-cyan-dim);
+        }
+        .drop-zone-icon {
+            font-size: 2.2rem;
+            color: var(--accent-cyan);
+        }
+        .drop-zone-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .drop-zone-subtext {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        .sandbox-scenarios {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .sandbox-scenario-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .sandbox-scenario-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateX(4px);
+            background: var(--bg-secondary);
+        }
+        .sandbox-scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sandbox-scenario-title {
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .sandbox-scenario-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+        .sandbox-scenario-badge.casual { background: var(--accent-cyan-dim); color: var(--accent-cyan); }
+        .sandbox-scenario-badge.security { background: var(--accent-violet-dim); color: var(--accent-violet); }
+        .sandbox-scenario-badge.roi { background: var(--accent-emerald-dim); color: var(--accent-emerald); }
+        .sandbox-scenario-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
         /* ── Responsiveness ────────────────────────────────── */
         @media (max-width: 1024px) {
             .dashboard { grid-template-columns: 1fr; }
@@ -754,10 +971,105 @@
             <!-- ── Main Canvas ────────────────────────────────── -->
             <div class="main-canvas">
                 <main class="dashboard" id="dashboard">
-                    <div class="waiting" id="waitingState">
-                        <div class="waiting-spinner"></div>
-                        <div class="waiting-text">Waiting for pipeline data...</div>
-                        <div class="waiting-text" style="font-size: 0.75rem;">Run <code style="color: var(--accent-cyan);">python -m pwm.main --mode demo --web --loop</code></div>
+                    <div class="onboarding-container" id="waitingState">
+                        <div class="onboarding-header">
+                            <h1 class="onboarding-title">🌍 Welcome to Project World Model</h1>
+                            <p class="onboarding-subtitle">Transition production management from reactive task tracking to predictive, latent-space causal twin simulation. Initialize your workspace below.</p>
+                        </div>
+                        
+                        <div class="onboarding-grid">
+                            <!-- Sandbox Playbook Panel -->
+                            <div class="onboarding-card">
+                                <h2 class="onboarding-card-title">
+                                    <span class="material-symbols-outlined" style="color:var(--accent-cyan)">science</span>
+                                    <span>Explore Interactive Sandbox</span>
+                                </h2>
+                                <p class="onboarding-card-desc">Play with simulated project conflicts, test What-If strategies, and inspect token-to-rework economics (CRR) instantly using our pre-built scenario templates.</p>
+                                
+                                <div class="sandbox-scenarios">
+                                    <div class="sandbox-scenario-card" onclick="loadSandbox(1)">
+                                        <div class="sandbox-scenario-header">
+                                            <span class="sandbox-scenario-title">Scenario 1: Cascading Milestone Failure</span>
+                                            <span class="sandbox-scenario-badge casual">Causal Simulation</span>
+                                        </div>
+                                        <p class="sandbox-scenario-desc">A critical task delay blocks an active pull request, cascading into dependencies for the physics integration pipeline.</p>
+                                    </div>
+                                    <div class="sandbox-scenario-card" onclick="loadSandbox(2)">
+                                        <div class="sandbox-scenario-header">
+                                            <span class="sandbox-scenario-title">Scenario 2: Security Validation Veto</span>
+                                            <span class="sandbox-scenario-badge security">Agent Sandbox</span>
+                                        </div>
+                                        <p class="sandbox-scenario-desc">Worker agent attempts to bypass authentication middleware to resolve performance conflicts. NemoClaw enclaves audit the dishonesty.</p>
+                                    </div>
+                                    <div class="sandbox-scenario-card" onclick="loadSandbox(3)">
+                                        <div class="sandbox-scenario-header">
+                                            <span class="sandbox-scenario-title">Scenario 3: Financial Optimization</span>
+                                            <span class="sandbox-scenario-badge roi">CRR Showcase</span>
+                                        </div>
+                                        <p class="sandbox-scenario-desc">Simulate a massive rendering collision and analyze the token expenditure vs. manual engineering saved rework economics.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Connect Workspace Panel -->
+                            <div class="onboarding-card">
+                                <h2 class="onboarding-card-title">
+                                    <span class="material-symbols-outlined" style="color:var(--accent-violet)">sensors</span>
+                                    <span>Connect Ingestion Sensors</span>
+                                </h2>
+                                <p class="onboarding-card-desc">Ingest your code telemetry, backlogs, and developer communications to compile your own live Causal Digital Twin.</p>
+                                
+                                <div class="onboarding-tabs">
+                                    <button class="onboarding-tab-btn active" onclick="switchOnboardingTab('git-tab', this)">GitHub / Linear</button>
+                                    <button class="onboarding-tab-btn" onclick="switchOnboardingTab('msproject-tab', this)">MS Project File</button>
+                                    <button class="onboarding-tab-btn" onclick="switchOnboardingTab('slack-tab', this)">Slack Export</button>
+                                </div>
+                                
+                                <!-- Tab 1: GitHub / Linear -->
+                                <div class="onboarding-tab-content active" id="git-tab">
+                                    <form id="configForm" onsubmit="saveConfig(event)">
+                                        <div class="form-group">
+                                            <label for="githubOwner">GitHub Owner / Org</label>
+                                            <input type="text" id="githubOwner" class="form-input" placeholder="e.g. petripaananen" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="githubRepo">GitHub Repository</label>
+                                            <input type="text" id="githubRepo" class="form-input" placeholder="e.g. Project-World-Model" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="linearTeam">Linear Team ID (Optional)</label>
+                                            <input type="text" id="linearTeam" class="form-input" placeholder="e.g. ENG">
+                                        </div>
+                                        <button type="submit" class="btn btn-sandbox" style="width:100%;justify-content:center;margin-top:10px;">
+                                            <span class="material-symbols-outlined">sync</span>
+                                            <span>Initialize Workspace</span>
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- Tab 2: MS Project -->
+                                <div class="onboarding-tab-content" id="msproject-tab">
+                                    <div class="drop-zone" id="msprojectDropZone" onclick="document.getElementById('msprojectInput').click()">
+                                        <span class="material-symbols-outlined drop-zone-icon">upload_file</span>
+                                        <span class="drop-zone-text">Drag & drop your MS Project XML export</span>
+                                        <span class="drop-zone-subtext">Or click to browse files</span>
+                                        <input type="file" id="msprojectInput" style="display:none" accept=".xml" onchange="uploadMSProject(this.files[0])">
+                                    </div>
+                                    <div id="msprojectStatus" style="margin-top:12px;font-size:0.8rem;text-align:center;"></div>
+                                </div>
+                                
+                                <!-- Tab 3: Slack Ingestion -->
+                                <div class="onboarding-tab-content" id="slack-tab">
+                                    <div class="drop-zone" id="slackDropZone" onclick="document.getElementById('slackInput').click()">
+                                        <span class="material-symbols-outlined drop-zone-icon">forum</span>
+                                        <span class="drop-zone-text">Drag & drop Slack channel JSON export</span>
+                                        <span class="drop-zone-subtext">Or click to browse files</span>
+                                        <input type="file" id="slackInput" style="display:none" accept=".json" onchange="uploadSlack(this.files[0])">
+                                    </div>
+                                    <div id="slackStatus" style="margin-top:12px;font-size:0.8rem;text-align:center;"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </main>
             </div>
@@ -1204,16 +1516,168 @@
         }
     });
 
+    // ── FTUE Onboarding Scripts ────────────────────────────────
+
+    function switchOnboardingTab(tabId, btn) {
+        const tabContents = document.querySelectorAll('.onboarding-tab-content');
+        tabContents.forEach(content => content.classList.remove('active'));
+        
+        const tabBtns = document.querySelectorAll('.onboarding-tab-btn');
+        tabBtns.forEach(button => button.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    async function saveConfig(event) {
+        event.preventDefault();
+        const owner = document.getElementById('githubOwner').value;
+        const repo = document.getElementById('githubRepo').value;
+        const team = document.getElementById('linearTeam').value;
+        
+        showToast('Saving configuration...');
+        
+        try {
+            const res = await fetch(`/api/config/mcp?github_owner=${owner}&github_repo=${repo}&linear_team_id=${team}`, {
+                method: 'POST'
+            });
+            const data = await res.json();
+            if (data.status === 'ok') {
+                showToast('✓ Workspace Initialized');
+                fetchState();
+            } else {
+                showToast('Error saving configuration');
+            }
+        } catch (err) {
+            showToast('Connection error');
+        }
+    }
+
+    async function uploadMSProject(file) {
+        if (!file) return;
+        const statusDiv = document.getElementById('msprojectStatus');
+        statusDiv.innerHTML = '<span style="color:var(--text-dim)">Uploading and parsing project schedule...</span>';
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const res = await fetch('/api/upload/msproject', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.status === 'ok') {
+                statusDiv.innerHTML = '<span style="color:var(--accent-emerald)">✓ MS Project schedule ingested</span>';
+                showToast('✓ Project schedule updated');
+                fetchState();
+            } else {
+                statusDiv.innerHTML = `<span style="color:var(--accent-rose)">Error: ${data.message}</span>`;
+            }
+        } catch (err) {
+            statusDiv.innerHTML = `<span style="color:var(--accent-rose)">Upload failed: ${err.message}</span>`;
+        }
+    }
+
+    async function uploadSlack(file) {
+        if (!file) return;
+        const statusDiv = document.getElementById('slackStatus');
+        statusDiv.innerHTML = '<span style="color:var(--text-dim)">Uploading and parsing Slack history...</span>';
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const res = await fetch('/api/upload/slack', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.status === 'ok') {
+                statusDiv.innerHTML = '<span style="color:var(--accent-emerald)">✓ Slack telemetry ingested</span>';
+                showToast('✓ Chat telemetry updated');
+                fetchState();
+            } else {
+                statusDiv.innerHTML = `<span style="color:var(--accent-rose)">Error: ${data.message}</span>`;
+            }
+        } catch (err) {
+            statusDiv.innerHTML = `<span style="color:var(--accent-rose)">Upload failed: ${err.message}</span>`;
+        }
+    }
+
+    async function loadSandbox(scenarioId) {
+        showToast('Initializing sandbox scenario...');
+        try {
+            const res = await fetch(`/api/sandbox/load?scenario_id=${scenarioId}`, {
+                method: 'POST'
+            });
+            const data = await res.json();
+            if (data.status === 'ok') {
+                showToast('✓ Sandbox scenario compiled');
+                fetchState();
+            } else {
+                showToast('Error compiling sandbox');
+            }
+        } catch (err) {
+            showToast('Connection error');
+        }
+    }
+
+    function setupDragAndDrop(elementId, uploadFn) {
+        const zone = document.getElementById(elementId);
+        if (!zone) return;
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            zone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                zone.classList.add('dragover');
+            }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            zone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+            }, false);
+        });
+        
+        zone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                uploadFn(files[0]);
+            }
+        }, false);
+    }
+
+    function fetchState() {
+        fetch('/api/state').then(r => r.json()).then(data => {
+            if (data.status !== 'waiting') {
+                currentState = data;
+                renderDashboard(data);
+            }
+        });
+    }
+
     // ── Init ──────────────────────────────────────────────────
     connect();
 
-    // Also fetch initial state via REST
-    fetch('/api/state').then(r => r.json()).then(data => {
-        if (data.status !== 'waiting') {
-            currentState = data;
-            renderDashboard(data);
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        const themeIcon = document.getElementById('themeIcon');
+        if (themeIcon) {
+            themeIcon.textContent = savedTheme === 'light' ? 'dark_mode' : 'light_mode';
         }
+        
+        // Wait for element rendering in DOM
+        setTimeout(() => {
+            setupDragAndDrop('msprojectDropZone', uploadMSProject);
+            setupDragAndDrop('slackDropZone', uploadSlack);
+        }, 500);
     });
+
+    // Also fetch initial state via REST
+    fetchState();
     </script>
 </body>
 </html>
