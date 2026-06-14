@@ -73,8 +73,8 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
     async def test_layer1_observation_vjepa_and_fallback(self):
         """Test Layer 1 Observation V-JEPA URL calling and fallback logic."""
         # Setup mock telemetry data
-        github_data = {"repo_owner": "test", "repo_name": "repo"}
-        linear_data = {"team_name": "QA"}
+        github_data = ProjectState(repo_owner="test", repo_name="repo")
+        linear_data = SprintState(team_name="QA", cycle_name="Sprint 1")
 
         # 1. Fallback case: blank endpoint URL
         self.config.models.vjepa_endpoint_url = ""
@@ -83,7 +83,7 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
         
         self.assertEqual(result["status"], "raw_logs")
         self.assertIsNone(result["embeddings"])
-        self.assertEqual(result["raw_data"]["github"], github_data)
+        self.assertEqual(result["raw_data"]["github"], github_data.model_dump())
 
         # 2. Configured URL case: mock post request
         self.config.models.vjepa_endpoint_url = "http://localhost:8001/encode"
@@ -101,8 +101,10 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
             mock_post.assert_called_once_with(
                 "http://localhost:8001/encode",
                 json={"data": {
-                    "github": github_data,
-                    "linear": linear_data,
+                    "github": github_data.model_dump(),
+                    "linear": linear_data.model_dump(),
+                    "slack": None,
+                    "unified_graph": result["unified_graph"].model_dump(),
                     "game_engine_stub": {
                         "active_scene": "main_menu",
                         "fps": 60,
@@ -140,8 +142,17 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
             conflicts=[conflict]
         )
 
-        # Patch DebtDetector.analyze
-        with patch("pwm.simulation.debt_detector.DebtDetector.analyze", new_callable=AsyncMock) as mock_analyze:
+        # Patch DebtDetector.analyze and genai.Client
+        with patch("pwm.simulation.debt_detector.DebtDetector.analyze", new_callable=AsyncMock) as mock_analyze, \
+             patch("google.genai.Client") as mock_genai_client:
+            
+            # Setup mock embedding
+            mock_client_instance = MagicMock()
+            mock_response_embed = MagicMock()
+            mock_response_embed.embeddings = [MagicMock(values=[0.1]*768)]
+            mock_client_instance.models.embed_content.return_value = mock_response_embed
+            mock_genai_client.return_value = mock_client_instance
+
             mock_analyze.return_value = mock_report
             
             # 1. Fallback case: blank endpoint URL
@@ -176,10 +187,11 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
                 mock_post.return_value = mock_response
                 result = await layer2.run_simulation(project_state, sprint_state)
                 
-                mock_post.assert_called_once_with(
-                    "http://localhost:8002/simulate",
-                    json={"action": "simulate_conflict_propagation", "state_vector": [0.1] * 64}
-                )
+                mock_post.assert_called_once()
+                call_kwargs = mock_post.call_args.kwargs
+                self.assertIn("json", call_kwargs)
+                self.assertEqual(call_kwargs["json"]["action"], "simulate_conflict_propagation")
+                self.assertEqual(len(call_kwargs["json"]["state_vector"]), 64)
                 self.assertEqual(result.conflicts[0].causal_evidence.probability, 0.85)
                 self.assertEqual(result.conflicts[0].causal_evidence.confidence, 0.95)
                 self.assertIn("Refined via LeWorldModel (LeWM)", result.conflicts[0].causal_evidence.causal_chain[-1])
@@ -266,6 +278,7 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
         self.config.models.nemoclaw_endpoint_url = ""
         layer4 = Layer4Validation(self.config)
         layer4.critic.process = AsyncMock(return_value={"proposals": [proposal], "verdicts": [mock_verdict]})
+        layer4.opponent.generate_counter_proposal = AsyncMock(return_value=ResolutionStrategy(title="Opponent Strategy", description="Opponent"))
         
         props, verdicts = await layer4.validate_proposals(state, "Base Context", mode="analyze")
         self.assertEqual(verdicts[0].verdict, CriticVerdictStatus.APPROVED)
@@ -274,6 +287,7 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
         self.config.models.nemoclaw_endpoint_url = "http://localhost:8004/audit"
         layer4 = Layer4Validation(self.config)
         layer4.critic.process = AsyncMock(return_value={"proposals": [proposal], "verdicts": [mock_verdict]})
+        layer4.opponent.generate_counter_proposal = AsyncMock(return_value=ResolutionStrategy(title="Opponent Strategy", description="Opponent"))
         
         mock_response = MagicMock()
         mock_response.status_code = 200
