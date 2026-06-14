@@ -1,6 +1,8 @@
 import httpx
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from pwm.config import PWMConfig
+from pwm.ingestion.data_fusion import DataFusionEngine
+from pwm.ingestion.models import ProjectState, SprintState, SlackState, UnifiedProjectGraph
 
 class Layer1Observation:
     """
@@ -13,10 +15,20 @@ class Layer1Observation:
         self.config = config
         self.endpoint_url = config.models.vjepa_endpoint_url
 
-    async def process_telemetry(self, github_data: Any, linear_data: Any) -> Dict[str, Any]:
+    async def process_telemetry(
+        self, 
+        project_state: Optional[ProjectState] = None, 
+        sprint_state: Optional[SprintState] = None,
+        slack_state: Optional[SlackState] = None
+    ) -> Dict[str, Any]:
+        # 1. Fuse data into a UnifiedProjectGraph
+        fusion_engine = DataFusionEngine()
+        unified_graph = fusion_engine.fuse(project_state, sprint_state, slack_state)
         payload = {
-            "github": github_data.model_dump() if hasattr(github_data, "model_dump") else github_data,
-            "linear": linear_data.model_dump() if hasattr(linear_data, "model_dump") else linear_data,
+            "github": project_state.model_dump() if project_state else None,
+            "linear": sprint_state.model_dump() if sprint_state else None,
+            "slack": slack_state.model_dump() if slack_state else None,
+            "unified_graph": unified_graph.model_dump(),
             "game_engine_stub": {
                 "active_scene": "main_menu",
                 "fps": 60,
@@ -38,6 +50,7 @@ class Layer1Observation:
                     return {
                         "status": "vjepa_encoded",
                         "embeddings": result.get("embeddings"),
+                        "unified_graph": unified_graph,
                         "raw_data": payload
                     }
             except Exception as e:
@@ -48,5 +61,6 @@ class Layer1Observation:
         return {
             "status": "raw_logs",
             "embeddings": None,
+            "unified_graph": unified_graph,
             "raw_data": payload
         }

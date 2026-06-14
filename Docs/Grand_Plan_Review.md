@@ -123,7 +123,6 @@ Project World Model/
 │   ├── test_budget_and_loop.py   ← Budget and Critic loop tests
 │   ├── test_gcp_config.py       ← GCP config, VM, and modular layers tests
 │   └── test_security_adversarial.py ← Security hardening tests
-└── papervizagent/               ← Reference implementation (forked)
 ```
 
 ### ✅ Completed & Thesis-Aligned

@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Tuple
 from pwm.config import PWMConfig
 from pwm.ingestion.models import PWMPipelineState, ResolutionProposal, CriticVerdict, CriticVerdictStatus
 from pwm.agents.critic_agent import CriticAgent
+from pwm.agents.opponent_agent import OpponentAgent
 
 class Layer4Validation:
     """
@@ -13,11 +14,17 @@ class Layer4Validation:
     def __init__(self, config: PWMConfig):
         self.config = config
         self.endpoint_url = config.models.nemoclaw_endpoint_url
+        self.opponent = OpponentAgent(config)
         self.critic = CriticAgent(config)
 
     @property
     def token_usage(self) -> Dict[str, int]:
-        return self.critic.token_usage
+        c_usage = self.critic.token_usage
+        o_usage = self.opponent.token_usage
+        return {
+            "input_tokens": c_usage["input_tokens"] + o_usage["input_tokens"],
+            "output_tokens": c_usage["output_tokens"] + o_usage["output_tokens"],
+        }
 
     async def validate_proposals(
         self,
@@ -83,6 +90,18 @@ class Layer4Validation:
         state: PWMPipelineState,
         project_context: str,
     ) -> Tuple[List[ResolutionProposal], List[CriticVerdict]]:
+        
+        # 1. Run Opponent Agent on all proposals to generate counter-strategies
+        for proposal in state.proposals:
+            if proposal.target_conflict:
+                counter_strategy = await self.opponent.generate_counter_proposal(
+                    conflict=proposal.target_conflict,
+                    worker_proposal=proposal,
+                    project_context=project_context,
+                )
+                proposal.counter_strategies.append(counter_strategy)
+                
+        # 2. Run Critic Agent as Consensus Builder
         critic_data = {
             "proposals": state.proposals,
             "debt_report": state.debt_report,

@@ -35,7 +35,7 @@ from pwm.ingestion.models import (
 
 CRITIC_SYSTEM_PROMPT = """\
 ## ROLE
-You are the Critic Agent in the Project World Model (PWM) Agent Verification Engine. Your sole purpose is to audit Worker Agent proposals for quality, honesty, and architectural integrity. You are an independent reviewer — you have NO incentive to approve proposals.
+You are the Critic Agent & Consensus Builder in the Project World Model (PWM) Agent Verification Engine. Your sole purpose is to audit Worker Agent proposals against the Opponent Agent's ("Red Team") counter-strategies. You are an independent judge.
 
 ## YOUR MANDATE
 You exist to prevent:
@@ -53,9 +53,9 @@ Score each dimension and provide specific feedback:
 4. **Scope Assessment** ("appropriate" | "too_narrow" | "too_broad"): Is the proposal doing exactly what's needed?
 
 ## DECISION CRITERIA
-- **APPROVED**: All scores pass (integrity ≥ 0.7, no dishonesty, no security violations, tests adequate, scope appropriate)
-- **NEEDS_REVISION**: Minor issues that can be fixed with specific guidance
-- **REJECTED**: Fundamental flaws — including any strategic dishonesty, scope mismatch, or security sandbox violations
+- **APPROVED**: You resolve the debate by picking the best strategy or forging a consensus. All scores pass (integrity ≥ 0.7, no dishonesty).
+- **NEEDS_REVISION**: Both Worker and Opponent failed to provide a viable path, or minor issues exist.
+- **REJECTED**: Fundamental flaws in the worker's logic — including any strategic dishonesty or security sandbox violations.
 
 ## OUTPUT FORMAT
 ```json
@@ -272,6 +272,17 @@ class CriticAgent(BaseAgent):
                 f"  Affected Files: {', '.join(strategy.affected_files)}",
                 f"  Trade-offs: {strategy.trade_offs}",
             ])
+
+        if proposal.counter_strategies:
+            parts.append("\n### Opponent Agent Counter-Strategies:")
+            for i, strategy in enumerate(proposal.counter_strategies):
+                parts.extend([
+                    f"\n**Counter-Strategy {i + 1}**: {strategy.title}",
+                    f"  Description: {strategy.description}",
+                    f"  Steps: {json.dumps(strategy.steps)}",
+                    f"  Estimated Effort: {strategy.estimated_effort_hours}h",
+                    f"  Risk Level: {strategy.risk_level.value}",
+                ])
 
         parts.append(f"\n**Worker's Reasoning**: {proposal.worker_reasoning}")
 

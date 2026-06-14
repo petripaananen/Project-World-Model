@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 from pwm.config import PWMConfig
 from pwm.ingestion.models import PWMPipelineState, ResolutionProposal
 from pwm.agents.worker_agent import WorkerAgentFactory
+from pwm.agents.planner_agent import GoalPlannerAgent
 
 class Layer3Orchestration:
     """
@@ -47,12 +48,26 @@ class Layer3Orchestration:
                     print(f"[Layer 3] LMMs-Engine connection failed ({e}). Proceeding without visual context.")
 
         if mode == "analyze":
+            # 1. Ask GoalPlannerAgent for directives
+            planner = GoalPlannerAgent(self.config)
+            directives_result = await planner.generate_plan(state.strategic_objective, project_context)
+            planner_usage = planner.token_usage
+            self._token_usage["input_tokens"] += planner_usage["input_tokens"]
+            self._token_usage["output_tokens"] += planner_usage["output_tokens"]
+            
+            planner_context = (
+                f"\n\n## STRATEGIC DIRECTIVES (from Scenario Strategist)\n"
+                f"Primary Optimization: {directives_result['primary_optimization']}\n"
+                f"Risk Tolerance: {directives_result['risk_tolerance']}\n"
+                f"Directives:\n" + "\n".join(f"- {d}" for d in directives_result['worker_directives'])
+            )
+
             all_proposals = []
             for conflict in state.debt_report.conflicts:
                 agent, agent_type = WorkerAgentFactory.create(conflict, self.config)
                 
-                # Enrich context with visual analysis if available
-                enriched_context = project_context
+                # Enrich context with planner directives and visual analysis
+                enriched_context = project_context + planner_context
                 if visual_analysis:
                     enriched_context += (
                         f"\n\n[Visual Task Planning Context from LMMs-Engine]\n"

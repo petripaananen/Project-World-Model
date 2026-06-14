@@ -150,7 +150,20 @@ async def ingest_worker(queue: asyncio.Queue, config: PWMConfig, ingestion_mode:
         try:
             p_state = await github.ingest(mode=ingestion_mode)
             s_state = await linear.ingest(mode=ingestion_mode)
-            await queue.put((p_state, s_state))
+            
+            # Since we don't have a real Slack MCP yet, we mock a Slack state
+            from pwm.ingestion.models import SlackState, SlackMessage
+            slack_state = SlackState()
+            if ingestion_mode == "mock":
+                slack_state.recent_messages.append(SlackMessage(
+                    user="alice",
+                    text="Can someone review PR #12?",
+                    timestamp=datetime.now(),
+                    channel="#engineering"
+                ))
+                slack_state.compute_stats()
+
+            await queue.put((p_state, s_state, slack_state))
             print(f"[📡 Ingest Worker] Queued new state snapshot. Sleeping {interval}s.")
         except Exception as e:
             print(f"[❌ Ingest Worker] Error: {e}")
@@ -170,11 +183,17 @@ async def agent_worker(
     layer2 = Layer2Simulation(config)
     
     while True:
-        p_state, s_state = await queue.get()
+        p_state, s_state, slack_state = await queue.get()
         
         state = PWMPipelineState(run_id=str(uuid.uuid4())[:8], started_at=datetime.now())
         state.project_state = p_state
         state.sprint_state = s_state
+        state.slack_state = slack_state
+
+        # Layer 1
+        telemetry_result = await layer1.process_telemetry(p_state, s_state, slack_state)
+        state.unified_graph = telemetry_result.get("unified_graph")
+        print(f"[Layer 1] Status: {telemetry_result.get('status')}")
         
         print(f"[🤖 Agent Worker] Processing snapshot {state.run_id}...")
 
@@ -183,7 +202,8 @@ async def agent_worker(
             await event_logger.log_pipeline_start(state.run_id)
         
         # Layer 1: Process telemetry (V-JEPA or raw fallback)
-        telemetry_result = await layer1.process_telemetry(p_state, s_state)
+        telemetry_result = await layer1.process_telemetry(p_state, s_state, slack_state)
+        state.unified_graph = telemetry_result.get("unified_graph")
         if config.verbose:
             print(f"[🤖 Agent Worker] Layer 1 observation processed: status={telemetry_result.get('status')}")
 
@@ -275,6 +295,7 @@ async def run_pipeline(
     ingestion_mode: str = "mock",
     event_logger: EventLogger | None = None,
     scenario_id: int = 0,
+    strategic_objective: str = "Minimize technical debt and maximize speed.",
 ) -> PWMPipelineState:
     """
     Execute the full PWM pipeline (linear single-shot mode).
@@ -292,6 +313,7 @@ async def run_pipeline(
     state = PWMPipelineState(
         run_id=str(uuid.uuid4())[:8],
         started_at=datetime.now(),
+        strategic_objective=strategic_objective,
     )
 
     dashboard = CLIDashboard()
@@ -318,9 +340,22 @@ async def run_pipeline(
         f"'{state.sprint_state.cycle_name}'"
     )
 
+    # Mock slack state for the linear pipeline
+    from pwm.ingestion.models import SlackState, SlackMessage
+    state.slack_state = SlackState()
+    if ingestion_mode == "mock":
+        state.slack_state.recent_messages.append(SlackMessage(
+            user="alice",
+            text="Can someone review PR #12?",
+            timestamp=datetime.now(),
+            channel="#engineering"
+        ))
+        state.slack_state.compute_stats()
+
     # Route through Layer 1 Observation
     layer1 = Layer1Observation(config)
-    telemetry_result = await layer1.process_telemetry(state.project_state, state.sprint_state)
+    telemetry_result = await layer1.process_telemetry(state.project_state, state.sprint_state, state.slack_state)
+    state.unified_graph = telemetry_result.get("unified_graph")
     dashboard.console.print(
         f"  ✓ Observation processed: status={telemetry_result.get('status')}"
     )
@@ -599,6 +634,12 @@ def main():
         help="Run in continuous async loop mode (Prototype Phase 3 architecture)",
     )
     parser.add_argument(
+        "--strategic-objective",
+        type=str,
+        default="Minimize technical debt and maximize speed.",
+        help="The human's strategic goal for the Goal Planner Agent",
+    )
+    parser.add_argument(
         "--web",
         action="store_true",
         help="Start the web dashboard (FastAPI + WebSocket)",
@@ -664,6 +705,7 @@ def main():
             mode=args.mode,
             ingestion_mode=args.ingestion,
             scenario_id=args.scenario,
+            strategic_objective=args.strategic_objective,
         )
     )
 

@@ -26,7 +26,7 @@ except ImportError:
     DEFAULT_INSTANCE = "pwm-gpu-host"
     DEFAULT_ZONE = "us-central1-a"
 
-DEFAULT_COMMAND = "cd ~/Project-World-Model && pytest"
+DEFAULT_COMMAND = "cd ~/ProjectWorldModel && pytest"
 
 def run_command(cmd, shell=False, capture_output=False):
     """Helper to run system commands."""

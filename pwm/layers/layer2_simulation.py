@@ -30,11 +30,55 @@ class Layer2Simulation:
             if self.config.verbose:
                 print(f"[Layer 2] Calling LeWM service at {self.endpoint_url}...")
             try:
+                # 1. Generate text embedding from the project state
+                from google import genai
+                from google.genai import types
+                
+                # Determine context to embed
+                context_str = f"Project: {project_state.repo_name}\n"
+                context_str += f"Total PRs: {project_state.total_open_prs}\n"
+                if sprint_state:
+                    context_str += f"Total Issues: {sprint_state.total_issues}\n"
+                    
+                # Create client (similar to BaseAgent)
+                if self.config.gcp.project_id:
+                    client = genai.Client(
+                        vertexai=True,
+                        project=self.config.gcp.project_id,
+                        location=self.config.gcp.location,
+                    )
+                else:
+                    client = genai.Client(api_key=self.config.google_api_key)
+                    
+                response = client.models.embed_content(
+                    model='text-embedding-004',
+                    contents=context_str,
+                )
+                embedding_768d = response.embeddings[0].values
+                
+                # 2. Project down to 64d using PCA
+                try:
+                    import numpy as np
+                    from sklearn.decomposition import PCA
+                    # Note: We fit a new PCA per run just for the demo 
+                    # (in production we'd load a pre-fitted PCA model)
+                    pca = PCA(n_components=64)
+                    # We need >64 samples to fit PCA, so we'll just slice or pad if needed
+                    # Wait, PCA requires n_samples >= n_components. 
+                    # Since we only have 1 sample, PCA will fail!
+                    # For demo purposes, we will use a deterministic random projection matrix
+                    np.random.seed(42)
+                    projection_matrix = np.random.randn(768, 64) / np.sqrt(64)
+                    embedding_64d = np.dot(np.array(embedding_768d), projection_matrix).tolist()
+                except ImportError:
+                    # Fallback to slicing if numpy/sklearn isn't available
+                    embedding_64d = embedding_768d[:64]
+                
                 url = self.endpoint_url if self.endpoint_url.endswith("/simulate") else f"{self.endpoint_url.rstrip('/')}/simulate"
-                # Post simple state representation to simulation engine
+                # Post real latent state representation to simulation engine
                 payload = {
                     "action": "simulate_conflict_propagation",
-                    "state_vector": [0.1] * 64  # representation placeholder
+                    "state_vector": embedding_64d
                 }
                 async with httpx.AsyncClient(timeout=5.0) as client:
                     response = await client.post(url, json=payload)

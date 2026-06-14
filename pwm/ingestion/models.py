@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import BaseModel, Field
 
@@ -194,6 +194,35 @@ class SlackState(BaseModel):
         """Compute aggregate stats from recent messages."""
         self.total_messages = len(self.recent_messages)
         self.active_users = list(set(m.user for m in self.recent_messages))
+
+
+class FusedNode(BaseModel):
+    """A node in the unified project graph (could be a PR, Issue, or File)."""
+    id: str
+    type: str  # "pr", "issue", "file", "message"
+    name: str
+    attributes: dict[str, Any] = Field(default_factory=dict)
+
+
+class FusedEdge(BaseModel):
+    """A relationship between two nodes in the graph."""
+    source_id: str
+    target_id: str
+    relation_type: str  # e.g., "modifies", "references", "blocks"
+
+
+class UnifiedProjectGraph(BaseModel):
+    """
+    Data Fusion Output: A unified graph of the project state, linking PRs,
+    issues, and Slack discussions to detect cross-system dependencies.
+    """
+    fused_at: datetime = Field(default_factory=datetime.now)
+    nodes: list[FusedNode] = Field(default_factory=list)
+    edges: list[FusedEdge] = Field(default_factory=list)
+
+    def summary(self) -> str:
+        """Text summary of the graph size."""
+        return f"UnifiedProjectGraph(nodes={len(self.nodes)}, edges={len(self.edges)})"
 
 
 # ──────────────────────────────────────────────────────────────
@@ -388,6 +417,7 @@ class ResolutionProposal(BaseModel):
     generated_at: datetime = Field(default_factory=datetime.now)
     target_conflict: Optional[FileConflict] = None
     strategies: list[ResolutionStrategy] = Field(default_factory=list)
+    counter_strategies: list[ResolutionStrategy] = Field(default_factory=list)
     recommended_strategy_index: int = 0
     worker_reasoning: str = ""
     # Which specialist agent generated this proposal (Thesis Kuvio 7)
@@ -442,11 +472,13 @@ class PWMPipelineState(BaseModel):
     run_id: str = ""
     started_at: datetime = Field(default_factory=datetime.now)
     completed_at: Optional[datetime] = None
+    strategic_objective: str = ""
 
     # Layer 1 outputs
     project_state: Optional[ProjectState] = None
     sprint_state: Optional[SprintState] = None
     slack_state: Optional[SlackState] = None
+    unified_graph: Optional[UnifiedProjectGraph] = None
 
     # Layer 2 outputs
     debt_report: Optional[IntegrationDebtReport] = None

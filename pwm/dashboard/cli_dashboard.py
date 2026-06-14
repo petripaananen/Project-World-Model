@@ -67,7 +67,7 @@ class CLIDashboard:
     def render_full_report(self, state: PWMPipelineState) -> None:
         """Render the complete pipeline state as a dashboard."""
         self.console.clear()
-        self._render_header()
+        self._render_header(state)
 
         if state.project_state:
             self._render_project_state(state.project_state)
@@ -90,7 +90,7 @@ class CLIDashboard:
 
         self._render_footer()
 
-    def _render_header(self) -> None:
+    def _render_header(self, state: PWMPipelineState) -> None:
         """Render the PWM dashboard header."""
         header = Text()
         header.append("╔══════════════════════════════════════════════════════╗\n", style="bold cyan")
@@ -101,6 +101,10 @@ class CLIDashboard:
         header.append("║   ", style="bold cyan")
         header.append("Causal Digital Twin • Agent Verification", style="dim white")
         header.append("     ║\n", style="bold cyan")
+        if state.strategic_objective:
+            header.append("║   ", style="bold cyan")
+            header.append(f"🎯 Objective: {state.strategic_objective[:40]}", style="bold yellow")
+            header.append(" " * max(0, 41 - len(state.strategic_objective)) + "║\n", style="bold cyan")
         header.append("╚══════════════════════════════════════════════════════╝", style="bold cyan")
         self.console.print(header)
         self.console.print()
@@ -241,6 +245,14 @@ class CLIDashboard:
                 f"    Effort: {strategy.estimated_effort_hours}h | "
                 f"Risk: {strategy.risk_level.value}\n"
             )
+
+        if proposal.counter_strategies:
+            content_parts.append("\n  [bold red]🔴 Team of Rivals: Opponent Agent[/bold red]\n")
+            for j, strategy in enumerate(proposal.counter_strategies):
+                content_parts.append(
+                    f"  ○ [bold red]{strategy.title}[/bold red]\n"
+                    f"    {strategy.description[:100]}...\n"
+                )
 
         if verdict:
             icon = VERDICT_ICONS.get(verdict.verdict, "❓")
