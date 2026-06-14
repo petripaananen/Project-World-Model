@@ -165,11 +165,25 @@ def create_app(
 
     # ── Routes ──────────────────────────────────────────────────
 
-    @app.get("/", response_class=HTMLResponse)
-    async def index():
-        """Serve the main dashboard SPA."""
-        html_path = templates_dir / "index.html"
-        return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
+    from fastapi.staticfiles import StaticFiles
+    dist_dir = Path(__file__).resolve().parent.parent.parent / "visualizer" / "dist"
+    
+    if dist_dir.exists():
+        # Serve the built Vite assets
+        app.mount("/assets", StaticFiles(directory=str(dist_dir / "assets")), name="assets")
+        
+        @app.get("/", response_class=HTMLResponse)
+        async def index():
+            """Serve the Vite React SPA."""
+            html_path = dist_dir / "index.html"
+            return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
+    else:
+        # Fallback
+        @app.get("/", response_class=HTMLResponse)
+        async def index():
+            """Serve the fallback dashboard."""
+            html_path = templates_dir / "index.html"
+            return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
 
     @app.get("/api/state")
     async def get_state():

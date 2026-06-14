@@ -1,0 +1,2664 @@
+{
+  "repo_owner": "mock_owner",
+  "repo_name": "mock_repo",
+  "ingested_at": "2026-06-14 16:32:52.861552",
+  "default_branch": "main",
+  "recent_commits": [
+    {
+      "sha": "commit_0000",
+      "author": "Dev_4",
+      "message": "Mock commit 0",
+      "timestamp": "2026-06-12 03:32:52.861552",
+      "files_changed": [
+        "src/file_23.py"
+      ],
+      "additions": 40,
+      "deletions": 13
+    },
+    {
+      "sha": "commit_0001",
+      "author": "Dev_0",
+      "message": "Mock commit 1",
+      "timestamp": "2026-06-11 15:32:52.861552",
+      "files_changed": [
+        "src/file_11.py"
+      ],
+      "additions": 62,
+      "deletions": 33
+    },
+    {
+      "sha": "commit_0002",
+      "author": "Dev_5",
+      "message": "Mock commit 2",
+      "timestamp": "2026-06-10 13:32:52.861552",
+      "files_changed": [
+        "src/file_16.py"
+      ],
+      "additions": 18,
+      "deletions": 39
+    },
+    {
+      "sha": "commit_0003",
+      "author": "Dev_11",
+      "message": "Mock commit 3",
+      "timestamp": "2026-06-14 09:32:52.861552",
+      "files_changed": [
+        "src/file_19.py"
+      ],
+      "additions": 85,
+      "deletions": 42
+    },
+    {
+      "sha": "commit_0004",
+      "author": "Dev_2",
+      "message": "Mock commit 4",
+      "timestamp": "2026-06-13 08:32:52.861552",
+      "files_changed": [
+        "src/file_9.py"
+      ],
+      "additions": 49,
+      "deletions": 17
+    },
+    {
+      "sha": "commit_0005",
+      "author": "Dev_12",
+      "message": "Mock commit 5",
+      "timestamp": "2026-06-13 03:32:52.861552",
+      "files_changed": [
+        "src/file_42.py"
+      ],
+      "additions": 52,
+      "deletions": 7
+    },
+    {
+      "sha": "commit_0006",
+      "author": "Dev_15",
+      "message": "Mock commit 6",
+      "timestamp": "2026-06-10 17:32:52.861552",
+      "files_changed": [
+        "src/file_29.py"
+      ],
+      "additions": 63,
+      "deletions": 5
+    },
+    {
+      "sha": "commit_0007",
+      "author": "Dev_4",
+      "message": "Mock commit 7",
+      "timestamp": "2026-06-10 13:32:52.861552",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 9,
+      "deletions": 45
+    },
+    {
+      "sha": "commit_0008",
+      "author": "Dev_7",
+      "message": "Mock commit 8",
+      "timestamp": "2026-06-11 05:32:52.861552",
+      "files_changed": [
+        "src/file_15.py"
+      ],
+      "additions": 59,
+      "deletions": 16
+    },
+    {
+      "sha": "commit_0009",
+      "author": "Dev_16",
+      "message": "Mock commit 9",
+      "timestamp": "2026-06-14 01:32:52.861552",
+      "files_changed": [
+        "src/file_19.py"
+      ],
+      "additions": 65,
+      "deletions": 40
+    },
+    {
+      "sha": "commit_000a",
+      "author": "Dev_19",
+      "message": "Mock commit 10",
+      "timestamp": "2026-06-14 07:32:52.861552",
+      "files_changed": [
+        "src/file_30.py"
+      ],
+      "additions": 68,
+      "deletions": 3
+    },
+    {
+      "sha": "commit_000b",
+      "author": "Dev_4",
+      "message": "Mock commit 11",
+      "timestamp": "2026-06-11 08:32:52.861552",
+      "files_changed": [
+        "src/file_9.py"
+      ],
+      "additions": 31,
+      "deletions": 32
+    },
+    {
+      "sha": "commit_000c",
+      "author": "Dev_6",
+      "message": "Mock commit 12",
+      "timestamp": "2026-06-11 12:32:52.861552",
+      "files_changed": [
+        "src/file_9.py"
+      ],
+      "additions": 53,
+      "deletions": 18
+    },
+    {
+      "sha": "commit_000d",
+      "author": "Dev_3",
+      "message": "Mock commit 13",
+      "timestamp": "2026-06-12 00:32:52.861552",
+      "files_changed": [
+        "src/file_23.py"
+      ],
+      "additions": 62,
+      "deletions": 19
+    },
+    {
+      "sha": "commit_000e",
+      "author": "Dev_1",
+      "message": "Mock commit 14",
+      "timestamp": "2026-06-13 17:32:52.861552",
+      "files_changed": [
+        "src/file_31.py"
+      ],
+      "additions": 27,
+      "deletions": 33
+    },
+    {
+      "sha": "commit_000f",
+      "author": "Dev_14",
+      "message": "Mock commit 15",
+      "timestamp": "2026-06-11 07:32:52.861552",
+      "files_changed": [
+        "src/file_14.py"
+      ],
+      "additions": 99,
+      "deletions": 0
+    },
+    {
+      "sha": "commit_0010",
+      "author": "Dev_9",
+      "message": "Mock commit 16",
+      "timestamp": "2026-06-13 17:32:52.861552",
+      "files_changed": [
+        "src/file_11.py"
+      ],
+      "additions": 87,
+      "deletions": 5
+    },
+    {
+      "sha": "commit_0011",
+      "author": "Dev_16",
+      "message": "Mock commit 17",
+      "timestamp": "2026-06-13 18:32:52.861552",
+      "files_changed": [
+        "src/file_36.py"
+      ],
+      "additions": 51,
+      "deletions": 27
+    },
+    {
+      "sha": "commit_0012",
+      "author": "Dev_6",
+      "message": "Mock commit 18",
+      "timestamp": "2026-06-10 14:32:52.861552",
+      "files_changed": [
+        "src/file_46.py"
+      ],
+      "additions": 63,
+      "deletions": 47
+    },
+    {
+      "sha": "commit_0013",
+      "author": "Dev_15",
+      "message": "Mock commit 19",
+      "timestamp": "2026-06-13 14:32:52.861552",
+      "files_changed": [
+        "src/file_32.py"
+      ],
+      "additions": 96,
+      "deletions": 41
+    },
+    {
+      "sha": "commit_0014",
+      "author": "Dev_3",
+      "message": "Mock commit 20",
+      "timestamp": "2026-06-11 20:32:52.861552",
+      "files_changed": [
+        "src/file_23.py"
+      ],
+      "additions": 70,
+      "deletions": 44
+    },
+    {
+      "sha": "commit_0015",
+      "author": "Dev_12",
+      "message": "Mock commit 21",
+      "timestamp": "2026-06-13 02:32:52.861552",
+      "files_changed": [
+        "src/file_40.py"
+      ],
+      "additions": 5,
+      "deletions": 3
+    },
+    {
+      "sha": "commit_0016",
+      "author": "Dev_17",
+      "message": "Mock commit 22",
+      "timestamp": "2026-06-14 02:32:52.861552",
+      "files_changed": [
+        "src/file_10.py"
+      ],
+      "additions": 44,
+      "deletions": 26
+    },
+    {
+      "sha": "commit_0017",
+      "author": "Dev_6",
+      "message": "Mock commit 23",
+      "timestamp": "2026-06-11 15:32:52.861552",
+      "files_changed": [
+        "src/file_41.py"
+      ],
+      "additions": 83,
+      "deletions": 36
+    },
+    {
+      "sha": "commit_0018",
+      "author": "Dev_2",
+      "message": "Mock commit 24",
+      "timestamp": "2026-06-11 04:32:52.861552",
+      "files_changed": [
+        "src/file_48.py"
+      ],
+      "additions": 92,
+      "deletions": 1
+    },
+    {
+      "sha": "commit_0019",
+      "author": "Dev_1",
+      "message": "Mock commit 25",
+      "timestamp": "2026-06-11 07:32:52.861552",
+      "files_changed": [
+        "src/file_30.py"
+      ],
+      "additions": 40,
+      "deletions": 49
+    },
+    {
+      "sha": "commit_001a",
+      "author": "Dev_8",
+      "message": "Mock commit 26",
+      "timestamp": "2026-06-14 13:32:52.861552",
+      "files_changed": [
+        "src/file_20.py"
+      ],
+      "additions": 20,
+      "deletions": 23
+    },
+    {
+      "sha": "commit_001b",
+      "author": "Dev_19",
+      "message": "Mock commit 27",
+      "timestamp": "2026-06-12 06:32:52.861552",
+      "files_changed": [
+        "src/file_13.py"
+      ],
+      "additions": 67,
+      "deletions": 48
+    },
+    {
+      "sha": "commit_001c",
+      "author": "Dev_11",
+      "message": "Mock commit 28",
+      "timestamp": "2026-06-13 16:32:52.861552",
+      "files_changed": [
+        "src/file_14.py"
+      ],
+      "additions": 33,
+      "deletions": 23
+    },
+    {
+      "sha": "commit_001d",
+      "author": "Dev_7",
+      "message": "Mock commit 29",
+      "timestamp": "2026-06-11 10:32:52.861552",
+      "files_changed": [
+        "src/file_32.py"
+      ],
+      "additions": 38,
+      "deletions": 7
+    },
+    {
+      "sha": "commit_001e",
+      "author": "Dev_19",
+      "message": "Mock commit 30",
+      "timestamp": "2026-06-12 12:32:52.861552",
+      "files_changed": [
+        "src/file_28.py"
+      ],
+      "additions": 72,
+      "deletions": 15
+    },
+    {
+      "sha": "commit_001f",
+      "author": "Dev_12",
+      "message": "Mock commit 31",
+      "timestamp": "2026-06-13 02:32:52.861552",
+      "files_changed": [
+        "src/file_7.py"
+      ],
+      "additions": 72,
+      "deletions": 2
+    },
+    {
+      "sha": "commit_0020",
+      "author": "Dev_11",
+      "message": "Mock commit 32",
+      "timestamp": "2026-06-11 14:32:52.861552",
+      "files_changed": [
+        "src/file_4.py"
+      ],
+      "additions": 72,
+      "deletions": 16
+    },
+    {
+      "sha": "commit_0021",
+      "author": "Dev_11",
+      "message": "Mock commit 33",
+      "timestamp": "2026-06-14 03:32:52.861552",
+      "files_changed": [
+        "src/file_19.py"
+      ],
+      "additions": 64,
+      "deletions": 30
+    },
+    {
+      "sha": "commit_0022",
+      "author": "Dev_11",
+      "message": "Mock commit 34",
+      "timestamp": "2026-06-13 12:32:52.861552",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 74,
+      "deletions": 40
+    },
+    {
+      "sha": "commit_0023",
+      "author": "Dev_19",
+      "message": "Mock commit 35",
+      "timestamp": "2026-06-13 16:32:52.861552",
+      "files_changed": [
+        "src/file_44.py"
+      ],
+      "additions": 2,
+      "deletions": 43
+    },
+    {
+      "sha": "commit_0024",
+      "author": "Dev_15",
+      "message": "Mock commit 36",
+      "timestamp": "2026-06-14 06:32:52.861552",
+      "files_changed": [
+        "src/file_25.py"
+      ],
+      "additions": 24,
+      "deletions": 50
+    },
+    {
+      "sha": "commit_0025",
+      "author": "Dev_10",
+      "message": "Mock commit 37",
+      "timestamp": "2026-06-14 09:32:52.861552",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 34,
+      "deletions": 37
+    },
+    {
+      "sha": "commit_0026",
+      "author": "Dev_17",
+      "message": "Mock commit 38",
+      "timestamp": "2026-06-14 08:32:52.861552",
+      "files_changed": [
+        "src/file_2.py"
+      ],
+      "additions": 98,
+      "deletions": 0
+    },
+    {
+      "sha": "commit_0027",
+      "author": "Dev_15",
+      "message": "Mock commit 39",
+      "timestamp": "2026-06-10 16:32:52.861552",
+      "files_changed": [
+        "src/file_49.py"
+      ],
+      "additions": 18,
+      "deletions": 11
+    },
+    {
+      "sha": "commit_0028",
+      "author": "Dev_1",
+      "message": "Mock commit 40",
+      "timestamp": "2026-06-12 09:32:52.861552",
+      "files_changed": [
+        "src/file_41.py"
+      ],
+      "additions": 72,
+      "deletions": 6
+    },
+    {
+      "sha": "commit_0029",
+      "author": "Dev_6",
+      "message": "Mock commit 41",
+      "timestamp": "2026-06-12 12:32:52.861552",
+      "files_changed": [
+        "src/file_40.py"
+      ],
+      "additions": 90,
+      "deletions": 16
+    },
+    {
+      "sha": "commit_002a",
+      "author": "Dev_2",
+      "message": "Mock commit 42",
+      "timestamp": "2026-06-12 19:32:52.861552",
+      "files_changed": [
+        "src/file_9.py"
+      ],
+      "additions": 32,
+      "deletions": 44
+    },
+    {
+      "sha": "commit_002b",
+      "author": "Dev_7",
+      "message": "Mock commit 43",
+      "timestamp": "2026-06-11 04:32:52.861552",
+      "files_changed": [
+        "src/file_41.py"
+      ],
+      "additions": 84,
+      "deletions": 1
+    },
+    {
+      "sha": "commit_002c",
+      "author": "Dev_16",
+      "message": "Mock commit 44",
+      "timestamp": "2026-06-14 01:32:52.861552",
+      "files_changed": [
+        "src/file_1.py"
+      ],
+      "additions": 93,
+      "deletions": 10
+    },
+    {
+      "sha": "commit_002d",
+      "author": "Dev_8",
+      "message": "Mock commit 45",
+      "timestamp": "2026-06-13 03:32:52.861552",
+      "files_changed": [
+        "src/file_12.py"
+      ],
+      "additions": 50,
+      "deletions": 38
+    },
+    {
+      "sha": "commit_002e",
+      "author": "Dev_0",
+      "message": "Mock commit 46",
+      "timestamp": "2026-06-13 00:32:52.861552",
+      "files_changed": [
+        "src/file_37.py"
+      ],
+      "additions": 100,
+      "deletions": 21
+    },
+    {
+      "sha": "commit_002f",
+      "author": "Dev_18",
+      "message": "Mock commit 47",
+      "timestamp": "2026-06-12 18:32:52.861552",
+      "files_changed": [
+        "src/file_33.py"
+      ],
+      "additions": 72,
+      "deletions": 17
+    },
+    {
+      "sha": "commit_0030",
+      "author": "Dev_3",
+      "message": "Mock commit 48",
+      "timestamp": "2026-06-11 17:32:52.861552",
+      "files_changed": [
+        "src/file_24.py"
+      ],
+      "additions": 10,
+      "deletions": 12
+    },
+    {
+      "sha": "commit_0031",
+      "author": "Dev_7",
+      "message": "Mock commit 49",
+      "timestamp": "2026-06-12 00:32:52.861552",
+      "files_changed": [
+        "src/file_40.py"
+      ],
+      "additions": 62,
+      "deletions": 13
+    },
+    {
+      "sha": "commit_0032",
+      "author": "Dev_1",
+      "message": "Mock commit 50",
+      "timestamp": "2026-06-13 17:32:52.861552",
+      "files_changed": [
+        "src/file_12.py"
+      ],
+      "additions": 52,
+      "deletions": 29
+    },
+    {
+      "sha": "commit_0033",
+      "author": "Dev_9",
+      "message": "Mock commit 51",
+      "timestamp": "2026-06-11 12:32:52.861552",
+      "files_changed": [
+        "src/file_30.py"
+      ],
+      "additions": 68,
+      "deletions": 9
+    },
+    {
+      "sha": "commit_0034",
+      "author": "Dev_16",
+      "message": "Mock commit 52",
+      "timestamp": "2026-06-10 14:32:52.861552",
+      "files_changed": [
+        "src/file_4.py"
+      ],
+      "additions": 79,
+      "deletions": 22
+    },
+    {
+      "sha": "commit_0035",
+      "author": "Dev_15",
+      "message": "Mock commit 53",
+      "timestamp": "2026-06-12 16:32:52.861552",
+      "files_changed": [
+        "src/file_17.py"
+      ],
+      "additions": 35,
+      "deletions": 11
+    },
+    {
+      "sha": "commit_0036",
+      "author": "Dev_14",
+      "message": "Mock commit 54",
+      "timestamp": "2026-06-13 11:32:52.861552",
+      "files_changed": [
+        "src/file_40.py"
+      ],
+      "additions": 36,
+      "deletions": 21
+    },
+    {
+      "sha": "commit_0037",
+      "author": "Dev_8",
+      "message": "Mock commit 55",
+      "timestamp": "2026-06-13 19:32:52.861552",
+      "files_changed": [
+        "src/file_18.py"
+      ],
+      "additions": 39,
+      "deletions": 7
+    },
+    {
+      "sha": "commit_0038",
+      "author": "Dev_13",
+      "message": "Mock commit 56",
+      "timestamp": "2026-06-10 13:32:52.861552",
+      "files_changed": [
+        "src/file_21.py"
+      ],
+      "additions": 25,
+      "deletions": 12
+    },
+    {
+      "sha": "commit_0039",
+      "author": "Dev_13",
+      "message": "Mock commit 57",
+      "timestamp": "2026-06-11 20:32:52.861552",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 98,
+      "deletions": 10
+    },
+    {
+      "sha": "commit_003a",
+      "author": "Dev_15",
+      "message": "Mock commit 58",
+      "timestamp": "2026-06-13 08:32:52.861552",
+      "files_changed": [
+        "src/file_7.py"
+      ],
+      "additions": 51,
+      "deletions": 19
+    },
+    {
+      "sha": "commit_003b",
+      "author": "Dev_2",
+      "message": "Mock commit 59",
+      "timestamp": "2026-06-12 01:32:52.861552",
+      "files_changed": [
+        "src/file_42.py"
+      ],
+      "additions": 27,
+      "deletions": 32
+    },
+    {
+      "sha": "commit_003c",
+      "author": "Dev_9",
+      "message": "Mock commit 60",
+      "timestamp": "2026-06-11 01:32:52.861552",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 92,
+      "deletions": 12
+    },
+    {
+      "sha": "commit_003d",
+      "author": "Dev_15",
+      "message": "Mock commit 61",
+      "timestamp": "2026-06-12 14:32:52.861552",
+      "files_changed": [
+        "src/file_49.py"
+      ],
+      "additions": 12,
+      "deletions": 35
+    },
+    {
+      "sha": "commit_003e",
+      "author": "Dev_7",
+      "message": "Mock commit 62",
+      "timestamp": "2026-06-13 20:32:52.861552",
+      "files_changed": [
+        "src/file_26.py"
+      ],
+      "additions": 39,
+      "deletions": 23
+    },
+    {
+      "sha": "commit_003f",
+      "author": "Dev_0",
+      "message": "Mock commit 63",
+      "timestamp": "2026-06-13 08:32:52.861552",
+      "files_changed": [
+        "src/file_30.py"
+      ],
+      "additions": 16,
+      "deletions": 5
+    },
+    {
+      "sha": "commit_0040",
+      "author": "Dev_11",
+      "message": "Mock commit 64",
+      "timestamp": "2026-06-10 20:32:52.861552",
+      "files_changed": [
+        "src/file_44.py"
+      ],
+      "additions": 83,
+      "deletions": 2
+    },
+    {
+      "sha": "commit_0041",
+      "author": "Dev_18",
+      "message": "Mock commit 65",
+      "timestamp": "2026-06-11 06:32:52.861552",
+      "files_changed": [
+        "src/file_4.py"
+      ],
+      "additions": 28,
+      "deletions": 29
+    },
+    {
+      "sha": "commit_0042",
+      "author": "Dev_17",
+      "message": "Mock commit 66",
+      "timestamp": "2026-06-13 02:32:52.861552",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 5,
+      "deletions": 21
+    },
+    {
+      "sha": "commit_0043",
+      "author": "Dev_18",
+      "message": "Mock commit 67",
+      "timestamp": "2026-06-12 17:32:52.861552",
+      "files_changed": [
+        "src/file_36.py"
+      ],
+      "additions": 59,
+      "deletions": 34
+    },
+    {
+      "sha": "commit_0044",
+      "author": "Dev_6",
+      "message": "Mock commit 68",
+      "timestamp": "2026-06-14 06:32:52.861552",
+      "files_changed": [
+        "src/file_43.py"
+      ],
+      "additions": 89,
+      "deletions": 0
+    },
+    {
+      "sha": "commit_0045",
+      "author": "Dev_19",
+      "message": "Mock commit 69",
+      "timestamp": "2026-06-12 09:32:52.861552",
+      "files_changed": [
+        "src/file_34.py"
+      ],
+      "additions": 67,
+      "deletions": 48
+    },
+    {
+      "sha": "commit_0046",
+      "author": "Dev_10",
+      "message": "Mock commit 70",
+      "timestamp": "2026-06-12 15:32:52.861552",
+      "files_changed": [
+        "src/file_4.py"
+      ],
+      "additions": 73,
+      "deletions": 14
+    },
+    {
+      "sha": "commit_0047",
+      "author": "Dev_16",
+      "message": "Mock commit 71",
+      "timestamp": "2026-06-14 08:32:52.861552",
+      "files_changed": [
+        "src/file_10.py"
+      ],
+      "additions": 88,
+      "deletions": 46
+    },
+    {
+      "sha": "commit_0048",
+      "author": "Dev_16",
+      "message": "Mock commit 72",
+      "timestamp": "2026-06-13 04:32:52.861552",
+      "files_changed": [
+        "src/file_49.py"
+      ],
+      "additions": 40,
+      "deletions": 21
+    },
+    {
+      "sha": "commit_0049",
+      "author": "Dev_1",
+      "message": "Mock commit 73",
+      "timestamp": "2026-06-10 17:32:52.861552",
+      "files_changed": [
+        "src/file_4.py"
+      ],
+      "additions": 40,
+      "deletions": 36
+    },
+    {
+      "sha": "commit_004a",
+      "author": "Dev_14",
+      "message": "Mock commit 74",
+      "timestamp": "2026-06-12 11:32:52.861552",
+      "files_changed": [
+        "src/file_23.py"
+      ],
+      "additions": 70,
+      "deletions": 44
+    },
+    {
+      "sha": "commit_004b",
+      "author": "Dev_2",
+      "message": "Mock commit 75",
+      "timestamp": "2026-06-14 05:32:52.861552",
+      "files_changed": [
+        "src/file_11.py"
+      ],
+      "additions": 9,
+      "deletions": 30
+    },
+    {
+      "sha": "commit_004c",
+      "author": "Dev_14",
+      "message": "Mock commit 76",
+      "timestamp": "2026-06-13 06:32:52.861552",
+      "files_changed": [
+        "src/file_50.py"
+      ],
+      "additions": 19,
+      "deletions": 19
+    },
+    {
+      "sha": "commit_004d",
+      "author": "Dev_0",
+      "message": "Mock commit 77",
+      "timestamp": "2026-06-10 14:32:52.861552",
+      "files_changed": [
+        "src/file_13.py"
+      ],
+      "additions": 76,
+      "deletions": 11
+    },
+    {
+      "sha": "commit_004e",
+      "author": "Dev_5",
+      "message": "Mock commit 78",
+      "timestamp": "2026-06-14 01:32:52.861552",
+      "files_changed": [
+        "src/file_19.py"
+      ],
+      "additions": 28,
+      "deletions": 36
+    },
+    {
+      "sha": "commit_004f",
+      "author": "Dev_17",
+      "message": "Mock commit 79",
+      "timestamp": "2026-06-12 13:32:52.861552",
+      "files_changed": [
+        "src/file_28.py"
+      ],
+      "additions": 82,
+      "deletions": 32
+    },
+    {
+      "sha": "commit_0050",
+      "author": "Dev_17",
+      "message": "Mock commit 80",
+      "timestamp": "2026-06-10 14:32:52.861552",
+      "files_changed": [
+        "src/file_8.py"
+      ],
+      "additions": 55,
+      "deletions": 25
+    },
+    {
+      "sha": "commit_0051",
+      "author": "Dev_0",
+      "message": "Mock commit 81",
+      "timestamp": "2026-06-11 14:32:52.861552",
+      "files_changed": [
+        "src/file_24.py"
+      ],
+      "additions": 19,
+      "deletions": 24
+    },
+    {
+      "sha": "commit_0052",
+      "author": "Dev_13",
+      "message": "Mock commit 82",
+      "timestamp": "2026-06-14 11:32:52.861552",
+      "files_changed": [
+        "src/file_3.py"
+      ],
+      "additions": 9,
+      "deletions": 38
+    },
+    {
+      "sha": "commit_0053",
+      "author": "Dev_17",
+      "message": "Mock commit 83",
+      "timestamp": "2026-06-11 06:32:52.861552",
+      "files_changed": [
+        "src/file_29.py"
+      ],
+      "additions": 40,
+      "deletions": 22
+    },
+    {
+      "sha": "commit_0054",
+      "author": "Dev_17",
+      "message": "Mock commit 84",
+      "timestamp": "2026-06-13 07:32:52.861552",
+      "files_changed": [
+        "src/file_1.py"
+      ],
+      "additions": 26,
+      "deletions": 35
+    },
+    {
+      "sha": "commit_0055",
+      "author": "Dev_10",
+      "message": "Mock commit 85",
+      "timestamp": "2026-06-11 15:32:52.861552",
+      "files_changed": [
+        "src/file_24.py"
+      ],
+      "additions": 34,
+      "deletions": 6
+    },
+    {
+      "sha": "commit_0056",
+      "author": "Dev_9",
+      "message": "Mock commit 86",
+      "timestamp": "2026-06-11 15:32:52.861552",
+      "files_changed": [
+        "src/file_13.py"
+      ],
+      "additions": 42,
+      "deletions": 24
+    },
+    {
+      "sha": "commit_0057",
+      "author": "Dev_17",
+      "message": "Mock commit 87",
+      "timestamp": "2026-06-14 07:32:52.861552",
+      "files_changed": [
+        "src/file_38.py"
+      ],
+      "additions": 65,
+      "deletions": 4
+    },
+    {
+      "sha": "commit_0058",
+      "author": "Dev_1",
+      "message": "Mock commit 88",
+      "timestamp": "2026-06-11 19:32:52.861552",
+      "files_changed": [
+        "src/file_25.py"
+      ],
+      "additions": 36,
+      "deletions": 6
+    },
+    {
+      "sha": "commit_0059",
+      "author": "Dev_17",
+      "message": "Mock commit 89",
+      "timestamp": "2026-06-11 11:32:52.861552",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 76,
+      "deletions": 16
+    },
+    {
+      "sha": "commit_005a",
+      "author": "Dev_19",
+      "message": "Mock commit 90",
+      "timestamp": "2026-06-11 22:32:52.861552",
+      "files_changed": [
+        "src/file_2.py"
+      ],
+      "additions": 10,
+      "deletions": 34
+    },
+    {
+      "sha": "commit_005b",
+      "author": "Dev_7",
+      "message": "Mock commit 91",
+      "timestamp": "2026-06-11 12:32:52.861552",
+      "files_changed": [
+        "src/file_37.py"
+      ],
+      "additions": 70,
+      "deletions": 37
+    },
+    {
+      "sha": "commit_005c",
+      "author": "Dev_12",
+      "message": "Mock commit 92",
+      "timestamp": "2026-06-13 11:32:52.861552",
+      "files_changed": [
+        "src/file_19.py"
+      ],
+      "additions": 20,
+      "deletions": 44
+    },
+    {
+      "sha": "commit_005d",
+      "author": "Dev_1",
+      "message": "Mock commit 93",
+      "timestamp": "2026-06-11 08:32:52.861552",
+      "files_changed": [
+        "src/file_26.py"
+      ],
+      "additions": 28,
+      "deletions": 0
+    },
+    {
+      "sha": "commit_005e",
+      "author": "Dev_18",
+      "message": "Mock commit 94",
+      "timestamp": "2026-06-10 13:32:52.861552",
+      "files_changed": [
+        "src/file_11.py"
+      ],
+      "additions": 59,
+      "deletions": 42
+    },
+    {
+      "sha": "commit_005f",
+      "author": "Dev_14",
+      "message": "Mock commit 95",
+      "timestamp": "2026-06-12 13:32:52.861552",
+      "files_changed": [
+        "src/file_40.py"
+      ],
+      "additions": 3,
+      "deletions": 48
+    },
+    {
+      "sha": "commit_0060",
+      "author": "Dev_16",
+      "message": "Mock commit 96",
+      "timestamp": "2026-06-13 17:32:52.861552",
+      "files_changed": [
+        "src/file_28.py"
+      ],
+      "additions": 24,
+      "deletions": 39
+    },
+    {
+      "sha": "commit_0061",
+      "author": "Dev_18",
+      "message": "Mock commit 97",
+      "timestamp": "2026-06-13 16:32:52.861552",
+      "files_changed": [
+        "src/file_19.py"
+      ],
+      "additions": 45,
+      "deletions": 40
+    },
+    {
+      "sha": "commit_0062",
+      "author": "Dev_0",
+      "message": "Mock commit 98",
+      "timestamp": "2026-06-14 12:32:52.861552",
+      "files_changed": [
+        "src/file_43.py"
+      ],
+      "additions": 89,
+      "deletions": 6
+    },
+    {
+      "sha": "commit_0063",
+      "author": "Dev_3",
+      "message": "Mock commit 99",
+      "timestamp": "2026-06-12 03:32:52.861552",
+      "files_changed": [
+        "src/file_15.py"
+      ],
+      "additions": 49,
+      "deletions": 21
+    },
+    {
+      "sha": "commit_0064",
+      "author": "Dev_16",
+      "message": "Mock commit 100",
+      "timestamp": "2026-06-12 11:32:52.861552",
+      "files_changed": [
+        "src/file_10.py"
+      ],
+      "additions": 58,
+      "deletions": 14
+    },
+    {
+      "sha": "commit_0065",
+      "author": "Dev_5",
+      "message": "Mock commit 101",
+      "timestamp": "2026-06-13 04:32:52.861552",
+      "files_changed": [
+        "src/file_10.py"
+      ],
+      "additions": 75,
+      "deletions": 49
+    },
+    {
+      "sha": "commit_0066",
+      "author": "Dev_12",
+      "message": "Mock commit 102",
+      "timestamp": "2026-06-12 20:32:52.861552",
+      "files_changed": [
+        "src/file_9.py"
+      ],
+      "additions": 38,
+      "deletions": 26
+    },
+    {
+      "sha": "commit_0067",
+      "author": "Dev_17",
+      "message": "Mock commit 103",
+      "timestamp": "2026-06-13 18:32:52.861552",
+      "files_changed": [
+        "src/file_38.py"
+      ],
+      "additions": 42,
+      "deletions": 4
+    },
+    {
+      "sha": "commit_0068",
+      "author": "Dev_5",
+      "message": "Mock commit 104",
+      "timestamp": "2026-06-14 04:32:52.861552",
+      "files_changed": [
+        "src/file_40.py"
+      ],
+      "additions": 14,
+      "deletions": 45
+    },
+    {
+      "sha": "commit_0069",
+      "author": "Dev_4",
+      "message": "Mock commit 105",
+      "timestamp": "2026-06-13 23:32:52.861552",
+      "files_changed": [
+        "src/file_3.py"
+      ],
+      "additions": 72,
+      "deletions": 21
+    },
+    {
+      "sha": "commit_006a",
+      "author": "Dev_4",
+      "message": "Mock commit 106",
+      "timestamp": "2026-06-10 16:32:52.861552",
+      "files_changed": [
+        "src/file_41.py"
+      ],
+      "additions": 19,
+      "deletions": 17
+    },
+    {
+      "sha": "commit_006b",
+      "author": "Dev_17",
+      "message": "Mock commit 107",
+      "timestamp": "2026-06-10 12:32:52.861552",
+      "files_changed": [
+        "src/file_20.py"
+      ],
+      "additions": 79,
+      "deletions": 25
+    },
+    {
+      "sha": "commit_006c",
+      "author": "Dev_5",
+      "message": "Mock commit 108",
+      "timestamp": "2026-06-11 05:32:52.861552",
+      "files_changed": [
+        "src/file_48.py"
+      ],
+      "additions": 36,
+      "deletions": 39
+    },
+    {
+      "sha": "commit_006d",
+      "author": "Dev_15",
+      "message": "Mock commit 109",
+      "timestamp": "2026-06-14 08:32:52.861552",
+      "files_changed": [
+        "src/file_5.py"
+      ],
+      "additions": 47,
+      "deletions": 48
+    },
+    {
+      "sha": "commit_006e",
+      "author": "Dev_12",
+      "message": "Mock commit 110",
+      "timestamp": "2026-06-14 12:32:52.861552",
+      "files_changed": [
+        "src/file_30.py"
+      ],
+      "additions": 82,
+      "deletions": 49
+    },
+    {
+      "sha": "commit_006f",
+      "author": "Dev_14",
+      "message": "Mock commit 111",
+      "timestamp": "2026-06-12 16:32:52.861552",
+      "files_changed": [
+        "src/file_7.py"
+      ],
+      "additions": 64,
+      "deletions": 30
+    },
+    {
+      "sha": "commit_0070",
+      "author": "Dev_16",
+      "message": "Mock commit 112",
+      "timestamp": "2026-06-11 20:32:52.861552",
+      "files_changed": [
+        "src/file_29.py"
+      ],
+      "additions": 86,
+      "deletions": 4
+    },
+    {
+      "sha": "commit_0071",
+      "author": "Dev_17",
+      "message": "Mock commit 113",
+      "timestamp": "2026-06-13 07:32:52.861552",
+      "files_changed": [
+        "src/file_41.py"
+      ],
+      "additions": 4,
+      "deletions": 11
+    },
+    {
+      "sha": "commit_0072",
+      "author": "Dev_6",
+      "message": "Mock commit 114",
+      "timestamp": "2026-06-10 20:32:52.861552",
+      "files_changed": [
+        "src/file_7.py"
+      ],
+      "additions": 25,
+      "deletions": 5
+    },
+    {
+      "sha": "commit_0073",
+      "author": "Dev_18",
+      "message": "Mock commit 115",
+      "timestamp": "2026-06-11 15:32:52.861552",
+      "files_changed": [
+        "src/file_10.py"
+      ],
+      "additions": 43,
+      "deletions": 35
+    },
+    {
+      "sha": "commit_0074",
+      "author": "Dev_10",
+      "message": "Mock commit 116",
+      "timestamp": "2026-06-13 22:32:52.861552",
+      "files_changed": [
+        "src/file_30.py"
+      ],
+      "additions": 14,
+      "deletions": 20
+    },
+    {
+      "sha": "commit_0075",
+      "author": "Dev_9",
+      "message": "Mock commit 117",
+      "timestamp": "2026-06-11 12:32:52.861552",
+      "files_changed": [
+        "src/file_32.py"
+      ],
+      "additions": 27,
+      "deletions": 45
+    },
+    {
+      "sha": "commit_0076",
+      "author": "Dev_6",
+      "message": "Mock commit 118",
+      "timestamp": "2026-06-14 01:32:52.861552",
+      "files_changed": [
+        "src/file_37.py"
+      ],
+      "additions": 56,
+      "deletions": 12
+    },
+    {
+      "sha": "commit_0077",
+      "author": "Dev_5",
+      "message": "Mock commit 119",
+      "timestamp": "2026-06-12 05:32:52.861552",
+      "files_changed": [
+        "src/file_26.py"
+      ],
+      "additions": 71,
+      "deletions": 49
+    },
+    {
+      "sha": "commit_0078",
+      "author": "Dev_8",
+      "message": "Mock commit 120",
+      "timestamp": "2026-06-13 19:32:52.861552",
+      "files_changed": [
+        "src/file_34.py"
+      ],
+      "additions": 68,
+      "deletions": 23
+    },
+    {
+      "sha": "commit_0079",
+      "author": "Dev_16",
+      "message": "Mock commit 121",
+      "timestamp": "2026-06-12 03:32:52.861552",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 83,
+      "deletions": 21
+    },
+    {
+      "sha": "commit_007a",
+      "author": "Dev_2",
+      "message": "Mock commit 122",
+      "timestamp": "2026-06-11 07:32:52.861552",
+      "files_changed": [
+        "src/file_41.py"
+      ],
+      "additions": 58,
+      "deletions": 36
+    },
+    {
+      "sha": "commit_007b",
+      "author": "Dev_10",
+      "message": "Mock commit 123",
+      "timestamp": "2026-06-10 19:32:52.861552",
+      "files_changed": [
+        "src/file_20.py"
+      ],
+      "additions": 69,
+      "deletions": 19
+    },
+    {
+      "sha": "commit_007c",
+      "author": "Dev_19",
+      "message": "Mock commit 124",
+      "timestamp": "2026-06-11 17:32:52.861552",
+      "files_changed": [
+        "src/file_6.py"
+      ],
+      "additions": 51,
+      "deletions": 12
+    },
+    {
+      "sha": "commit_007d",
+      "author": "Dev_10",
+      "message": "Mock commit 125",
+      "timestamp": "2026-06-11 11:32:52.861552",
+      "files_changed": [
+        "src/file_2.py"
+      ],
+      "additions": 50,
+      "deletions": 8
+    },
+    {
+      "sha": "commit_007e",
+      "author": "Dev_2",
+      "message": "Mock commit 126",
+      "timestamp": "2026-06-12 05:32:52.861552",
+      "files_changed": [
+        "src/file_28.py"
+      ],
+      "additions": 80,
+      "deletions": 34
+    },
+    {
+      "sha": "commit_007f",
+      "author": "Dev_17",
+      "message": "Mock commit 127",
+      "timestamp": "2026-06-11 19:32:52.861552",
+      "files_changed": [
+        "src/file_45.py"
+      ],
+      "additions": 5,
+      "deletions": 40
+    },
+    {
+      "sha": "commit_0080",
+      "author": "Dev_16",
+      "message": "Mock commit 128",
+      "timestamp": "2026-06-13 15:32:52.861552",
+      "files_changed": [
+        "src/file_13.py"
+      ],
+      "additions": 54,
+      "deletions": 46
+    },
+    {
+      "sha": "commit_0081",
+      "author": "Dev_15",
+      "message": "Mock commit 129",
+      "timestamp": "2026-06-11 19:32:52.861552",
+      "files_changed": [
+        "src/file_50.py"
+      ],
+      "additions": 3,
+      "deletions": 14
+    },
+    {
+      "sha": "commit_0082",
+      "author": "Dev_6",
+      "message": "Mock commit 130",
+      "timestamp": "2026-06-10 18:32:52.861552",
+      "files_changed": [
+        "src/file_26.py"
+      ],
+      "additions": 94,
+      "deletions": 42
+    },
+    {
+      "sha": "commit_0083",
+      "author": "Dev_14",
+      "message": "Mock commit 131",
+      "timestamp": "2026-06-13 05:32:52.861552",
+      "files_changed": [
+        "src/file_40.py"
+      ],
+      "additions": 63,
+      "deletions": 26
+    },
+    {
+      "sha": "commit_0084",
+      "author": "Dev_8",
+      "message": "Mock commit 132",
+      "timestamp": "2026-06-14 03:32:52.861552",
+      "files_changed": [
+        "src/file_36.py"
+      ],
+      "additions": 74,
+      "deletions": 35
+    },
+    {
+      "sha": "commit_0085",
+      "author": "Dev_7",
+      "message": "Mock commit 133",
+      "timestamp": "2026-06-13 18:32:52.861552",
+      "files_changed": [
+        "src/file_49.py"
+      ],
+      "additions": 27,
+      "deletions": 20
+    },
+    {
+      "sha": "commit_0086",
+      "author": "Dev_7",
+      "message": "Mock commit 134",
+      "timestamp": "2026-06-13 03:32:52.861552",
+      "files_changed": [
+        "src/file_17.py"
+      ],
+      "additions": 67,
+      "deletions": 35
+    },
+    {
+      "sha": "commit_0087",
+      "author": "Dev_4",
+      "message": "Mock commit 135",
+      "timestamp": "2026-06-13 16:32:52.861552",
+      "files_changed": [
+        "src/file_4.py"
+      ],
+      "additions": 42,
+      "deletions": 43
+    },
+    {
+      "sha": "commit_0088",
+      "author": "Dev_3",
+      "message": "Mock commit 136",
+      "timestamp": "2026-06-11 15:32:52.861552",
+      "files_changed": [
+        "src/file_4.py"
+      ],
+      "additions": 77,
+      "deletions": 42
+    },
+    {
+      "sha": "commit_0089",
+      "author": "Dev_16",
+      "message": "Mock commit 137",
+      "timestamp": "2026-06-12 04:32:52.861552",
+      "files_changed": [
+        "src/file_39.py"
+      ],
+      "additions": 19,
+      "deletions": 28
+    },
+    {
+      "sha": "commit_008a",
+      "author": "Dev_3",
+      "message": "Mock commit 138",
+      "timestamp": "2026-06-11 05:32:52.861552",
+      "files_changed": [
+        "src/file_43.py"
+      ],
+      "additions": 54,
+      "deletions": 20
+    },
+    {
+      "sha": "commit_008b",
+      "author": "Dev_3",
+      "message": "Mock commit 139",
+      "timestamp": "2026-06-12 12:32:52.861552",
+      "files_changed": [
+        "src/file_38.py"
+      ],
+      "additions": 23,
+      "deletions": 8
+    },
+    {
+      "sha": "commit_008c",
+      "author": "Dev_6",
+      "message": "Mock commit 140",
+      "timestamp": "2026-06-10 22:32:52.861552",
+      "files_changed": [
+        "src/file_21.py"
+      ],
+      "additions": 66,
+      "deletions": 49
+    },
+    {
+      "sha": "commit_008d",
+      "author": "Dev_3",
+      "message": "Mock commit 141",
+      "timestamp": "2026-06-11 22:32:52.861552",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 3,
+      "deletions": 49
+    },
+    {
+      "sha": "commit_008e",
+      "author": "Dev_17",
+      "message": "Mock commit 142",
+      "timestamp": "2026-06-14 15:32:52.861552",
+      "files_changed": [
+        "src/file_12.py"
+      ],
+      "additions": 9,
+      "deletions": 0
+    },
+    {
+      "sha": "commit_008f",
+      "author": "Dev_10",
+      "message": "Mock commit 143",
+      "timestamp": "2026-06-14 13:32:52.861552",
+      "files_changed": [
+        "src/file_38.py"
+      ],
+      "additions": 44,
+      "deletions": 31
+    },
+    {
+      "sha": "commit_0090",
+      "author": "Dev_16",
+      "message": "Mock commit 144",
+      "timestamp": "2026-06-10 14:32:52.861552",
+      "files_changed": [
+        "src/file_19.py"
+      ],
+      "additions": 20,
+      "deletions": 3
+    },
+    {
+      "sha": "commit_0091",
+      "author": "Dev_10",
+      "message": "Mock commit 145",
+      "timestamp": "2026-06-14 00:32:52.861552",
+      "files_changed": [
+        "src/file_11.py"
+      ],
+      "additions": 86,
+      "deletions": 23
+    },
+    {
+      "sha": "commit_0092",
+      "author": "Dev_1",
+      "message": "Mock commit 146",
+      "timestamp": "2026-06-10 19:32:52.861552",
+      "files_changed": [
+        "src/file_8.py"
+      ],
+      "additions": 47,
+      "deletions": 28
+    },
+    {
+      "sha": "commit_0093",
+      "author": "Dev_13",
+      "message": "Mock commit 147",
+      "timestamp": "2026-06-13 01:32:52.861552",
+      "files_changed": [
+        "src/file_31.py"
+      ],
+      "additions": 62,
+      "deletions": 36
+    },
+    {
+      "sha": "commit_0094",
+      "author": "Dev_6",
+      "message": "Mock commit 148",
+      "timestamp": "2026-06-12 03:32:52.861552",
+      "files_changed": [
+        "src/file_12.py"
+      ],
+      "additions": 49,
+      "deletions": 8
+    },
+    {
+      "sha": "commit_0095",
+      "author": "Dev_11",
+      "message": "Mock commit 149",
+      "timestamp": "2026-06-12 21:32:52.861552",
+      "files_changed": [
+        "src/file_11.py"
+      ],
+      "additions": 64,
+      "deletions": 12
+    },
+    {
+      "sha": "commit_0096",
+      "author": "Dev_15",
+      "message": "Mock commit 150",
+      "timestamp": "2026-06-12 03:32:52.861552",
+      "files_changed": [
+        "src/file_19.py"
+      ],
+      "additions": 29,
+      "deletions": 25
+    },
+    {
+      "sha": "commit_0097",
+      "author": "Dev_16",
+      "message": "Mock commit 151",
+      "timestamp": "2026-06-12 08:32:52.861552",
+      "files_changed": [
+        "src/file_49.py"
+      ],
+      "additions": 25,
+      "deletions": 24
+    },
+    {
+      "sha": "commit_0098",
+      "author": "Dev_4",
+      "message": "Mock commit 152",
+      "timestamp": "2026-06-11 10:32:52.861552",
+      "files_changed": [
+        "src/file_13.py"
+      ],
+      "additions": 14,
+      "deletions": 39
+    },
+    {
+      "sha": "commit_0099",
+      "author": "Dev_5",
+      "message": "Mock commit 153",
+      "timestamp": "2026-06-13 22:32:52.861552",
+      "files_changed": [
+        "src/file_22.py"
+      ],
+      "additions": 44,
+      "deletions": 20
+    },
+    {
+      "sha": "commit_009a",
+      "author": "Dev_5",
+      "message": "Mock commit 154",
+      "timestamp": "2026-06-11 05:32:52.861552",
+      "files_changed": [
+        "src/file_20.py"
+      ],
+      "additions": 76,
+      "deletions": 41
+    },
+    {
+      "sha": "commit_009b",
+      "author": "Dev_12",
+      "message": "Mock commit 155",
+      "timestamp": "2026-06-12 16:32:52.861552",
+      "files_changed": [
+        "src/file_45.py"
+      ],
+      "additions": 50,
+      "deletions": 43
+    },
+    {
+      "sha": "commit_009c",
+      "author": "Dev_10",
+      "message": "Mock commit 156",
+      "timestamp": "2026-06-10 14:32:52.861552",
+      "files_changed": [
+        "src/file_40.py"
+      ],
+      "additions": 3,
+      "deletions": 30
+    },
+    {
+      "sha": "commit_009d",
+      "author": "Dev_15",
+      "message": "Mock commit 157",
+      "timestamp": "2026-06-13 12:32:52.861552",
+      "files_changed": [
+        "src/file_32.py"
+      ],
+      "additions": 52,
+      "deletions": 17
+    },
+    {
+      "sha": "commit_009e",
+      "author": "Dev_4",
+      "message": "Mock commit 158",
+      "timestamp": "2026-06-13 19:32:52.861552",
+      "files_changed": [
+        "src/file_6.py"
+      ],
+      "additions": 70,
+      "deletions": 28
+    },
+    {
+      "sha": "commit_009f",
+      "author": "Dev_3",
+      "message": "Mock commit 159",
+      "timestamp": "2026-06-13 21:32:52.861552",
+      "files_changed": [
+        "src/file_27.py"
+      ],
+      "additions": 94,
+      "deletions": 24
+    },
+    {
+      "sha": "commit_00a0",
+      "author": "Dev_15",
+      "message": "Mock commit 160",
+      "timestamp": "2026-06-14 15:32:52.861552",
+      "files_changed": [
+        "src/file_45.py"
+      ],
+      "additions": 26,
+      "deletions": 24
+    },
+    {
+      "sha": "commit_00a1",
+      "author": "Dev_7",
+      "message": "Mock commit 161",
+      "timestamp": "2026-06-13 13:32:52.861552",
+      "files_changed": [
+        "src/file_12.py"
+      ],
+      "additions": 40,
+      "deletions": 49
+    },
+    {
+      "sha": "commit_00a2",
+      "author": "Dev_15",
+      "message": "Mock commit 162",
+      "timestamp": "2026-06-11 14:32:52.861552",
+      "files_changed": [
+        "src/file_5.py"
+      ],
+      "additions": 60,
+      "deletions": 2
+    },
+    {
+      "sha": "commit_00a3",
+      "author": "Dev_18",
+      "message": "Mock commit 163",
+      "timestamp": "2026-06-12 07:32:52.861552",
+      "files_changed": [
+        "src/file_27.py"
+      ],
+      "additions": 81,
+      "deletions": 12
+    },
+    {
+      "sha": "commit_00a4",
+      "author": "Dev_13",
+      "message": "Mock commit 164",
+      "timestamp": "2026-06-11 14:32:52.861552",
+      "files_changed": [
+        "src/file_29.py"
+      ],
+      "additions": 35,
+      "deletions": 26
+    },
+    {
+      "sha": "commit_00a5",
+      "author": "Dev_6",
+      "message": "Mock commit 165",
+      "timestamp": "2026-06-11 20:32:52.861552",
+      "files_changed": [
+        "src/file_46.py"
+      ],
+      "additions": 50,
+      "deletions": 2
+    },
+    {
+      "sha": "commit_00a6",
+      "author": "Dev_16",
+      "message": "Mock commit 166",
+      "timestamp": "2026-06-13 16:32:52.861552",
+      "files_changed": [
+        "src/file_39.py"
+      ],
+      "additions": 87,
+      "deletions": 42
+    },
+    {
+      "sha": "commit_00a7",
+      "author": "Dev_9",
+      "message": "Mock commit 167",
+      "timestamp": "2026-06-10 14:32:52.861552",
+      "files_changed": [
+        "src/file_10.py"
+      ],
+      "additions": 48,
+      "deletions": 22
+    },
+    {
+      "sha": "commit_00a8",
+      "author": "Dev_13",
+      "message": "Mock commit 168",
+      "timestamp": "2026-06-13 12:32:52.861552",
+      "files_changed": [
+        "src/file_24.py"
+      ],
+      "additions": 49,
+      "deletions": 4
+    },
+    {
+      "sha": "commit_00a9",
+      "author": "Dev_19",
+      "message": "Mock commit 169",
+      "timestamp": "2026-06-11 15:32:52.861552",
+      "files_changed": [
+        "src/file_24.py"
+      ],
+      "additions": 92,
+      "deletions": 9
+    },
+    {
+      "sha": "commit_00aa",
+      "author": "Dev_13",
+      "message": "Mock commit 170",
+      "timestamp": "2026-06-13 12:32:52.862557",
+      "files_changed": [
+        "src/file_11.py"
+      ],
+      "additions": 99,
+      "deletions": 19
+    },
+    {
+      "sha": "commit_00ab",
+      "author": "Dev_19",
+      "message": "Mock commit 171",
+      "timestamp": "2026-06-11 11:32:52.862557",
+      "files_changed": [
+        "src/file_44.py"
+      ],
+      "additions": 92,
+      "deletions": 47
+    },
+    {
+      "sha": "commit_00ac",
+      "author": "Dev_1",
+      "message": "Mock commit 172",
+      "timestamp": "2026-06-12 20:32:52.862557",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 76,
+      "deletions": 2
+    },
+    {
+      "sha": "commit_00ad",
+      "author": "Dev_2",
+      "message": "Mock commit 173",
+      "timestamp": "2026-06-11 09:32:52.862557",
+      "files_changed": [
+        "src/file_29.py"
+      ],
+      "additions": 84,
+      "deletions": 18
+    },
+    {
+      "sha": "commit_00ae",
+      "author": "Dev_6",
+      "message": "Mock commit 174",
+      "timestamp": "2026-06-12 18:32:52.862557",
+      "files_changed": [
+        "src/file_50.py"
+      ],
+      "additions": 93,
+      "deletions": 21
+    },
+    {
+      "sha": "commit_00af",
+      "author": "Dev_3",
+      "message": "Mock commit 175",
+      "timestamp": "2026-06-12 11:32:52.862557",
+      "files_changed": [
+        "src/file_14.py"
+      ],
+      "additions": 85,
+      "deletions": 33
+    },
+    {
+      "sha": "commit_00b0",
+      "author": "Dev_5",
+      "message": "Mock commit 176",
+      "timestamp": "2026-06-11 08:32:52.862557",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 58,
+      "deletions": 10
+    },
+    {
+      "sha": "commit_00b1",
+      "author": "Dev_18",
+      "message": "Mock commit 177",
+      "timestamp": "2026-06-11 05:32:52.862557",
+      "files_changed": [
+        "src/file_37.py"
+      ],
+      "additions": 76,
+      "deletions": 2
+    },
+    {
+      "sha": "commit_00b2",
+      "author": "Dev_5",
+      "message": "Mock commit 178",
+      "timestamp": "2026-06-14 01:32:52.862557",
+      "files_changed": [
+        "src/file_13.py"
+      ],
+      "additions": 96,
+      "deletions": 7
+    },
+    {
+      "sha": "commit_00b3",
+      "author": "Dev_0",
+      "message": "Mock commit 179",
+      "timestamp": "2026-06-12 20:32:52.862557",
+      "files_changed": [
+        "src/file_29.py"
+      ],
+      "additions": 35,
+      "deletions": 0
+    },
+    {
+      "sha": "commit_00b4",
+      "author": "Dev_4",
+      "message": "Mock commit 180",
+      "timestamp": "2026-06-12 22:32:52.862557",
+      "files_changed": [
+        "src/file_50.py"
+      ],
+      "additions": 58,
+      "deletions": 17
+    },
+    {
+      "sha": "commit_00b5",
+      "author": "Dev_4",
+      "message": "Mock commit 181",
+      "timestamp": "2026-06-11 04:32:52.862557",
+      "files_changed": [
+        "src/file_47.py"
+      ],
+      "additions": 45,
+      "deletions": 41
+    },
+    {
+      "sha": "commit_00b6",
+      "author": "Dev_1",
+      "message": "Mock commit 182",
+      "timestamp": "2026-06-13 23:32:52.862557",
+      "files_changed": [
+        "src/file_11.py"
+      ],
+      "additions": 45,
+      "deletions": 48
+    },
+    {
+      "sha": "commit_00b7",
+      "author": "Dev_3",
+      "message": "Mock commit 183",
+      "timestamp": "2026-06-12 03:32:52.862557",
+      "files_changed": [
+        "src/file_28.py"
+      ],
+      "additions": 31,
+      "deletions": 13
+    },
+    {
+      "sha": "commit_00b8",
+      "author": "Dev_2",
+      "message": "Mock commit 184",
+      "timestamp": "2026-06-11 07:32:52.862557",
+      "files_changed": [
+        "src/file_32.py"
+      ],
+      "additions": 45,
+      "deletions": 24
+    },
+    {
+      "sha": "commit_00b9",
+      "author": "Dev_19",
+      "message": "Mock commit 185",
+      "timestamp": "2026-06-11 05:32:52.862557",
+      "files_changed": [
+        "src/file_45.py"
+      ],
+      "additions": 26,
+      "deletions": 22
+    },
+    {
+      "sha": "commit_00ba",
+      "author": "Dev_2",
+      "message": "Mock commit 186",
+      "timestamp": "2026-06-13 23:32:52.862557",
+      "files_changed": [
+        "src/file_10.py"
+      ],
+      "additions": 59,
+      "deletions": 22
+    },
+    {
+      "sha": "commit_00bb",
+      "author": "Dev_18",
+      "message": "Mock commit 187",
+      "timestamp": "2026-06-14 06:32:52.862557",
+      "files_changed": [
+        "src/file_10.py"
+      ],
+      "additions": 45,
+      "deletions": 32
+    },
+    {
+      "sha": "commit_00bc",
+      "author": "Dev_18",
+      "message": "Mock commit 188",
+      "timestamp": "2026-06-13 19:32:52.862557",
+      "files_changed": [
+        "src/file_26.py"
+      ],
+      "additions": 57,
+      "deletions": 49
+    },
+    {
+      "sha": "commit_00bd",
+      "author": "Dev_7",
+      "message": "Mock commit 189",
+      "timestamp": "2026-06-13 04:32:52.862557",
+      "files_changed": [
+        "src/file_1.py"
+      ],
+      "additions": 22,
+      "deletions": 41
+    },
+    {
+      "sha": "commit_00be",
+      "author": "Dev_10",
+      "message": "Mock commit 190",
+      "timestamp": "2026-06-12 00:32:52.862557",
+      "files_changed": [
+        "src/file_23.py"
+      ],
+      "additions": 85,
+      "deletions": 11
+    },
+    {
+      "sha": "commit_00bf",
+      "author": "Dev_19",
+      "message": "Mock commit 191",
+      "timestamp": "2026-06-14 09:32:52.862557",
+      "files_changed": [
+        "src/file_35.py"
+      ],
+      "additions": 50,
+      "deletions": 3
+    },
+    {
+      "sha": "commit_00c0",
+      "author": "Dev_2",
+      "message": "Mock commit 192",
+      "timestamp": "2026-06-10 15:32:52.862557",
+      "files_changed": [
+        "src/file_16.py"
+      ],
+      "additions": 59,
+      "deletions": 37
+    },
+    {
+      "sha": "commit_00c1",
+      "author": "Dev_6",
+      "message": "Mock commit 193",
+      "timestamp": "2026-06-13 05:32:52.862557",
+      "files_changed": [
+        "src/file_26.py"
+      ],
+      "additions": 58,
+      "deletions": 23
+    },
+    {
+      "sha": "commit_00c2",
+      "author": "Dev_12",
+      "message": "Mock commit 194",
+      "timestamp": "2026-06-12 08:32:52.862557",
+      "files_changed": [
+        "src/file_46.py"
+      ],
+      "additions": 72,
+      "deletions": 40
+    },
+    {
+      "sha": "commit_00c3",
+      "author": "Dev_19",
+      "message": "Mock commit 195",
+      "timestamp": "2026-06-12 00:32:52.862557",
+      "files_changed": [
+        "src/file_18.py"
+      ],
+      "additions": 75,
+      "deletions": 9
+    },
+    {
+      "sha": "commit_00c4",
+      "author": "Dev_2",
+      "message": "Mock commit 196",
+      "timestamp": "2026-06-11 08:32:52.862557",
+      "files_changed": [
+        "src/file_33.py"
+      ],
+      "additions": 85,
+      "deletions": 27
+    },
+    {
+      "sha": "commit_00c5",
+      "author": "Dev_1",
+      "message": "Mock commit 197",
+      "timestamp": "2026-06-13 07:32:52.862557",
+      "files_changed": [
+        "src/file_20.py"
+      ],
+      "additions": 52,
+      "deletions": 19
+    },
+    {
+      "sha": "commit_00c6",
+      "author": "Dev_10",
+      "message": "Mock commit 198",
+      "timestamp": "2026-06-12 04:32:52.862557",
+      "files_changed": [
+        "src/file_27.py"
+      ],
+      "additions": 13,
+      "deletions": 41
+    },
+    {
+      "sha": "commit_00c7",
+      "author": "Dev_15",
+      "message": "Mock commit 199",
+      "timestamp": "2026-06-13 04:32:52.862557",
+      "files_changed": [
+        "src/file_48.py"
+      ],
+      "additions": 85,
+      "deletions": 39
+    }
+  ],
+  "open_pull_requests": [
+    {
+      "id": 1,
+      "title": "Feature: Implementation of mock task 0",
+      "author": "Dev_5",
+      "branch": "feature/ENG-60",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-12 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_48.py",
+        "src/file_44.py",
+        "src/file_37.py",
+        "src/file_32.py",
+        "src/file_39.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 2,
+      "title": "Feature: Implementation of mock task 1",
+      "author": "Dev_8",
+      "branch": "feature/ENG-64",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-12 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_25.py",
+        "src/file_45.py",
+        "src/file_28.py",
+        "src/file_22.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 3,
+      "title": "Feature: Implementation of mock task 2",
+      "author": "Dev_12",
+      "branch": "feature/ENG-23",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-09 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_11.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 4,
+      "title": "Feature: Implementation of mock task 3",
+      "author": "Dev_9",
+      "branch": "feature/ENG-45",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-12 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_38.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 5,
+      "title": "Feature: Implementation of mock task 4",
+      "author": "Dev_4",
+      "branch": "feature/ENG-23",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-12 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_41.py",
+        "src/file_12.py",
+        "src/file_48.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 6,
+      "title": "Feature: Implementation of mock task 5",
+      "author": "Dev_15",
+      "branch": "feature/ENG-67",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-12 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_10.py",
+        "src/file_36.py",
+        "src/file_23.py",
+        "src/file_39.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 7,
+      "title": "Feature: Implementation of mock task 6",
+      "author": "Dev_14",
+      "branch": "feature/ENG-36",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-09 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_50.py",
+        "src/file_5.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 8,
+      "title": "Feature: Implementation of mock task 7",
+      "author": "Dev_17",
+      "branch": "feature/ENG-85",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-09 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_11.py",
+        "src/file_5.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 9,
+      "title": "Feature: Implementation of mock task 8",
+      "author": "Dev_2",
+      "branch": "feature/ENG-53",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-10 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_40.py",
+        "src/file_27.py",
+        "src/file_17.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 10,
+      "title": "Feature: Implementation of mock task 9",
+      "author": "Dev_10",
+      "branch": "feature/ENG-54",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-13 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_17.py",
+        "src/file_49.py",
+        "src/file_14.py",
+        "src/file_35.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 11,
+      "title": "Feature: Implementation of mock task 10",
+      "author": "Dev_19",
+      "branch": "feature/ENG-86",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-11 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_48.py",
+        "src/file_24.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 12,
+      "title": "Feature: Implementation of mock task 11",
+      "author": "Dev_8",
+      "branch": "feature/ENG-37",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-10 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_12.py",
+        "src/file_18.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 13,
+      "title": "Feature: Implementation of mock task 12",
+      "author": "Dev_9",
+      "branch": "feature/ENG-90",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-09 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_5.py",
+        "src/file_4.py",
+        "src/file_26.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 14,
+      "title": "Feature: Implementation of mock task 13",
+      "author": "Dev_13",
+      "branch": "feature/ENG-32",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-11 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_27.py",
+        "src/file_4.py",
+        "src/file_1.py",
+        "src/file_23.py",
+        "src/file_20.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    },
+    {
+      "id": 15,
+      "title": "Feature: Implementation of mock task 14",
+      "author": "Dev_19",
+      "branch": "feature/ENG-100",
+      "base_branch": "main",
+      "state": "open",
+      "created_at": "2026-06-10 16:32:52.862557",
+      "updated_at": null,
+      "files_changed": [
+        "src/file_18.py",
+        "src/file_40.py"
+      ],
+      "additions": 0,
+      "deletions": 0,
+      "review_state": null,
+      "labels": []
+    }
+  ],
+  "active_branches": [
+    {
+      "name": "feature/ENG-83",
+      "ahead_of_main": 4,
+      "behind_main": 2,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-54",
+      "ahead_of_main": 5,
+      "behind_main": 1,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-74",
+      "ahead_of_main": 6,
+      "behind_main": 1,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-23",
+      "ahead_of_main": 1,
+      "behind_main": 3,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-58",
+      "ahead_of_main": 3,
+      "behind_main": 3,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-25",
+      "ahead_of_main": 5,
+      "behind_main": 2,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-71",
+      "ahead_of_main": 8,
+      "behind_main": 2,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-3",
+      "ahead_of_main": 1,
+      "behind_main": 3,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-18",
+      "ahead_of_main": 6,
+      "behind_main": 2,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-4",
+      "ahead_of_main": 10,
+      "behind_main": 3,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-4",
+      "ahead_of_main": 6,
+      "behind_main": 4,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-15",
+      "ahead_of_main": 9,
+      "behind_main": 2,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-65",
+      "ahead_of_main": 9,
+      "behind_main": 2,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-22",
+      "ahead_of_main": 7,
+      "behind_main": 3,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-80",
+      "ahead_of_main": 2,
+      "behind_main": 1,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-87",
+      "ahead_of_main": 2,
+      "behind_main": 4,
+      "last_commit_date": null,
+      "author": null
+    },
+    {
+      "name": "feature/ENG-8",
+      "ahead_of_main": 1,
+      "behind_main": 3,
+      "last_commit_date": null,
+      "author": null
+    }
+  ],
+  "total_open_prs": 15,
+  "total_active_branches": 17,
+  "files_with_multiple_pr_touches": {
+    "src/file_48.py": [
+      1,
+      5,
+      11
+    ],
+    "src/file_39.py": [
+      1,
+      6
+    ],
+    "src/file_11.py": [
+      3,
+      8
+    ],
+    "src/file_12.py": [
+      5,
+      12
+    ],
+    "src/file_23.py": [
+      6,
+      14
+    ],
+    "src/file_5.py": [
+      7,
+      8,
+      13
+    ],
+    "src/file_40.py": [
+      9,
+      15
+    ],
+    "src/file_27.py": [
+      9,
+      14
+    ],
+    "src/file_17.py": [
+      9,
+      10
+    ],
+    "src/file_18.py": [
+      12,
+      15
+    ],
+    "src/file_4.py": [
+      13,
+      14
+    ]
+  }
+}

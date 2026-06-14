@@ -1,12 +1,13 @@
-# Use official lightweight Python image
-FROM python:3.11-slim
+# Stage 1: Build the React frontend
+FROM node:20-slim AS frontend-builder
+WORKDIR /app/visualizer
+COPY visualizer/package.json visualizer/package-lock.json* ./
+RUN npm install
+COPY visualizer/ ./
+RUN npm run build
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PORT=8765
-
-# Set working directory
+# Stage 2: Build the Python backend
+FROM python:3.12-slim
 WORKDIR /app
 
 # Install system dependencies
@@ -15,17 +16,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies
-COPY pwm/requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir uvicorn fastapi pytz starlette pydantic requests
 
 # Copy active codebase
-COPY pwm /app/pwm
+COPY pwm/ ./pwm/
 
-# Create directory for local logs (if not using database)
-RUN mkdir -p /app/output && chmod 777 /app/output
+# Copy the built frontend from Stage 1
+COPY --from=frontend-builder /app/visualizer/dist ./visualizer/dist
 
-# Expose port
-EXPOSE 8765
+# Expose port (Cloud Run sets PORT automatically, defaults to 8080)
+ENV PORT=8080
+EXPOSE 8080
 
-# Launch the orchestrator in mock loop mode with web dashboard
+# Launch the orchestrator in demo mode
 CMD python -m pwm.main --mode demo --ingestion mock --web --loop --no-interactive

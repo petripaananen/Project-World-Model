@@ -19,4 +19,13 @@ Every plan must contain at minimum:
 2.  **Categorized Phases/Sections:** H2 or H3 headers grouping the work logically.
 3.  **Actionable Checklists:** Every phase must have at least one `- [ ]` actionable item to ensure the plan acts as a tracker, not just an essay.
 
-*By adhering to this standard, we guarantee a premium, "Executive-Ready" User Experience for all PWM strategic documentation.*
+## 4. Professional Project Management Terminology
+The AI assistant MUST strictly use terminology aligned with standard enterprise project management platforms (e.g., Jira, Linear, Azure DevOps) and Petri Paananen's Master's Thesis. 
+*   **Ban Playful Metaphors:** Never use playful, non-professional metaphors (such as "Zen Garden", "sand", "vegetation", "bamboo", "weeds", "gnomes", "weather", "storm", "pollen") in the UI, tooltips, code comments, or documentation.
+*   **Terminology Mapping:**
+    *   *Use:* **"DTO Simulation"**, **"Digital Twin Simulation"**, or **"Causal Simulation Workspace"** (instead of "Zen Garden").
+    *   *Use:* **"Worker / Critic / Opponent Agent Nodes"** or **"Autonomous Verification Agents"** (instead of "Gnomes").
+    *   *Use:* **"Dependency Graph"**, **"Telemetry Nodes"**, or **"PR / Issue Ingestion Objects"** (instead of "Bamboo" / "Weeds").
+    *   *Use:* **"System Health State"**, **"Integration Debt Levels"**, or **"Stable / Alert status"** (instead of "Weather" / "Storm").
+
+*By adhering to this standard, we guarantee a premium, "Executive-Ready" User Experience for all PWM strategic documentation and UI layouts.*
