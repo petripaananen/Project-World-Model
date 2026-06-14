@@ -47,7 +47,7 @@ class ModelConfig(BaseModel):
         default=3, description="Max Worker→Critic iteration rounds"
     )
     max_run_cost_usd: float = Field(
-        default=0.50,
+        default=2.50,
         description="Maximum USD cost budget per pipeline run",
     )
     max_run_tokens: int = Field(
