@@ -51,6 +51,7 @@ class EventType(str, Enum):
     SANDBOX_SIMULATION = "sandbox_simulation"
     SYSTEM_START = "system_start"
     TELEMETRY_INGESTED = "telemetry_ingested"
+    GROUNDING_CALIBRATED = "grounding_calibrated"
     ERROR = "error"
 
 
@@ -278,6 +279,21 @@ class EventLogger:
             actor="debt_detector",
             summary=f"Detected {count} integration debt items ({total_hours:.1f}h rework)",
             details={"count": count, "total_rework_hours": total_hours},
+        ))
+
+    async def log_grounding_calibrated(
+        self, run_id: str, error: float, calibration_factor: float
+    ) -> None:
+        """Convenience: log a world model grounding calibration event."""
+        await self.log(PWMEvent(
+            event_type=EventType.GROUNDING_CALIBRATED,
+            run_id=run_id,
+            actor="calibration_engine",
+            summary=f"LeWM Grounding Calibrated: L2 Error={error:.4f}, Weight Adjustment={calibration_factor:.4f}",
+            details={
+                "prediction_error": error,
+                "calibration_factor": calibration_factor,
+            },
         ))
 
     async def log_proposal(

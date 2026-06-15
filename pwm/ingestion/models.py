@@ -295,6 +295,10 @@ class IntegrationDebtReport(BaseModel):
     # Summary for the Scenario Strategist
     executive_summary: str = ""
 
+    # Phase 8: Latent state vectors
+    latent_state: Optional[list[float]] = None
+    predicted_next_latent_state: Optional[list[float]] = None
+
     def compute_stats(self) -> None:
         """Compute aggregate statistics from conflict list."""
         self.total_debt_items = len(self.conflicts)

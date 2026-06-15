@@ -200,8 +200,42 @@ async def agent_worker(
             if config.verbose:
                 print(f"[🤖 Agent Worker] Layer 1 observation processed: status={telemetry_result.get('status')}")
 
-            # Layer 2: Run simulation (LeWM or local/Gemini fallback)
-            state.debt_report = await layer2.run_simulation(p_state, s_state, mode=mode)
+            # Layer 2: Run simulation (LeWM or local/Gemini fallback) (Phase 8 Multi-Modal Input)
+            state.debt_report = await layer2.run_simulation(
+                project_state=p_state,
+                sprint_state=s_state,
+                slack_state=slack_state,
+                unified_graph=state.unified_graph,
+                mode=mode,
+            )
+
+            # Self-Supervised Grounding (Phase 8 Calibration Loop)
+            if state.debt_report and state.debt_report.latent_state is not None:
+                from pwm.simulation.calibration import WorldModelCalibrator
+                calibrator = WorldModelCalibrator(config)
+                calibrator.load_state()
+
+                if calibrator.last_predicted_latent_state is not None:
+                    error = calibrator.calculate_grounding_error(
+                        predicted=calibrator.last_predicted_latent_state,
+                        actual=state.debt_report.latent_state
+                    )
+                    factor = calibrator.update_calibration_factor(error)
+                    if config.verbose:
+                        print(f"[🤖 Agent Worker] [Grounding] Calibration error: {error:.4f}, weight factor adjusted to: {factor:.4f}")
+
+                    if event_logger:
+                        await event_logger.log_grounding_calibrated(
+                            run_id=state.run_id,
+                            error=error,
+                            calibration_factor=factor
+                        )
+                else:
+                    if config.verbose:
+                        print("[🤖 Agent Worker] [Grounding] Initial run: no previous predictions to calibrate.")
+
+                calibrator.last_predicted_latent_state = state.debt_report.predicted_next_latent_state
+                calibrator.save_state()
 
             if event_logger and state.debt_report:
                 await event_logger.log_debt_detected(
@@ -371,11 +405,39 @@ async def run_pipeline(
         state.debt_report = await layer2.run_simulation(
             project_state=state.project_state,
             sprint_state=state.sprint_state,
+            slack_state=state.slack_state,
+            unified_graph=state.unified_graph,
             mode=mode,
         )
         print(
             f"  ✓ {state.debt_report.executive_summary}"
         )
+
+        # Self-Supervised Grounding (Phase 8 Calibration Loop)
+        if state.debt_report and state.debt_report.latent_state is not None:
+            from pwm.simulation.calibration import WorldModelCalibrator
+            calibrator = WorldModelCalibrator(config)
+            calibrator.load_state()
+
+            if calibrator.last_predicted_latent_state is not None:
+                error = calibrator.calculate_grounding_error(
+                    predicted=calibrator.last_predicted_latent_state,
+                    actual=state.debt_report.latent_state
+                )
+                factor = calibrator.update_calibration_factor(error)
+                print(f"  ✓ [Grounding] Calibration error: {error:.4f}, weight factor adjusted to: {factor:.4f}")
+
+                if event_logger:
+                    await event_logger.log_grounding_calibrated(
+                        run_id=state.run_id,
+                        error=error,
+                        calibration_factor=factor
+                    )
+            else:
+                print("  ✓ [Grounding] Initial run: no previous predictions to calibrate.")
+
+            calibrator.last_predicted_latent_state = state.debt_report.predicted_next_latent_state
+            calibrator.save_state()
     print()
 
     # ── Layer 3 + 4: Worker + Critic Agents ─────────────────────
@@ -558,11 +620,15 @@ def main():
         return  # F5: Always return after loop/web mode — never fall through
 
     # Run the linear pipeline (Phase 2 PoC mode)
+    event_logger = EventLogger(config.dashboard.event_log_path, config=config)
+    event_logger.load_from_disk()
+
     state = asyncio.run(
         run_pipeline(
             config=config,
             mode=args.mode,
             ingestion_mode=args.ingestion,
+            event_logger=event_logger,
             scenario_id=args.scenario,
             strategic_objective=args.strategic_objective,
         )

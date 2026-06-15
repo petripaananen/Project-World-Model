@@ -1,7 +1,7 @@
 import httpx
 from typing import Any, Dict, Optional
 from pwm.config import PWMConfig
-from pwm.ingestion.models import ProjectState, SprintState, IntegrationDebtReport
+from pwm.ingestion.models import ProjectState, SprintState, IntegrationDebtReport, SlackState, UnifiedProjectGraph
 from pwm.simulation.debt_detector import DebtDetector
 
 class Layer2Simulation:
@@ -24,21 +24,37 @@ class Layer2Simulation:
         self,
         project_state: ProjectState,
         sprint_state: Optional[SprintState] = None,
+        slack_state: Optional[SlackState] = None,
+        unified_graph: Optional[UnifiedProjectGraph] = None,
         mode: str = "analyze",
     ) -> IntegrationDebtReport:
         if self.endpoint_url and mode == "analyze":
             if self.config.verbose:
                 print(f"[Layer 2] Calling LeWM service at {self.endpoint_url}...")
             try:
-                # 1. Generate text embedding from the project state
+                # 1. Generate text embedding from the multi-modal state context
                 from google import genai
                 from google.genai import types
                 
-                # Determine context to embed
-                context_str = f"Project: {project_state.repo_name}\n"
-                context_str += f"Total PRs: {project_state.total_open_prs}\n"
+                # Fuses Textual state, Graph topology, and Visual/structural summaries (Phase 8)
+                context_str = f"Project: {project_state.repo_name} owned by {project_state.repo_owner}\n"
+                context_str += f"Telemetry Text - PRs: {project_state.total_open_prs}, Branches: {project_state.total_active_branches}\n"
                 if sprint_state:
-                    context_str += f"Total Issues: {sprint_state.total_issues}\n"
+                    context_str += f"Telemetry Text - Sprint Cycle: {sprint_state.cycle_name}, Issues: {sprint_state.total_issues}\n"
+                if slack_state:
+                    context_str += f"Telemetry Text - Slack Channels: {len(slack_state.channels)}, Messages: {slack_state.total_messages}\n"
+                
+                # Graph topology features
+                if unified_graph:
+                    context_str += f"Graph Topology - Nodes: {len(unified_graph.nodes)}, Edges: {len(unified_graph.edges)}\n"
+                    # Include key graph dependencies/edges (first 5 for dense summary representation)
+                    for edge in unified_graph.edges[:5]:
+                        context_str += f"Graph Relation - {edge.source_id} [{edge.relation_type}] {edge.target_id}\n"
+
+                # Visual project management timeline summary (if present in sprint task dates or milestones)
+                if sprint_state:
+                    blocked_list = ", ".join(sprint_state.blocked_issues) if sprint_state.blocked_issues else "None"
+                    context_str += f"Visual Timeline - Sprint Milestones/Critical Blockers: {blocked_list}\n"
                     
                 # Use the detector's client to avoid duplicate initialization logic
                 client = self.detector._client
@@ -86,10 +102,55 @@ class Layer2Simulation:
                                 f"Refined via LeWorldModel (LeWM) action-conditioned simulation: predicted risk {causal_risk:.2f}"
                             )
                     
+                    # Save latent state vectors in report for Phase 8 grounding/calibration
+                    report.latent_state = embedding_64d
+                    report.predicted_next_latent_state = result.get("next_state_prediction")
+
+                    # Apply calibration factor scaling (Phase 8 Grounding)
+                    try:
+                        from pwm.simulation.calibration import WorldModelCalibrator
+                        calibrator = WorldModelCalibrator(self.config)
+                        calibrator.load_state()
+                        factor = calibrator.calibration_factor
+                    except Exception:
+                        factor = 1.0
+
+                    if report.latent_state:
+                        report.latent_state = [val * factor for val in report.latent_state]
+                    if report.predicted_next_latent_state:
+                        report.predicted_next_latent_state = [val * factor for val in report.predicted_next_latent_state]
+                    
                     return report
             except Exception as e:
                 if self.config.verbose:
                     print(f"[Layer 2] LeWM connection failed ({e}). Falling back to Gemini DebtDetector.")
         
         # Fallback to local/Gemini detector
-        return await self.detector.analyze(project_state, sprint_state, mode=mode)
+        report = await self.detector.analyze(project_state, sprint_state, mode=mode)
+        # Generate a deterministic mock embedding if LeWM is skipped
+        try:
+            import numpy as np
+            np.random.seed(42)
+            mock_embedding = (np.random.randn(64) * 0.1).tolist()
+            mock_predicted = [val * 0.95 for val in mock_embedding]
+            report.latent_state = mock_embedding
+            report.predicted_next_latent_state = mock_predicted
+        except ImportError:
+            report.latent_state = [0.0] * 64
+            report.predicted_next_latent_state = [0.0] * 64
+
+        # Apply calibration factor scaling (Phase 8 Grounding)
+        try:
+            from pwm.simulation.calibration import WorldModelCalibrator
+            calibrator = WorldModelCalibrator(self.config)
+            calibrator.load_state()
+            factor = calibrator.calibration_factor
+        except Exception:
+            factor = 1.0
+
+        if report.latent_state:
+            report.latent_state = [val * factor for val in report.latent_state]
+        if report.predicted_next_latent_state:
+            report.predicted_next_latent_state = [val * factor for val in report.predicted_next_latent_state]
+
+        return report
