@@ -1329,102 +1329,171 @@ function App() {
                     </div>
 
                     {/* Project Completion Prediction & Causal Triage */}
-                    <div className="glass-card prediction-triage-card" style={{ gridColumn: '1 / -1', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '1rem', marginBottom: '1rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
-                        <div>
-                          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                            Project Completion Prediction & Causal Triage
-                          </h3>
-                          <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-sub)' }}>
-                            Closed-loop simulation forecasting and corrective path optimizations
-                          </p>
-                        </div>
-                        <span className={`status-pill ${activeProjectData.telemetry.crr >= 1.0 ? 'completed' : 'failed'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '6px 16px', borderRadius: '12px', fontWeight: 700 }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>
-                            {activeProjectData.telemetry.crr >= 1.0 ? 'check_circle' : 'warning'}
-                          </span>
-                          {activeProjectData.telemetry.crr >= 1.0 ? 'ON TRACK (92% Probability)' : 'AT RISK OF DELAY (48% Probability)'}
-                        </span>
-                      </div>
+                    {(() => {
+                      // Calculate On-Time Probability dynamically based on Scope, Time, and Budget
+                      const totalIssues = activeProjectData.telemetry.issues;
+                      const openPrs = activeProjectData.telemetry.prs;
+                      
+                      // Count blocked issues in sprint/live state
+                      let blockedCount = 0;
+                      if (activeProjectData.id === 'proj-live') {
+                        blockedCount = pipelineState?.unified_graph?.nodes?.filter(n => n.type === 'issue' && n.attributes?.status === 'Blocked').length || 0;
+                      } else if (activeProjectData.id === 'proj-gamma') {
+                        blockedCount = 2; // Gamma has partitioned database/OOM blockages
+                      } else if (activeProjectData.id === 'proj-beta') {
+                        blockedCount = 1; // Beta has connection pool blockages
+                      } else if (activeProjectData.id === 'proj-alpha') {
+                        blockedCount = 1; // Alpha has CSS component blockers
+                      }
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px', marginTop: '8px' }}>
-                        {/* Column 1: Prediction Detail */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-sub)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            Delivery Forecast
-                          </div>
-                          {activeProjectData.telemetry.crr >= 1.0 ? (
-                            <>
-                              <div style={{ fontSize: '2.5rem', fontWeight: 850, color: 'var(--success)', fontFamily: 'var(--mono-font)', lineHeight: 1 }}>92%</div>
-                              <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 600 }}>Predicted Completion: On Time</div>
-                              <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.4 }}>
-                                Causal simulation confirms high probability of integration convergence. No circular dependency loops or critical-severity bottlenecks are currently predicted to delay the target release date.
-                              </p>
-                            </>
-                          ) : (
-                            <>
-                              <div style={{ fontSize: '2.5rem', fontWeight: 850, color: 'var(--error)', fontFamily: 'var(--mono-font)', lineHeight: 1 }}>48%</div>
-                              <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 600 }}>Predicted Completion: Delayed (5d)</div>
-                              <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.4 }}>
-                                Grounding prediction error and low Compute-to-Rework Ratio indicate high risk of integration failure. Cascading dependencies in pull request merges threaten delivery milestones.
-                              </p>
-                            </>
-                          )}
-                        </div>
+                      // Count critical risks in project details
+                      const criticalRisksCount = activeProjectData.risks.filter(r => r.severity === 'critical').length;
 
-                        {/* Column 2: Corrective Action Recommendations */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-sub)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            Recommended Corrective Action Plan
+                      // Scope score represents overall backlog load
+                      const scopeScore = totalIssues + openPrs * 1.5;
+
+                      // Base probability starts at 96%
+                      let prob = 96;
+
+                      // Deduct for high scope load (Backlog load)
+                      if (scopeScore > 18) {
+                        prob -= 18;
+                      } else if (scopeScore > 10) {
+                        prob -= 10;
+                      } else if (scopeScore > 5) {
+                        prob -= 5;
+                      }
+
+                      // Deduct for blocked tasks (Time/Timeline constraints)
+                      prob -= blockedCount * 12;
+
+                      // Deduct for critical risks (Scope divergence/Conflict risks)
+                      prob -= criticalRisksCount * 10;
+
+                      // Deduct for high budget utilization (e.g. token burn close to 20M cap)
+                      const parsedTokenBurn = parseFloat(tokenBurn);
+                      if (parsedTokenBurn > 15) {
+                        prob -= 8;
+                      }
+
+                      // Clamp probability
+                      const onTimeProbability = Math.min(Math.max(prob, 25), 98);
+                      const isOnTime = onTimeProbability >= 70;
+
+                      return (
+                        <div className="glass-card prediction-triage-card" style={{ gridColumn: '1 / -1', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '1rem', marginBottom: '1rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
+                            <div>
+                              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                                Project Completion Prediction & Causal Triage
+                              </h3>
+                              <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-sub)' }}>
+                                Predictive schedule tracking based on active scope burden, blocked tasks, and budget status
+                              </p>
+                            </div>
+                            <span className={`status-pill ${isOnTime ? 'completed' : 'failed'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '6px 16px', borderRadius: '12px', fontWeight: 700 }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>
+                                {isOnTime ? 'check_circle' : 'warning'}
+                              </span>
+                              {isOnTime ? `ON TRACK (${onTimeProbability}% Probability)` : `AT RISK OF DELAY (${onTimeProbability}% Probability)`}
+                            </span>
                           </div>
-                          
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {activeProjectData.telemetry.crr >= 1.0 ? (
-                              <>
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(46, 160, 67, 0.04)', border: '1px solid rgba(46, 160, 67, 0.12)', padding: '12px', borderRadius: '10px' }}>
-                                  <span className="material-symbols-outlined" style={{ color: 'var(--success)', fontSize: '1.3rem' }}>lock</span>
-                                  <div>
-                                    <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Maintain Current Cognitive Limits</strong>
-                                    <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>The active QA Agent Token Limit of {qaLimit}M and Opponent Agent Limit of {opponentLimit}M are perfectly scaled for the current complexity. Keep limits enforced to stay within budget.</p>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px', marginTop: '8px' }}>
+                            {/* Column 1: Prediction Detail */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-sub)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Delivery Forecast
+                              </div>
+                              <div style={{ fontSize: '2.5rem', fontWeight: 850, color: isOnTime ? 'var(--success)' : 'var(--error)', fontFamily: 'var(--mono-font)', lineHeight: 1 }}>
+                                {onTimeProbability}%
+                              </div>
+                              <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 600 }}>
+                                Predicted Status: {isOnTime ? 'On Time' : `Delayed (${Math.round((100 - onTimeProbability) / 8) + 2}d)`}
+                              </div>
+                              <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.4 }}>
+                                {isOnTime ? (
+                                  `Causal simulation indicates the current scope of ${openPrs} PRs and ${totalIssues} tasks is well-distributed. Low blocker overhead and stable budget utilization guarantee a clean integration pathway.`
+                                ) : (
+                                  `High task burden (${totalIssues} open tasks), ${blockedCount} blocked critical path tasks, and active integration conflicts threaten the delivery timeline. Corrective actions are required to restore schedule buffer.`
+                                )}
+                              </p>
+                            </div>
+
+                            {/* Column 2: Corrective Action Recommendations */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-sub)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Recommended Corrective Action Plan
+                              </div>
+                              
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {/* Time Risk Correction: Blocked Tasks */}
+                                {blockedCount > 0 && (
+                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(255, 118, 118, 0.05)', border: '1px solid rgba(255, 118, 118, 0.15)', padding: '12px', borderRadius: '10px' }}>
+                                    <span className="material-symbols-outlined" style={{ color: 'var(--error)', fontSize: '1.3rem' }}>group_add</span>
+                                    <div>
+                                      <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Time Correction: Unblock Blocker Tasks</strong>
+                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
+                                        Reallocate engineer resources immediately to clear the {blockedCount} blocked sprint items. Resolving these task blockages recovers schedule margin and improves on-time probability by <span style={{ color: 'var(--success)', fontWeight: 600 }}>+{blockedCount * 10}%</span>.
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(68, 80, 183, 0.04)', border: '1px solid rgba(68, 80, 183, 0.12)', padding: '12px', borderRadius: '10px' }}>
-                                  <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.3rem' }}>playlist_add_check</span>
-                                  <div>
-                                    <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Continuous Merging Schedule</strong>
-                                    <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>Proceed with approval of pending PRs. The digital twin predicts zero circular lockouts or regression conflicts from the current queue.</p>
+                                )}
+
+                                {/* Scope Risk Correction: High Task Burden */}
+                                {scopeScore > 12 && (
+                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(255, 215, 0, 0.05)', border: '1px solid rgba(255, 215, 0, 0.18)', padding: '12px', borderRadius: '10px' }}>
+                                    <span className="material-symbols-outlined" style={{ color: '#b89200', fontSize: '1.3rem' }}>compress</span>
+                                    <div>
+                                      <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Scope Correction: Defer Non-Essential Backlog</strong>
+                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
+                                        Defer {Math.min(openPrs, 2)} high-divergence branches or non-essential features to the next sprint. Reducing the scope density will prevent developer fatigue and cut predicted integration rework by <span style={{ color: 'var(--success)', fontWeight: 600 }}>~6.5 hours</span>.
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(255, 118, 118, 0.05)', border: '1px solid rgba(255, 118, 118, 0.15)', padding: '12px', borderRadius: '10px' }}>
-                                  <span className="material-symbols-outlined" style={{ color: 'var(--error)', fontSize: '1.3rem' }}>group_add</span>
-                                  <div>
-                                    <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>1. Reallocate Developer to Core Bottlenecks</strong>
-                                    <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>Move 1 senior engineer to resolve the active dependency bottlenecks (e.g. database schema alignment or authentication API slow path). <span style={{ color: 'var(--success)', fontWeight: 600 }}>Recovers 4.8 hrs rework, raises completion probability to 68%.</span></p>
+                                )}
+
+                                {/* Budget Risk Correction: Token Burn / Compute Overrun */}
+                                {parsedTokenBurn > 12 ? (
+                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(68, 80, 183, 0.04)', border: '1px solid rgba(68, 80, 183, 0.12)', padding: '12px', borderRadius: '10px' }}>
+                                    <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.3rem' }}>lock</span>
+                                    <div>
+                                      <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Budget Correction: Enforce Cognitive Limits</strong>
+                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
+                                        Enforce cognitive budget limits to stabilize daily token burn ({tokenBurn}M) below the 20M cap. If limits are already set, consider lowering the QA Agent limit to 4.5M to conserve compute.
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(255, 215, 0, 0.05)', border: '1px solid rgba(255, 215, 0, 0.18)', padding: '12px', borderRadius: '10px' }}>
-                                  <span className="material-symbols-outlined" style={{ color: '#b89200', fontSize: '1.3rem' }}>speed</span>
-                                  <div>
-                                    <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>2. Adjust Cognitive Token Budget Limits</strong>
-                                    <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>Increase the <strong>QA Agent Limit</strong> from {qaLimit}M to at least <strong>6.5M tokens</strong>. Expanding the search space allows the simulation engine to generate safer, more comprehensive resolution strategies.</p>
+                                ) : (
+                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(46, 160, 67, 0.04)', border: '1px solid rgba(46, 160, 67, 0.12)', padding: '12px', borderRadius: '10px' }}>
+                                    <span className="material-symbols-outlined" style={{ color: 'var(--success)', fontSize: '1.3rem' }}>lock</span>
+                                    <div>
+                                      <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Budget Status: Optimal</strong>
+                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
+                                        Daily token burn ({tokenBurn}M) is safely below the 20M cap. Current model execution parameters are financially sustainable.
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(68, 80, 183, 0.04)', border: '1px solid rgba(68, 80, 183, 0.12)', padding: '12px', borderRadius: '10px' }}>
-                                  <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.3rem' }}>pause_circle</span>
-                                  <div>
-                                    <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>3. Defer High-Risk Integrations</strong>
-                                    <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>Pause merging of large PRs with active collisions (e.g., modular refactors) until downstream dependency layers are validated and stabilized.</p>
+                                )}
+
+                                {/* General Recommendation if perfectly on track */}
+                                {isOnTime && blockedCount === 0 && scopeScore <= 12 && (
+                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(46, 160, 67, 0.04)', border: '1px solid rgba(46, 160, 67, 0.12)', padding: '12px', borderRadius: '10px' }}>
+                                    <span className="material-symbols-outlined" style={{ color: 'var(--success)', fontSize: '1.3rem' }}>verified</span>
+                                    <div>
+                                      <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Optimal Alignment Plan</strong>
+                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
+                                        The project shows strong delivery parameters across scope, time, and budget. Continue with the planned release cycle.
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                              </>
-                            )}
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
 
                     {/* Bottom Bento Grid Section */}
                     <div className="bento-grid">

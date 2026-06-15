@@ -1174,9 +1174,38 @@
 
     // ── Render Components ─────────────────────────────────────
     function renderPredictionTriage(state) {
-        const crr = state.crr ? state.crr.crr : 0;
-        const isOptimal = crr >= 1.0;
-        const probability = isOptimal ? 92 : Math.min(Math.max(Math.round(crr * 80 + 10), 30), 85);
+        const totalIssues = state.sprint_state ? state.sprint_state.total_issues : 0;
+        const openPrs = state.project_state ? state.project_state.total_open_prs : 0;
+        
+        let blockedCount = 0;
+        if (state.sprint_state && state.sprint_state.blocked_issues && state.sprint_state.blocked_issues.length > 0) {
+            blockedCount = state.sprint_state.blocked_issues.length;
+        } else if (state.unified_graph && state.unified_graph.nodes) {
+            blockedCount = state.unified_graph.nodes.filter(n => n.type === 'issue' && n.attributes && n.attributes.status === 'Blocked').length;
+        }
+
+        const criticalRisksCount = state.debt_report ? state.debt_report.critical_count : 0;
+        const scopeScore = totalIssues + openPrs * 1.5;
+
+        let prob = 96;
+        if (scopeScore > 18) {
+            prob -= 18;
+        } else if (scopeScore > 10) {
+            prob -= 10;
+        } else if (scopeScore > 5) {
+            prob -= 5;
+        }
+
+        prob -= blockedCount * 12;
+        prob -= criticalRisksCount * 10;
+
+        const tokenBurn = ((state.total_input_tokens || 0) + (state.total_output_tokens || 0)) / 1e6;
+        if (tokenBurn > 15) {
+            prob -= 8;
+        }
+
+        const onTimeProbability = Math.min(Math.max(prob, 25), 98);
+        const isOnTime = onTimeProbability >= 70;
         
         return `
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-glass); padding-bottom: 12px; margin-bottom: 16px;">
@@ -1185,8 +1214,8 @@
                     Closed-loop simulation forecasting and corrective path optimizations based on live telemetry
                 </p>
             </div>
-            <span class="severity-badge ${isOptimal ? 'low' : 'high'}" style="font-size: 0.8rem; padding: 6px 16px; border-radius: 12px; font-weight: 700; text-transform: uppercase;">
-                ${isOptimal ? 'ON TRACK (92% Probability)' : 'AT RISK OF DELAY (' + probability + '% Probability)'}
+            <span class="severity-badge ${isOnTime ? 'low' : 'high'}" style="font-size: 0.8rem; padding: 6px 16px; border-radius: 12px; font-weight: 700; text-transform: uppercase;">
+                ${isOnTime ? 'ON TRACK (' + onTimeProbability + '% Probability)' : 'AT RISK OF DELAY (' + onTimeProbability + '% Probability)'}
             </span>
         </div>
 
@@ -1196,16 +1225,16 @@
                 <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">
                     Delivery Forecast
                 </div>
-                <div style="font-size: 2.5rem; font-weight: 800; color: ${isOptimal ? 'var(--accent-emerald)' : 'var(--accent-rose)'}; font-family: var(--font-mono); line-height: 1;">
-                    ${probability}%
+                <div style="font-size: 2.5rem; font-weight: 800; color: ${isOnTime ? 'var(--accent-emerald)' : 'var(--accent-rose)'}; font-family: var(--font-mono); line-height: 1;">
+                    ${onTimeProbability}%
                 </div>
                 <div style="font-size: 0.85rem; color: var(--text-primary); font-weight: 600;">
-                    Predicted Completion: ${isOptimal ? 'On Time' : 'Delayed (5d)'}
+                    Predicted Completion: ${isOnTime ? 'On Time' : 'Delayed (' + (Math.round((100 - onTimeProbability) / 8) + 2) + 'd)'}
                 </div>
                 <p style="margin: 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
-                    ${isOptimal 
-                      ? 'Causal simulation confirms high probability of integration convergence. No circular dependency loops or critical-severity bottlenecks are currently predicted to delay the target release date.'
-                      : 'Grounding prediction error and low Compute-to-Rework Ratio indicate high risk of integration failure. Cascading dependencies in pull request merges threaten delivery milestones.'}
+                    ${isOnTime 
+                      ? `Causal simulation indicates the current scope of ${openPrs} PRs and ${totalIssues} tasks is well-distributed. Low blocker overhead and stable budget utilization guarantee a clean integration pathway.`
+                      : `High task burden (${totalIssues} open tasks), ${blockedCount} blocked critical path tasks, and active integration conflicts threaten the delivery timeline. Corrective actions are required to restore schedule buffer.`}
                 </p>
             </div>
 
@@ -1216,44 +1245,63 @@
                 </div>
                 
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    ${isOptimal ? `
-                        <div style="display: flex; gap: 12px; align-items: flex-start; background: rgba(5, 150, 105, 0.04); border: 1px solid rgba(5, 150, 105, 0.12); padding: 12px; border-radius: 10px;">
-                            <span class="material-symbols-outlined" style="color: var(--accent-emerald); font-size: 1.3rem;">lock</span>
-                            <div>
-                                <strong style="font-size: 0.85rem; color: var(--text-primary);">Maintain Current Cognitive Limits</strong>
-                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">The active QA Agent Token Limit is perfectly scaled for the current complexity. Keep limits enforced to stay within budget.</p>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 12px; align-items: flex-start; background: rgba(94, 106, 210, 0.04); border: 1px solid rgba(94, 106, 210, 0.12); padding: 12px; border-radius: 10px;">
-                            <span class="material-symbols-outlined" style="color: var(--accent-cyan); font-size: 1.3rem;">playlist_add_check</span>
-                            <div>
-                                <strong style="font-size: 0.85rem; color: var(--text-primary);">Continuous Merging Schedule</strong>
-                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Proceed with approval of pending PRs. The digital twin predicts zero circular lockouts or regression conflicts from the current queue.</p>
-                            </div>
-                        </div>
-                    ` : `
+                    ${blockedCount > 0 ? `
                         <div style="display: flex; gap: 12px; align-items: flex-start; background: rgba(186, 26, 26, 0.04); border: 1px solid rgba(186, 26, 26, 0.12); padding: 12px; border-radius: 10px;">
                             <span class="material-symbols-outlined" style="color: var(--accent-rose); font-size: 1.3rem;">group_add</span>
                             <div>
-                                <strong style="font-size: 0.85rem; color: var(--text-primary);">1. Reallocate Developer to Core Bottlenecks</strong>
-                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Move 1 senior engineer to resolve the active dependency bottlenecks (e.g. database schema alignment or authentication API slow path). <span style="color: var(--accent-emerald); font-weight: 600;">Recovers 4.8 hrs rework, raises completion probability.</span></p>
+                                <strong style="font-size: 0.85rem; color: var(--text-primary);">Time Correction: Unblock Blocker Tasks</strong>
+                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">
+                                    Reallocate engineer resources immediately to clear the ${blockedCount} blocked sprint items. Resolving these task blockages recovers schedule margin and improves on-time probability by <span style="color: var(--accent-emerald); font-weight: 600;">+${blockedCount * 10}%</span>.
+                                </p>
                             </div>
                         </div>
+                    ` : ''}
+
+                    ${scopeScore > 12 ? `
                         <div style="display: flex; gap: 12px; align-items: flex-start; background: rgba(184, 94, 0, 0.04); border: 1px solid rgba(184, 94, 0, 0.12); padding: 12px; border-radius: 10px;">
-                            <span class="material-symbols-outlined" style="color: var(--accent-amber); font-size: 1.3rem;">speed</span>
+                            <span class="material-symbols-outlined" style="color: var(--accent-amber); font-size: 1.3rem;">compress</span>
                             <div>
-                                <strong style="font-size: 0.85rem; color: var(--text-primary);">2. Adjust Cognitive Token Budget Limits</strong>
-                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Increase the <strong>QA Agent Limit</strong> to expand the search space and allow the simulation engine to generate safer, more comprehensive resolution strategies.</p>
+                                <strong style="font-size: 0.85rem; color: var(--text-primary);">Scope Correction: Defer Non-Essential Backlog</strong>
+                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">
+                                    Defer non-essential branches or backlog features to the next sprint. Reducing the scope density will prevent developer fatigue and cut predicted integration rework.
+                                </p>
                             </div>
                         </div>
+                    ` : ''}
+
+                    ${tokenBurn > 12 ? `
                         <div style="display: flex; gap: 12px; align-items: flex-start; background: rgba(94, 106, 210, 0.04); border: 1px solid rgba(94, 106, 210, 0.12); padding: 12px; border-radius: 10px;">
-                            <span class="material-symbols-outlined" style="color: var(--accent-cyan); font-size: 1.3rem;">pause_circle</span>
+                            <span class="material-symbols-outlined" style="color: var(--accent-cyan); font-size: 1.3rem;">lock</span>
                             <div>
-                                <strong style="font-size: 0.85rem; color: var(--text-primary);">3. Defer High-Risk Integrations</strong>
-                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">Pause merging of large PRs with active collisions until downstream dependency layers are validated and stabilized.</p>
+                                <strong style="font-size: 0.85rem; color: var(--text-primary);">Budget Correction: Enforce Cognitive Limits</strong>
+                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">
+                                    Enforce cognitive budget limits to stabilize daily token burn (${tokenBurn.toFixed(1)}M) below the 20M cap. Consider lowering the QA Agent token limits to conserve budget.
+                                </p>
+                            </div>
+                        </div>
+                    ` : `
+                        <div style="display: flex; gap: 12px; align-items: flex-start; background: rgba(5, 150, 105, 0.04); border: 1px solid rgba(5, 150, 105, 0.12); padding: 12px; border-radius: 10px;">
+                            <span class="material-symbols-outlined" style="color: var(--accent-emerald); font-size: 1.3rem;">lock</span>
+                            <div>
+                                <strong style="font-size: 0.85rem; color: var(--text-primary);">Budget Status: Optimal</strong>
+                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">
+                                    Daily token burn (${tokenBurn.toFixed(1)}M) is safely below the 20M cap. Current model execution parameters are financially sustainable.
+                                </p>
                             </div>
                         </div>
                     `}
+
+                    ${isOnTime && blockedCount === 0 && scopeScore <= 12 ? `
+                        <div style="display: flex; gap: 12px; align-items: flex-start; background: rgba(5, 150, 105, 0.04); border: 1px solid rgba(5, 150, 105, 0.12); padding: 12px; border-radius: 10px;">
+                            <span class="material-symbols-outlined" style="color: var(--accent-emerald); font-size: 1.3rem;">verified</span>
+                            <div>
+                                <strong style="font-size: 0.85rem; color: var(--text-primary);">Optimal Alignment Plan</strong>
+                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">
+                                    The project shows strong delivery parameters across scope, time, and budget. Continue with the planned release cycle.
+                                </p>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         </div>
