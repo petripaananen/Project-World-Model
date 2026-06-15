@@ -95,8 +95,8 @@ class DashboardState:
 
     def _serialize_state(self, state: PWMPipelineState) -> dict:
         """Serialize pipeline state for JSON transmission."""
-        import pytz
-        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        from datetime import datetime, timezone
 
         data = json.loads(state.model_dump_json())
         data["events"] = [
@@ -111,9 +111,9 @@ class DashboardState:
             from pwm.config import PWMConfig
             config = PWMConfig() # We can recreate default config or pass it in. For simplicity, reading env here:
             tz_str = os.getenv("PWM_TIMEZONE", "Europe/Helsinki")
-            tz = pytz.timezone(tz_str)
+            tz = ZoneInfo(tz_str)
         except Exception:
-            tz = pytz.UTC
+            tz = timezone.utc
             tz_str = "UTC"
             
         now = datetime.now(tz)
@@ -385,7 +385,7 @@ def create_app(
         
         # Detect conflicts & run pipeline
         detector = DebtDetector(config)
-        state.debt_report = detector.detect(state.project_state, state.sprint_state)
+        state.debt_report = await detector.analyze(state.project_state, state.sprint_state)
         state.debt_report.compute_stats()
         
         state = await _execute_agent_pipeline(state, config, mode="demo", event_logger=dashboard_state.event_logger)
@@ -424,7 +424,7 @@ def create_app(
         
         # Run simulation/detector
         detector = DebtDetector(config)
-        state.debt_report = detector.detect(state.project_state, state.sprint_state)
+        state.debt_report = await detector.analyze(state.project_state, state.sprint_state)
         state.debt_report.compute_stats()
         
         state = await _execute_agent_pipeline(state, config, mode="demo", event_logger=dashboard_state.event_logger)

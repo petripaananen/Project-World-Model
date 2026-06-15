@@ -7,6 +7,7 @@ UnifiedProjectGraph to reveal cross-system dependencies.
 
 from __future__ import annotations
 
+import re
 from typing import Optional
 
 from pwm.ingestion.models import (
@@ -31,6 +32,12 @@ class DataFusionEngine:
     ) -> UnifiedProjectGraph:
         """Create a graph from the available telemetry sources."""
         graph = UnifiedProjectGraph()
+        existing_node_ids = set()
+
+        def add_node(node: FusedNode) -> None:
+            if node.id not in existing_node_ids:
+                graph.nodes.append(node)
+                existing_node_ids.add(node.id)
 
         # 1. Add GitHub Data (PRs and Branches)
         if project_state:
@@ -45,7 +52,7 @@ class DataFusionEngine:
                         "files_changed": pr.files_changed,
                     }
                 )
-                graph.nodes.append(node)
+                add_node(node)
                 
                 # Create file dependency nodes implicitly
                 for f in pr.files_changed:
@@ -55,13 +62,16 @@ class DataFusionEngine:
                         target_id=f"file-{f}",
                         relation_type="modifies"
                     ))
-                    # Optionally, ensure the file node exists
-                    if not any(n.id == f"file-{f}" for n in graph.nodes):
-                        graph.nodes.append(FusedNode(
-                            id=f"file-{f}",
+                    
+                    # Ensure the file node exists using O(1) check
+                    file_node_id = f"file-{f}"
+                    if file_node_id not in existing_node_ids:
+                        file_node = FusedNode(
+                            id=file_node_id,
                             type="file",
                             name=f,
-                        ))
+                        )
+                        add_node(file_node)
 
         # 2. Add Linear/Jira Data
         if sprint_state:
@@ -76,7 +86,7 @@ class DataFusionEngine:
                         "priority": issue.priority,
                     }
                 )
-                graph.nodes.append(node)
+                add_node(node)
 
                 # Link PR to Issue if PR branch name contains issue ID
                 # e.g., branch "feature/ENG-123-login" matches issue "ENG-123"
@@ -91,32 +101,51 @@ class DataFusionEngine:
                             
         # 3. Add Slack Data
         if slack_state:
+            # Pre-index PRs by ID string for O(1) lookup
+            pr_by_id = {}
+            if project_state:
+                for pr in project_state.open_pull_requests:
+                    pr_by_id[str(pr.id)] = pr
+
+            # Pre-index Issues by ID string (lowercased) for O(1) lookup
+            issue_by_id = {}
+            if sprint_state:
+                for issue in sprint_state.issues:
+                    issue_by_id[issue.id.lower()] = issue
+
             for msg in slack_state.recent_messages:
-                # Basic string matching: does this message mention a PR or Issue?
-                mentions_pr = False
-                if project_state:
-                    for pr in project_state.open_pull_requests:
-                        if f"#{pr.id}" in msg.text:
-                            graph.edges.append(FusedEdge(
-                                source_id=f"msg-{msg.timestamp.timestamp()}",
-                                target_id=f"pr-{pr.id}",
-                                relation_type="references"
-                            ))
-                            mentions_pr = True
-                            
-                if sprint_state:
-                    for issue in sprint_state.issues:
-                        if issue.id in msg.text:
-                            graph.edges.append(FusedEdge(
-                                source_id=f"msg-{msg.timestamp.timestamp()}",
-                                target_id=f"issue-{issue.id}",
-                                relation_type="references"
-                            ))
-                            mentions_pr = True
-                            
-                if mentions_pr:
+                has_mentions = False
+                msg_text = msg.text
+                msg_timestamp = msg.timestamp.timestamp()
+                msg_node_id = f"msg-{msg_timestamp}"
+
+                # Match PR mentions: # followed by digits (e.g. "#12")
+                pr_matches = re.findall(r"#(\d+)", msg_text)
+                for pr_id_str in pr_matches:
+                    if pr_id_str in pr_by_id:
+                        graph.edges.append(FusedEdge(
+                            source_id=msg_node_id,
+                            target_id=f"pr-{pr_id_str}",
+                            relation_type="references"
+                        ))
+                        has_mentions = True
+
+                # Match Issue mentions: e.g. ENG-123, PHYSICS-456
+                issue_matches = re.findall(r"([a-zA-Z]+-\d+)", msg_text)
+                for issue_id in issue_matches:
+                    issue_key = issue_id.lower()
+                    if issue_key in issue_by_id:
+                        actual_issue_id = issue_by_id[issue_key].id
+                        graph.edges.append(FusedEdge(
+                            source_id=msg_node_id,
+                            target_id=f"issue-{actual_issue_id}",
+                            relation_type="references"
+                        ))
+                        has_mentions = True
+
+                if has_mentions:
                     node = FusedNode(
-                        id=f"msg-{msg.timestamp.timestamp()}",
+                        id=msg_node_id,
                         type="message",
                         name=f"Msg from {msg.user}",
                         attributes={
@@ -125,6 +154,6 @@ class DataFusionEngine:
                             "sentiment": msg.sentiment
                         }
                     )
-                    graph.nodes.append(node)
+                    add_node(node)
 
         return graph

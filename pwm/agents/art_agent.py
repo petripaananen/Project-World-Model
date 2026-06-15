@@ -220,6 +220,5 @@ class ArtIntegrationAgent(BaseAgent):
 
 def is_art_file(filepath: str) -> bool:
     """Check if a file path corresponds to a game art/asset file."""
-    import os
-    _, ext = os.path.splitext(filepath.lower())
-    return ext in ART_FILE_EXTENSIONS
+    from pathlib import Path
+    return Path(filepath).suffix.lower() in ART_FILE_EXTENSIONS

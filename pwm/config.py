@@ -8,12 +8,14 @@ Supports both Google AI Studio (GOOGLE_API_KEY) and Vertex AI (GCP project).
 
 from __future__ import annotations
 
+import asyncio
 import os
+import threading
 from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field, PrivateAttr
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 
 # Load .env from project root
@@ -53,6 +55,15 @@ class ModelConfig(BaseModel):
     max_run_tokens: int = Field(
         default=100000,
         description="Maximum cumulative tokens budget per pipeline run",
+    )
+    # Demo mode token counts (for CRR calculation in demo mode)
+    demo_input_tokens: int = Field(
+        default=15_000,
+        description="Simulated input token count for demo mode CRR",
+    )
+    demo_output_tokens: int = Field(
+        default=8_000,
+        description="Simulated output token count for demo mode CRR",
     )
     # External model service endpoints
     vjepa_endpoint_url: str = Field(default="", description="Layer 1 V-JEPA service endpoint")
@@ -168,9 +179,9 @@ class PWMConfig(BaseModel):
     # Private attributes for tracking compute usage
     _cumulative_input_tokens: int = PrivateAttr(default=0)
     _cumulative_output_tokens: int = PrivateAttr(default=0)
+    _token_lock: threading.Lock = PrivateAttr(default_factory=threading.Lock)
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def validate_api_access(self) -> bool:
         """Check that we have at least one valid API access path."""
@@ -180,30 +191,38 @@ class PWMConfig(BaseModel):
             return True
         return False
 
-    def add_tokens(self, input_tokens: int, output_tokens: int):
-        """Accumulate token counts across all agent execution threads."""
-        self._cumulative_input_tokens += input_tokens
-        self._cumulative_output_tokens += output_tokens
+    def add_tokens(self, input_tokens: int, output_tokens: int) -> None:
+        """Accumulate token counts across all agent execution threads.
+
+        Thread-safe via threading.Lock to support concurrent async/sync contexts.
+        """
+        with self._token_lock:
+            self._cumulative_input_tokens += input_tokens
+            self._cumulative_output_tokens += output_tokens
 
     def get_cumulative_tokens(self) -> dict[str, int]:
         """Get the current run's total token consumption."""
-        return {
-            "input_tokens": self._cumulative_input_tokens,
-            "output_tokens": self._cumulative_output_tokens,
-        }
+        with self._token_lock:
+            return {
+                "input_tokens": self._cumulative_input_tokens,
+                "output_tokens": self._cumulative_output_tokens,
+            }
 
     def get_cumulative_cost_usd(self) -> float:
         """Calculate cumulative run cost based on configured Gemini rates."""
-        input_cost = (self._cumulative_input_tokens / 1_000_000) * self.crr.token_cost_per_million_input
-        output_cost = (self._cumulative_output_tokens / 1_000_000) * self.crr.token_cost_per_million_output
-        return input_cost + output_cost
+        with self._token_lock:
+            input_cost = (self._cumulative_input_tokens / 1_000_000) * self.crr.token_cost_per_million_input
+            output_cost = (self._cumulative_output_tokens / 1_000_000) * self.crr.token_cost_per_million_output
+            return input_cost + output_cost
 
     def is_budget_exhausted(self) -> bool:
         """Check if token counts or financial costs exceed limits."""
-        if self._cumulative_input_tokens + self._cumulative_output_tokens >= self.models.max_run_tokens:
-            return True
-        if self.get_cumulative_cost_usd() >= self.models.max_run_cost_usd:
-            return True
+        with self._token_lock:
+            if self._cumulative_input_tokens + self._cumulative_output_tokens >= self.models.max_run_tokens:
+                return True
+            if (self._cumulative_input_tokens / 1_000_000) * self.crr.token_cost_per_million_input + \
+               (self._cumulative_output_tokens / 1_000_000) * self.crr.token_cost_per_million_output >= self.models.max_run_cost_usd:
+                return True
         return False
 
     @classmethod
@@ -219,7 +238,7 @@ class PWMConfig(BaseModel):
         return cls(
             google_api_key=os.getenv("GOOGLE_API_KEY", ""),
             gcp=GCPConfig(
-                project_id=os.getenv("GCP_PROJECT_ID", "project-world-model"),
+                project_id=os.getenv("GCP_PROJECT_ID", ""),
                 location=os.getenv("GCP_LOCATION", "us-central1"),
                 gce_instance_name=os.getenv("GCP_GCE_INSTANCE_NAME", "pwm-gpu-host"),
                 gce_zone=os.getenv("GCP_GCE_ZONE", "us-central1-a"),

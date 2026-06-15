@@ -49,7 +49,7 @@ class BaseAgent(ABC):
 
     def _create_client(self) -> genai.Client:
         """Create the appropriate Gemini client based on config."""
-        # Prioritize Vertex AI if GCP project is configured (Phase 6 transition)
+        # Use Vertex AI only when a real GCP project is explicitly configured
         if self.config.gcp.project_id:
             return genai.Client(
                 vertexai=True,

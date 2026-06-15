@@ -8,7 +8,6 @@ attack it, finding flaws or proposing a counter-strategy (Hypothesis B).
 
 from __future__ import annotations
 
-import json
 from typing import Any, Dict
 
 from pwm.agents.base_agent import BaseAgent

@@ -40,15 +40,8 @@ class Layer2Simulation:
                 if sprint_state:
                     context_str += f"Total Issues: {sprint_state.total_issues}\n"
                     
-                # Create client (similar to BaseAgent)
-                if self.config.gcp.project_id:
-                    client = genai.Client(
-                        vertexai=True,
-                        project=self.config.gcp.project_id,
-                        location=self.config.gcp.location,
-                    )
-                else:
-                    client = genai.Client(api_key=self.config.google_api_key)
+                # Use the detector's client to avoid duplicate initialization logic
+                client = self.detector._client
                     
                 response = client.models.embed_content(
                     model='text-embedding-004',
@@ -56,22 +49,15 @@ class Layer2Simulation:
                 )
                 embedding_768d = response.embeddings[0].values
                 
-                # 2. Project down to 64d using PCA
+                # 2. Project down to 64d using deterministic random projection matrix
                 try:
                     import numpy as np
-                    from sklearn.decomposition import PCA
-                    # Note: We fit a new PCA per run just for the demo 
-                    # (in production we'd load a pre-fitted PCA model)
-                    pca = PCA(n_components=64)
-                    # We need >64 samples to fit PCA, so we'll just slice or pad if needed
-                    # Wait, PCA requires n_samples >= n_components. 
-                    # Since we only have 1 sample, PCA will fail!
                     # For demo purposes, we will use a deterministic random projection matrix
                     np.random.seed(42)
                     projection_matrix = np.random.randn(768, 64) / np.sqrt(64)
                     embedding_64d = np.dot(np.array(embedding_768d), projection_matrix).tolist()
                 except ImportError:
-                    # Fallback to slicing if numpy/sklearn isn't available
+                    # Fallback to slicing if numpy isn't available
                     embedding_64d = embedding_768d[:64]
                 
                 url = self.endpoint_url if self.endpoint_url.endswith("/simulate") else f"{self.endpoint_url.rstrip('/')}/simulate"

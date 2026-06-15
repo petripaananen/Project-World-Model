@@ -6,6 +6,9 @@ from .critic_agent import CriticAgent
 from .qa_agent import QAAgent
 from .build_agent import BuildAgent
 from .art_agent import ArtIntegrationAgent
+from .planner_agent import GoalPlannerAgent
+from .opponent_agent import OpponentAgent
+from .monitor_agent import ExecutionMonitorAgent
 
 __all__ = [
     "BaseAgent",
@@ -15,4 +18,7 @@ __all__ = [
     "QAAgent",
     "BuildAgent",
     "ArtIntegrationAgent",
+    "GoalPlannerAgent",
+    "OpponentAgent",
+    "ExecutionMonitorAgent",
 ]

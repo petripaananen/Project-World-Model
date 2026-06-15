@@ -40,6 +40,16 @@ class DebtDetector(BaseAgent):
       - Semantic: Deep conflict analysis using Gemini (causal world model)
     """
 
+    # Detection thresholds (L5)
+    DIVERGENCE_CRITICAL = 100
+    DIVERGENCE_HIGH = 50
+    DIVERGENCE_MEDIUM = 20
+
+    PR_SIZE_CHANGES_HIGH = 1000
+    PR_SIZE_FILES_HIGH = 30
+    PR_SIZE_CHANGES_MEDIUM = 500
+    PR_SIZE_FILES_MEDIUM = 15
+
     def __init__(self, config: PWMConfig):
         system_prompt = (
             "You are the Causal Simulation Engine (Latent Core) acting as the Causal Digital Twin (CDT).\n"
@@ -219,12 +229,12 @@ class DebtDetector(BaseAgent):
             if branch.name == state.default_branch:
                 continue
 
-            # Severity thresholds for divergence
-            if branch.behind_main >= 100:
+            # Severity thresholds for divergence (L5)
+            if branch.behind_main >= self.DIVERGENCE_CRITICAL:
                 severity = DebtSeverity.CRITICAL
-            elif branch.behind_main >= 50:
+            elif branch.behind_main >= self.DIVERGENCE_HIGH:
                 severity = DebtSeverity.HIGH
-            elif branch.behind_main >= 20:
+            elif branch.behind_main >= self.DIVERGENCE_MEDIUM:
                 severity = DebtSeverity.MEDIUM
             else:
                 continue  # Not significant enough to report
@@ -286,9 +296,10 @@ class DebtDetector(BaseAgent):
             total_changes = pr.additions + pr.deletions
             file_count = len(pr.files_changed)
 
-            if total_changes >= 1000 or file_count >= 30:
+            # Severity thresholds for PR size (L5)
+            if total_changes >= self.PR_SIZE_CHANGES_HIGH or file_count >= self.PR_SIZE_FILES_HIGH:
                 severity = DebtSeverity.HIGH
-            elif total_changes >= 500 or file_count >= 15:
+            elif total_changes >= self.PR_SIZE_CHANGES_MEDIUM or file_count >= self.PR_SIZE_FILES_MEDIUM:
                 severity = DebtSeverity.MEDIUM
             else:
                 continue

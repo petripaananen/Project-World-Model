@@ -5,6 +5,7 @@ from pwm.ingestion.models import (
     IntegrationDebtReport,
     DebtSeverity,
     FileConflict,
+    PWMPipelineState,
     ResolutionProposal,
     ResolutionStrategy,
 )
@@ -167,3 +168,147 @@ def _scenario_3_crr_optimization() -> tuple[IntegrationDebtReport, list[Resoluti
     )
     
     return report, [proposal], [verdict]
+
+
+def generate_demo_proposals(
+    state: PWMPipelineState,
+) -> tuple[list[ResolutionProposal], list[CriticVerdict]]:
+    """Generate demo proposals and verdicts without Gemini API."""
+    proposals = []
+    verdicts = []
+
+    if not state.debt_report:
+        return proposals, verdicts
+
+    # Inject a mock Causal bottleneck if missing for the demo
+    has_dto = any(c.conflict_type == ConflictType.ORGANIZATIONAL_BOTTLENECK for c in state.debt_report.conflicts)
+    if not has_dto:
+        dto_conflict = FileConflict(
+            conflict_type=ConflictType.ORGANIZATIONAL_BOTTLENECK,
+            severity=DebtSeverity.HIGH,
+            description="Causal Simulation: Issue ENG-404 is blocked, which will delay PR #12 and cause a cascading failure for the physics team's milestone.",
+            affected_files=[],
+            involved_prs=[12],
+            involved_issues=["ENG-404"],
+            estimated_rework_hours=12.0,
+        )
+        state.debt_report.conflicts.append(dto_conflict)
+        state.debt_report.compute_stats()
+
+    for conflict in state.debt_report.conflicts:
+        if conflict.conflict_type == ConflictType.ORGANIZATIONAL_BOTTLENECK:
+            proposal = ResolutionProposal(
+                target_conflict=conflict,
+                strategies=[
+                    ResolutionStrategy(
+                        title="Resource Reallocation (Causal Optimal)",
+                        description="Temporarily reallocate 1 senior developer to unblock ENG-404.",
+                        steps=[
+                            "Pause low-priority tasks for Team Alpha",
+                            "Assign Dev to ENG-404 for 2 days",
+                            "Merge PR #12 immediately after unblocking"
+                        ],
+                        estimated_effort_hours=4.0,
+                        risk_level=DebtSeverity.LOW,
+                    )
+                ],
+                recommended_strategy_index=0,
+                worker_reasoning="Simulations show that reallocating resources to unblock ENG-404 avoids 12 hours of cascading delay for the physics milestone."
+            )
+            proposals.append(proposal)
+
+            verdict = CriticVerdict(
+                verdict=CriticVerdictStatus.APPROVED,
+                round_number=0,
+                architectural_integrity_score=0.95,
+                strategic_dishonesty_detected=False,
+                test_coverage_adequate=True,
+                scope_assessment="appropriate",
+                critique="Reallocating resources is the optimal move to prevent the cascading failure. Good organizational optimization.",
+                suggested_revisions=[],
+                approved_strategy_index=0,
+            )
+            verdicts.append(verdict)
+            continue
+
+        # Create a plausible demo proposal
+        proposal = ResolutionProposal(
+            target_conflict=conflict,
+            strategies=[
+                ResolutionStrategy(
+                    title="Sequential Merge Strategy",
+                    description=(
+                        f"Merge the involved PRs in dependency order to minimize "
+                        f"conflict surface. Start with the smallest change set, "
+                        f"then rebase remaining PRs against the updated main branch."
+                    ),
+                    steps=[
+                        "Identify the PR with the smallest diff as the merge anchor",
+                        "Merge the anchor PR after passing CI",
+                        "Rebase remaining PRs against updated main",
+                        "Run integration tests on each rebased PR",
+                        "Merge in ascending order of diff size",
+                    ],
+                    estimated_effort_hours=conflict.estimated_rework_hours * 0.6,
+                    risk_level=DebtSeverity.LOW,
+                    affected_files=conflict.affected_files,
+                    trade_offs=(
+                        "Lower risk but slower — each PR must wait for the previous "
+                        "to merge. Adds ~2h to total timeline vs. parallel approach."
+                    ),
+                ),
+                ResolutionStrategy(
+                    title="Feature Flag Isolation",
+                    description=(
+                        f"Wrap conflicting changes behind feature flags to allow "
+                        f"parallel merging without runtime conflicts. Toggle flags "
+                        f"in staging to validate each change independently."
+                    ),
+                    steps=[
+                        "Add feature flag infrastructure if not present",
+                        "Wrap each PR's changes behind a named flag",
+                        "Merge all PRs to main with flags disabled",
+                        "Enable flags sequentially in staging environment",
+                        "Run full integration test suite with each flag combination",
+                    ],
+                    estimated_effort_hours=conflict.estimated_rework_hours * 0.8,
+                    risk_level=DebtSeverity.MEDIUM,
+                    affected_files=conflict.affected_files,
+                    trade_offs=(
+                        "Enables parallel work but adds flag management overhead. "
+                        "Flags must be cleaned up within 2 sprints to avoid tech debt."
+                    ),
+                ),
+            ],
+            recommended_strategy_index=0,
+            worker_reasoning=(
+                "Sequential merge is recommended for this case because the "
+                "conflict surface is contained to a small number of files. "
+                "Feature flags add unnecessary complexity for this scope."
+            ),
+        )
+        proposals.append(proposal)
+
+        # Create a plausible demo verdict
+        verdict = CriticVerdict(
+            verdict=CriticVerdictStatus.APPROVED,
+            round_number=0,
+            architectural_integrity_score=0.85,
+            strategic_dishonesty_detected=False,
+            test_coverage_adequate=True,
+            scope_assessment="appropriate",
+            critique=(
+                "The sequential merge strategy is sound for this conflict scope. "
+                "The effort estimate is realistic. The worker correctly identified "
+                "that feature flags would be over-engineering for this case. "
+                "One minor suggestion: add a rollback plan for each merge step."
+            ),
+            suggested_revisions=[
+                "Add explicit rollback steps for each merge phase",
+            ],
+            approved_strategy_index=0,
+        )
+        verdicts.append(verdict)
+
+    return proposals, verdicts
+

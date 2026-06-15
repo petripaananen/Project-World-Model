@@ -8,6 +8,7 @@ Asynchronous watchdog that monitors pipeline events and detects stuck states.
 from __future__ import annotations
 
 import asyncio
+import time
 from typing import Optional
 
 from pwm.logging.event_logger import EventLogger, EventType
@@ -28,10 +29,10 @@ class ExecutionMonitorAgent:
 
     async def _monitor_loop(self):
         """Background loop to monitor events."""
-        start_time = asyncio.get_event_loop().time()
+        start_time = time.monotonic()
         
         while self._running:
-            now = asyncio.get_event_loop().time()
+            now = time.monotonic()
             if now - start_time > self.timeout_seconds:
                 await self.event_logger.log_error(
                     self.run_id, 

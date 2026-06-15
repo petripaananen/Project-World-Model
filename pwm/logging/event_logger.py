@@ -21,6 +21,7 @@ Cryptographic Chaining (Thesis §5.2 — "muuttumaton liikkuja"):
 from __future__ import annotations
 
 import asyncio
+import warnings
 import hashlib
 import json
 import uuid
@@ -48,6 +49,8 @@ class EventType(str, Enum):
     HUMAN_VETOED = "human_vetoed"
     HUMAN_DRILL_DOWN = "human_drill_down"
     SANDBOX_SIMULATION = "sandbox_simulation"
+    SYSTEM_START = "system_start"
+    TELEMETRY_INGESTED = "telemetry_ingested"
     ERROR = "error"
 
 
@@ -237,8 +240,13 @@ class EventLogger:
         try:
             with open(self._log_path, "a", encoding="utf-8") as f:
                 f.write(event.to_log_line())
-        except Exception:
-            pass
+        except Exception as e:
+            warnings.warn(
+                f"[EventLogger] SAIF audit trail write failed: {e}. "
+                f"Event {event.event_id} kept in memory only.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
         self._in_memory_events.append(event)
 
     async def log_pipeline_start(self, run_id: str) -> None:

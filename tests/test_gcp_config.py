@@ -234,7 +234,7 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
         
         mock_worker = MagicMock()
         mock_worker.token_usage = {"input_tokens": 100, "output_tokens": 50}
-        mock_worker.process = AsyncMock(return_value={"proposals": [mock_proposal]})
+        mock_worker.resolve_conflict = AsyncMock(return_value=mock_proposal)
         
         with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
             mock_post.return_value = mock_response

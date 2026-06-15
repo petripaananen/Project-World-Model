@@ -80,6 +80,20 @@ def run_tests(project, instance, zone, command):
     print(f"🖥️ Running automated tests on GPU VM: '{command}'")
     run_command(["gcloud", "compute", "ssh", instance, f"--zone={zone}", f"--project={project}", f"--command={command}"])
 
+
+def validate_command(command):
+    """Validate remote command to prevent shell injection vectors."""
+    # Check for forbidden shell metacharacters: ;, |, $, `, >, <, \n, \r
+    # Allow '&&' as a special case for command chaining
+    temp_command = command.replace("&&", "")
+    forbidden_chars = [';', '|', '$', '`', '>', '<', '\n', '\r', '&']
+    for char in forbidden_chars:
+        if char in temp_command:
+            raise ValueError(
+                f"Security Validation Alert: Command contains forbidden shell metacharacter '{char}'."
+            )
+
+
 def main():
     parser = argparse.ArgumentParser(description="Run automated tests on a GCP GPU instance with guaranteed shutdown.")
     parser.add_argument("--project", default=DEFAULT_PROJECT, help=f"GCP Project ID (default: {DEFAULT_PROJECT})")
@@ -89,6 +103,12 @@ def main():
     
     args = parser.parse_args()
     
+    try:
+        validate_command(args.command)
+    except ValueError as e:
+        print(f"❌ ERROR: {e}")
+        sys.exit(1)
+        
     exit_code = 0
     try:
         # 1. Start the GPU VM

@@ -76,18 +76,12 @@ class Layer3Orchestration:
                         f"Estimated Rework: {visual_analysis.get('estimated_rework_hours')} hours\n"
                     )
                 
-                data = {
-                    "debt_report": state.debt_report,
-                    "project_context": enriched_context,
-                    "worker_agent": agent,
-                }
-                data = await agent.process(data)
-                proposals_for_conflict = data.get("proposals", [])
-                
-                for p in proposals_for_conflict:
-                    p.agent_type = agent_type
-                    
-                all_proposals.extend(proposals_for_conflict)
+                proposal = await agent.resolve_conflict(
+                    conflict=conflict,
+                    project_context=enriched_context,
+                )
+                proposal.agent_type = agent_type
+                all_proposals.append(proposal)
                 
                 # Accumulate token usage
                 usage = agent.token_usage
@@ -96,7 +90,7 @@ class Layer3Orchestration:
             
             return all_proposals
         else:
-            # Fallback to importing _generate_demo_proposals dynamically
-            from pwm.main import _generate_demo_proposals
-            proposals, _ = _generate_demo_proposals(state)
+            # Fallback to importing generate_demo_proposals dynamically
+            from pwm.scenarios import generate_demo_proposals
+            proposals, _ = generate_demo_proposals(state)
             return proposals

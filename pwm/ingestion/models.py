@@ -349,6 +349,7 @@ class CRRResult(BaseModel):
         description="True when CRR approaches 1.0 — AI costs nearing rework value",
     )
     jevons_paradox_message: str = ""
+
     def compute(
         self,
         input_tokens: int,
