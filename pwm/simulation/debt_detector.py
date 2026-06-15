@@ -65,7 +65,14 @@ class DebtDetector(BaseAgent):
             '    "affected_files": ["path/to/file.ext"],\n'
             '    "involved_prs": [123, 456],\n'
             '    "involved_issues": ["ENG-123"],\n'
-            '    "estimated_rework_hours": 4.0\n'
+            '    "estimated_rework_hours": 4.0,\n'
+            '    "causal_evidence": {\n'
+            '      "probability": 0.75,\n'
+            '      "confidence": 0.8,\n'
+            '      "counterfactual": "If issue ENG-123 remains blocked, PR #123 cannot be verified, causing integration delay.",\n'
+            '      "causal_chain": ["ENG-123 is blocked by database sync", "PR #123 contains database migrations", "Cannot run tests on PR #123", "Release timeline is delayed"],\n'
+            '      "impact_distribution": {"critical": 0.2, "high": 0.5, "medium": 0.2, "low": 0.1}\n'
+            '    }\n'
             "  }\n"
             "]\n"
             "If there are no conflicts or bottlenecks, return an empty array: []"
@@ -348,7 +355,7 @@ class DebtDetector(BaseAgent):
             "Analyze the following open pull requests for potential semantic conflicts.\n"
             "Use Level 3 Counterfactual reasoning: 'If PR A is merged, how does it affect the assumptions of PR B?'\n\n"
             f"{chr(10).join(context_parts)}\n\n"
-            "Return a JSON array of semantic conflicts."
+            "Return a JSON array of semantic conflicts matching the schema, including the causal_evidence field."
         )
 
         response_text = await self.call_gemini(prompt)
@@ -365,6 +372,17 @@ class DebtDetector(BaseAgent):
                     severity_str = str(item.get("severity", "medium")).lower()
                     if severity_str not in [s.value for s in DebtSeverity]:
                         severity_str = "medium"
+                    
+                    evidence_data = item.get("causal_evidence")
+                    causal_evidence = None
+                    if isinstance(evidence_data, dict):
+                        causal_evidence = CausalEvidence(
+                            probability=float(evidence_data.get("probability", 0.5)),
+                            confidence=float(evidence_data.get("confidence", 0.7)),
+                            counterfactual=str(evidence_data.get("counterfactual", "")),
+                            causal_chain=list(evidence_data.get("causal_chain", [])),
+                            impact_distribution=dict(evidence_data.get("impact_distribution", {}))
+                        )
                         
                     conflicts.append(
                         FileConflict(
@@ -375,6 +393,7 @@ class DebtDetector(BaseAgent):
                             involved_prs=item.get("involved_prs", []),
                             involved_issues=item.get("involved_issues", []),
                             estimated_rework_hours=float(item.get("estimated_rework_hours", 4.0)),
+                            causal_evidence=causal_evidence,
                         )
                     )
                 except Exception as e:
@@ -412,7 +431,7 @@ class DebtDetector(BaseAgent):
             "Analyze the following sprint issues and open pull requests as a Digital Twin of the Organization.\n"
             "Use Level 3 Counterfactual reasoning: 'If Issue X is blocked or delayed, how does it cascade into PR integration and overall project delivery?'\n\n"
             f"{chr(10).join(context_parts)}\n\n"
-            "Identify any organizational bottlenecks and return them as a JSON array of conflict objects with conflict_type 'organizational_bottleneck'."
+            "Identify any organizational bottlenecks and return them as a JSON array of conflict objects with conflict_type 'organizational_bottleneck' including the causal_evidence field."
         )
 
         response_text = await self.call_gemini(prompt)
@@ -433,6 +452,17 @@ class DebtDetector(BaseAgent):
                     c_type = str(item.get("conflict_type", "organizational_bottleneck"))
                     if c_type not in [c.value for c in ConflictType]:
                         c_type = "organizational_bottleneck"
+                    
+                    evidence_data = item.get("causal_evidence")
+                    causal_evidence = None
+                    if isinstance(evidence_data, dict):
+                        causal_evidence = CausalEvidence(
+                            probability=float(evidence_data.get("probability", 0.5)),
+                            confidence=float(evidence_data.get("confidence", 0.7)),
+                            counterfactual=str(evidence_data.get("counterfactual", "")),
+                            causal_chain=list(evidence_data.get("causal_chain", [])),
+                            impact_distribution=dict(evidence_data.get("impact_distribution", {}))
+                        )
                         
                     conflicts.append(
                         FileConflict(
@@ -443,6 +473,7 @@ class DebtDetector(BaseAgent):
                             involved_prs=item.get("involved_prs", []),
                             involved_issues=item.get("involved_issues", []),
                             estimated_rework_hours=float(item.get("estimated_rework_hours", 4.0)),
+                            causal_evidence=causal_evidence,
                         )
                     )
                 except Exception as e:

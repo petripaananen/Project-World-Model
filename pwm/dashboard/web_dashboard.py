@@ -104,6 +104,23 @@ class DashboardState:
             for e in self.event_logger.get_events(run_id=state.run_id, limit=50)
         ]
         data["crr_history"] = self.crr_history[-20:]  # Last 20 CRR values
+        
+        # Embed calibration data (Phase 8 Grounding)
+        try:
+            from pwm.config import PWMConfig
+            from pwm.simulation.calibration import WorldModelCalibrator
+            config = PWMConfig()
+            calibrator = WorldModelCalibrator(config)
+            calibrator.load_state()
+            data["calibration"] = {
+                "factor": calibrator.calibration_factor,
+                "history": calibrator.history[-20:]
+            }
+        except Exception:
+            data["calibration"] = {
+                "factor": 1.0,
+                "history": []
+            }
 
         # Embed cycle data directly into state (Thesis Kuvio 8)
         try:

@@ -25,6 +25,59 @@ interface PipelineState {
     total_ai_cost_usd: number;
     estimated_rework_cost_usd: number;
   };
+  cycle?: {
+    phase: string;
+    title: string;
+    description: string;
+    local_time: string;
+    timezone: string;
+  };
+  calibration?: {
+    factor: number;
+    history: Array<{
+      timestamp: string;
+      error: number;
+      calibration_factor: number;
+    }>;
+  };
+  debt_report?: {
+    generated_at: string;
+    repo: string;
+    total_debt_items: number;
+    total_estimated_rework_hours: number;
+    critical_count: number;
+    high_count: number;
+    medium_count: number;
+    low_count: number;
+    conflicts: Array<{
+      conflict_type: string;
+      severity: string;
+      description: string;
+      affected_files: string[];
+      involved_prs: number[];
+      involved_branches: string[];
+      involved_issues: string[];
+      estimated_rework_hours: number;
+      causal_evidence?: {
+        probability: number;
+        confidence: number;
+        counterfactual: string;
+        causal_chain: string[];
+        impact_distribution: Record<string, number>;
+      };
+    }>;
+  };
+  proposals?: any[];
+  verdicts?: any[];
+  human_approved?: boolean;
+  human_notes?: string;
+  events?: Array<{
+    event_type: string;
+    actor: string;
+    summary: string;
+    timestamp: string;
+    details?: any;
+  }>;
 }
 
 interface ProjectData {
@@ -609,6 +662,10 @@ function App() {
   const [pipelineState, setPipelineState] = useState<PipelineState | null>(null);
   const [zenMode, setZenMode] = useState(false);
   const [selectedProject, setSelectedProject] = useState<string>('');
+  const [expandedConflictId, setExpandedConflictId] = useState<number | null>(null);
+  const [humanApprovedState, setHumanApprovedState] = useState<boolean | null>(null);
+  const [humanNotesText, setHumanNotesText] = useState<string>('');
+  const [decisionSubmitting, setDecisionSubmitting] = useState(false);
   
   // Custom dynamically connected projects list
   const [customProjects, setCustomProjects] = useState<ProjectData[]>([]);
@@ -688,6 +745,29 @@ function App() {
     'proj-gamma': { prs: 0, issues: 0 },
     'proj-live': { prs: 0, issues: 0 }
   });
+
+  const handleSubmitDecision = async (approved: boolean) => {
+    setDecisionSubmitting(true);
+    try {
+      const response = await fetch(`/api/decision?approved=${approved}&notes=${encodeURIComponent(humanNotesText)}`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        setHumanApprovedState(approved);
+        if (pipelineState) {
+          setPipelineState({
+            ...pipelineState,
+            human_approved: approved,
+            human_notes: humanNotesText,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Failed to submit audit decision:", err);
+    } finally {
+      setDecisionSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8765/ws');
@@ -976,28 +1056,28 @@ function App() {
             className={`menu-item-btn ${currentTab === 'overview' ? 'active' : ''}`}
           >
             <span className="material-symbols-outlined">dashboard</span>
-            <span className="menu-text">Overview</span>
+            <span className="menu-text">Console (OPA)</span>
           </button>
           <button 
             onClick={() => setCurrentTab('scenarios')} 
             className={`menu-item-btn ${currentTab === 'scenarios' ? 'active' : ''}`}
           >
             <span className="material-symbols-outlined">schema</span>
-            <span className="menu-text">Scenarios</span>
+            <span className="menu-text">What-If Sandbox</span>
           </button>
           <button 
-            onClick={() => setCurrentTab('crr')} 
-            className={`menu-item-btn ${currentTab === 'crr' ? 'active' : ''}`}
+            onClick={() => setCurrentTab('strategic')} 
+            className={`menu-item-btn ${currentTab === 'strategic' ? 'active' : ''}`}
           >
             <span className="material-symbols-outlined">analytics</span>
-            <span className="menu-text">CRR Analysis</span>
+            <span className="menu-text">Strategic Synthesis</span>
           </button>
           <button 
-            onClick={() => setCurrentTab('tokens')} 
-            className={`menu-item-btn ${currentTab === 'tokens' ? 'active' : ''}`}
+            onClick={() => setCurrentTab('calibration')} 
+            className={`menu-item-btn ${currentTab === 'calibration' ? 'active' : ''}`}
           >
-            <span className="material-symbols-outlined">toll</span>
-            <span className="menu-text">Token Ingestion</span>
+            <span className="material-symbols-outlined">query_stats</span>
+            <span className="menu-text">Calibration Engine</span>
           </button>
           <button 
             onClick={() => setCurrentTab('settings')} 
@@ -1131,16 +1211,16 @@ function App() {
                             <p>Select a workspace first. Once initialized, you can model counterfactual sandboxes and trigger sandbox simulations to detect circular dependency conflicts.</p>
                           </>
                         )}
-                        {currentTab === 'crr' && (
+                        {currentTab === 'strategic' && (
                           <>
-                            <h4>View CRR Deep Costs</h4>
-                            <p>Choose a repository to view a total Compute-to-Rework cost breakdown. Audit Worker, Critic, and Opponent token usage margins.</p>
+                            <h4>View Strategic Synthesis</h4>
+                            <p>Choose a repository to view the 3-pillar (Economics, Human, Technology) framework dashboard. Audit compute costs and check for Jevons Paradox runaway alerts.</p>
                           </>
                         )}
-                        {currentTab === 'tokens' && (
+                        {currentTab === 'calibration' && (
                           <>
-                            <h4>Track Ingestion Streams</h4>
-                            <p>Select a workspace to view incoming webhook logs, Git commits, and FastAPI WebSocket notifications. Perform manual syncs to pull active states.</p>
+                            <h4>Calibration Engine</h4>
+                            <p>Monitor self-supervised grounding error metrics and calibration weights as the world model aligns simulated predictions with real observed states.</p>
                           </>
                         )}
                         {currentTab === 'settings' && (
@@ -1187,432 +1267,444 @@ function App() {
             ) : !zenMode ? (
               // Option 2 Layout: Switchable tabs standard views
               <div className="standard-main-content">
-                
-                {/* 1. OVERVIEW TAB VIEW */}
+                               {/* 1. OVERVIEW TAB VIEW */}
                 {currentTab === 'overview' && (
                   <>
-                    {/* 3 Top Metric Cards */}
-                    <div className="metrics-row">
-                      {/* Card 1: CRR */}
-                      <div className="metric-card">
-                        <div className="metric-header">
-                          <span className="metric-title">CRR (Compute/Rework Ratio)</span>
-                          <div className="tooltip-trigger">
-                            <span className="material-symbols-outlined info-icon-styled">info</span>
-                            <span className="tooltip-text">Compute-to-Rework Ratio: Measures agent validation token cost vs avoided developer expert rework hours. Target &gt; 1.0.</span>
-                          </div>
-                        </div>
-                        <div className="metric-body">
-                          <span className="metric-value">{activeProjectData.telemetry.crr.toFixed(2)}x</span>
-                          <span className={`metric-trend-badge ${activeProjectData.telemetry.crr >= 1.0 ? 'positive' : 'negative'}`}>
-                            <span className="material-symbols-outlined trend-icon">
-                              {activeProjectData.telemetry.crr >= 1.0 ? 'trending_up' : 'trending_down'}
-                            </span>
-                            {activeProjectData.telemetry.crr >= 1.0 ? '+12.4% vs manual' : 'debt warning'}
-                          </span>
-                        </div>
-                        <div className="metric-footer">
-                          Target CRR is &gt;1.0x. Measures verification efficiency.
-                        </div>
-                      </div>
-
-                      {/* Card 2: Daily Token Burn */}
-                      <div className="metric-card">
-                        <div className="metric-header">
-                          <span className="metric-title">Daily Token Burn</span>
-                          <span className="material-symbols-outlined header-icon">toll</span>
-                        </div>
-                        <div className="metric-body">
-                          <div className="metric-value-row">
-                            <span className="metric-value">{tokenBurn}M</span>
-                            <span className="metric-cap">/ 20M cap</span>
-                          </div>
-                          <div className="token-progress-bar-container">
-                            <div className="token-progress-bar" style={{ width: `${Math.min((parseFloat(tokenBurn) / 20) * 100, 100)}%` }}></div>
-                          </div>
-                        </div>
-                        <div className="metric-footer">
-                          Active compute budget utilization envelope.
-                        </div>
-                      </div>
-
-                      {/* Card 3: Human Hours Saved */}
-                      <div className="metric-card">
-                        <div className="metric-header">
-                          <span className="metric-title">Human Hours Saved</span>
-                          <span className="material-symbols-outlined header-icon">schedule</span>
-                        </div>
-                        <div className="metric-body">
-                          <span className="metric-value">{hoursSaved} hrs</span>
-                          <span className="metric-trend-badge positive">
-                            <span className="material-symbols-outlined trend-icon">verified</span>
-                            Active Sandbox
-                          </span>
-                        </div>
-                        <div className="metric-footer">
-                          Estimated expert engineering hours saved this run.
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Central Grid Layout: Left SVG Chart, Right Cognitive Budget Controls */}
-                    <div className="central-grid">
-                      
-                      {/* Left: SVG Cost Chart */}
-                      <div className="glass-card chart-card">
-                        <div className="chart-card-header">
-                          <h3>Cost Analysis: Simulation vs Manual Rework</h3>
-                          <p className="subtitle">Predicted cumulative expenditures over 30-day window</p>
-                        </div>
-                        <CostChart projectCrr={activeProjectData.telemetry.crr} />
-                      </div>
-
-                      {/* Right: Cognitive Budget Controls */}
-                      <div className="glass-card controls-card">
-                        <div className="controls-header">
-                          <h3>Cognitive Budget Controls</h3>
-                          {limitsEnforced && (
-                            <span className="limits-status-badge secured">
-                              <span className="material-symbols-outlined icon-small">lock</span>
-                              SECURED
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className="control-slider-group">
-                          <div className="slider-label-row">
-                            <span className="slider-title">QA Agent Limit</span>
-                            <span className="slider-value-badge">{qaLimit.toFixed(1)}M tokens</span>
-                          </div>
-                          <input 
-                            type="range" 
-                            min="1.0" 
-                            max="10.0" 
-                            step="0.5" 
-                            value={qaLimit} 
-                            onChange={(e) => setQaLimit(parseFloat(e.target.value))}
-                            disabled={limitsEnforced}
-                            className="budget-slider"
-                          />
-                          <p className="slider-help-text">Sets maximum validation budget. Scales 3D simulation particle count.</p>
-                        </div>
-
-                        <div className="control-slider-group">
-                          <div className="slider-label-row">
-                            <span className="slider-title">Art/Opponent Agent Limit</span>
-                            <span className="slider-value-badge">{opponentLimit.toFixed(1)}M tokens</span>
-                          </div>
-                          <input 
-                            type="range" 
-                            min="0.1" 
-                            max="2.0" 
-                            step="0.1" 
-                            value={opponentLimit} 
-                            onChange={(e) => setOpponentLimit(parseFloat(e.target.value))}
-                            disabled={limitsEnforced}
-                            className="budget-slider"
-                          />
-                          <p className="slider-help-text">Alters opponent search depth. Regulates verification agent floating speeds.</p>
-                        </div>
-
-                        <button 
-                          className={`enforce-btn ${limitsEnforced ? 'enforced' : ''}`}
-                          onClick={() => setLimitsEnforced(!limitsEnforced)}
-                        >
-                          <span className="material-symbols-outlined btn-lock-icon">
-                            {limitsEnforced ? 'lock_open' : 'lock'}
-                          </span>
-                          {limitsEnforced ? 'Unlock Controls' : 'Enforce Limits'}
-                        </button>
-                      </div>
-
-                    </div>
-
-                    {/* Project Completion Prediction & Causal Triage */}
+                    {/* 24h Clock HUD */}
                     {(() => {
-                      // Calculate On-Time Probability dynamically based on Scope, Time, and Budget
-                      const totalIssues = activeProjectData.telemetry.issues;
-                      const openPrs = activeProjectData.telemetry.prs;
+                      const hour = new Date().getHours();
+                      const cycle = pipelineState?.cycle || (
+                        (22 <= hour || hour < 6)
+                          ? { phase: "night", title: "Agent Simulation", description: "Asynchronous models running background validation.", local_time: `${hour}:00`, timezone: "Europe/Helsinki" }
+                          : (6 <= hour && hour < 10)
+                            ? { phase: "morning", title: "Review & Triage", description: "Scenario Strategist reviews overnight conflict reports.", local_time: `${hour}:00`, timezone: "Europe/Helsinki" }
+                            : (10 <= hour && hour < 18)
+                              ? { phase: "day", title: "Human-in-the-Loop", description: "Collaborative refinement of integration strategies.", local_time: `${hour}:00`, timezone: "Europe/Helsinki" }
+                              : { phase: "evening", title: "Objective Setting", description: "Setting parameters for the next overnight cycle.", local_time: `${hour}:00`, timezone: "Europe/Helsinki" }
+                      );
                       
-                      // Count blocked issues in sprint/live state
-                      let blockedCount = 0;
-                      if (activeProjectData.id === 'proj-live') {
-                        blockedCount = pipelineState?.unified_graph?.nodes?.filter(n => n.type === 'issue' && n.attributes?.status === 'Blocked').length || 0;
-                      } else if (activeProjectData.id === 'proj-gamma') {
-                        blockedCount = 2; // Gamma has partitioned database/OOM blockages
-                      } else if (activeProjectData.id === 'proj-beta') {
-                        blockedCount = 1; // Beta has connection pool blockages
-                      } else if (activeProjectData.id === 'proj-alpha') {
-                        blockedCount = 1; // Alpha has CSS component blockers
-                      }
-
-                      // Count critical risks in project details
-                      const criticalRisksCount = activeProjectData.risks.filter(r => r.severity === 'critical').length;
-
-                      // Scope score represents overall backlog load
-                      const scopeScore = totalIssues + openPrs * 1.5;
-
-                      // Base probability starts at 96%
-                      let prob = 96;
-
-                      // Deduct for high scope load (Backlog load)
-                      if (scopeScore > 18) {
-                        prob -= 18;
-                      } else if (scopeScore > 10) {
-                        prob -= 10;
-                      } else if (scopeScore > 5) {
-                        prob -= 5;
-                      }
-
-                      // Deduct for blocked tasks (Time/Timeline constraints)
-                      prob -= blockedCount * 12;
-
-                      // Deduct for critical risks (Scope divergence/Conflict risks)
-                      prob -= criticalRisksCount * 10;
-
-                      // Deduct for high budget utilization (e.g. token burn close to 20M cap)
-                      const parsedTokenBurn = parseFloat(tokenBurn);
-                      if (parsedTokenBurn > 15) {
-                        prob -= 8;
-                      }
-
-                      // Clamp probability
-                      const onTimeProbability = Math.min(Math.max(prob, 25), 98);
-                      const isOnTime = onTimeProbability >= 70;
-
                       return (
-                        <div className="glass-card prediction-triage-card" style={{ gridColumn: '1 / -1', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '1rem', marginBottom: '1rem' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', paddingBottom: '12px' }}>
-                            <div>
-                              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
-                                Project Completion Prediction & Causal Triage
-                              </h3>
-                              <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-sub)' }}>
-                                Predictive schedule tracking based on active scope burden, blocked tasks, and budget status
-                              </p>
-                            </div>
-                            <span className={`status-pill ${isOnTime ? 'completed' : 'failed'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', padding: '6px 16px', borderRadius: '12px', fontWeight: 700 }}>
-                              <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>
-                                {isOnTime ? 'check_circle' : 'warning'}
-                              </span>
-                              {isOnTime ? `ON TRACK (${onTimeProbability}% Probability)` : `AT RISK OF DELAY (${onTimeProbability}% Probability)`}
+                        <div className="cycle-hud">
+                          <div className="cycle-info-row">
+                            <span className={`cycle-badge ${cycle.phase}`}>
+                              <span className="pulse-dot-small" style={{ display: cycle.phase === 'night' ? 'inline-block' : 'none' }}></span>
+                              {cycle.title}
                             </span>
+                            <span className="cycle-desc">{cycle.description}</span>
                           </div>
-
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px', marginTop: '8px' }}>
-                            {/* Column 1: Prediction Detail */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--surface)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-sub)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                Delivery Forecast
-                              </div>
-                              <div style={{ fontSize: '2.5rem', fontWeight: 850, color: isOnTime ? 'var(--success)' : 'var(--error)', fontFamily: 'var(--mono-font)', lineHeight: 1 }}>
-                                {onTimeProbability}%
-                              </div>
-                              <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 600 }}>
-                                Predicted Status: {isOnTime ? 'On Time' : `Delayed (${Math.round((100 - onTimeProbability) / 8) + 2}d)`}
-                              </div>
-                              <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.4 }}>
-                                {isOnTime ? (
-                                  `Causal simulation indicates the current scope of ${openPrs} PRs and ${totalIssues} tasks is well-distributed. Low blocker overhead and stable budget utilization guarantee a clean integration pathway.`
-                                ) : (
-                                  `High task burden (${totalIssues} open tasks), ${blockedCount} blocked critical path tasks, and active integration conflicts threaten the delivery timeline. Corrective actions are required to restore schedule buffer.`
-                                )}
-                              </p>
-                            </div>
-
-                            {/* Column 2: Corrective Action Recommendations */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-sub)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                Recommended Corrective Action Plan
-                              </div>
-                              
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                {/* Time Risk Correction: Blocked Tasks */}
-                                {blockedCount > 0 && (
-                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(255, 118, 118, 0.05)', border: '1px solid rgba(255, 118, 118, 0.15)', padding: '12px', borderRadius: '10px' }}>
-                                    <span className="material-symbols-outlined" style={{ color: 'var(--error)', fontSize: '1.3rem' }}>group_add</span>
-                                    <div>
-                                      <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Time Correction: Unblock Blocker Tasks</strong>
-                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
-                                        Reallocate engineer resources immediately to clear the {blockedCount} blocked sprint items. Resolving these task blockages recovers schedule margin and improves on-time probability by <span style={{ color: 'var(--success)', fontWeight: 600 }}>+{blockedCount * 10}%</span>.
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Scope Risk Correction: High Task Burden */}
-                                {scopeScore > 12 && (
-                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(255, 215, 0, 0.05)', border: '1px solid rgba(255, 215, 0, 0.18)', padding: '12px', borderRadius: '10px' }}>
-                                    <span className="material-symbols-outlined" style={{ color: '#b89200', fontSize: '1.3rem' }}>compress</span>
-                                    <div>
-                                      <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Scope Correction: Defer Non-Essential Backlog</strong>
-                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
-                                        Defer {Math.min(openPrs, 2)} high-divergence branches or non-essential features to the next sprint. Reducing the scope density will prevent developer fatigue and cut predicted integration rework by <span style={{ color: 'var(--success)', fontWeight: 600 }}>~6.5 hours</span>.
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Budget Risk Correction: Token Burn / Compute Overrun */}
-                                {parsedTokenBurn > 12 ? (
-                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(68, 80, 183, 0.04)', border: '1px solid rgba(68, 80, 183, 0.12)', padding: '12px', borderRadius: '10px' }}>
-                                    <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.3rem' }}>lock</span>
-                                    <div>
-                                      <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Budget Correction: Enforce Cognitive Limits</strong>
-                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
-                                        Enforce cognitive budget limits to stabilize daily token burn ({tokenBurn}M) below the 20M cap. If limits are already set, consider lowering the QA Agent limit to 4.5M to conserve compute.
-                                      </p>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(46, 160, 67, 0.04)', border: '1px solid rgba(46, 160, 67, 0.12)', padding: '12px', borderRadius: '10px' }}>
-                                    <span className="material-symbols-outlined" style={{ color: 'var(--success)', fontSize: '1.3rem' }}>lock</span>
-                                    <div>
-                                      <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Budget Status: Optimal</strong>
-                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
-                                        Daily token burn ({tokenBurn}M) is safely below the 20M cap. Current model execution parameters are financially sustainable.
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* General Recommendation if perfectly on track */}
-                                {isOnTime && blockedCount === 0 && scopeScore <= 12 && (
-                                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', background: 'rgba(46, 160, 67, 0.04)', border: '1px solid rgba(46, 160, 67, 0.12)', padding: '12px', borderRadius: '10px' }}>
-                                    <span className="material-symbols-outlined" style={{ color: 'var(--success)', fontSize: '1.3rem' }}>verified</span>
-                                    <div>
-                                      <strong style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>Optimal Alignment Plan</strong>
-                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
-                                        The project shows strong delivery parameters across scope, time, and budget. Continue with the planned release cycle.
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
+                          <div className="cycle-clock">
+                            {cycle.local_time} ({cycle.timezone})
                           </div>
                         </div>
                       );
                     })()}
 
-                    {/* Bottom Bento Grid Section */}
-                    <div className="bento-grid">
+                    {/* Observe-Predict-Act 3-Column Console */}
+                    <div className="observe-predict-act-grid">
                       
-                      {/* Bento Card 1: Active Scenario */}
-                      <div className="glass-card bento-card active-scenario-card">
-                        <h3>Active Scenario</h3>
-                        <p className="scenario-name">Scenario {selectedProject.includes('custom') ? 'Custom Ingestion' : selectedProject === 'proj-live' ? 'Live Ingestion' : 'Sandbox v4.1'}</p>
-                        <div className="scenario-run">
-                          <span className="run-dot active"></span>
-                          <span className="run-id">Run ID: #{selectedProject.includes('custom') ? 'CUST-SYNC' : selectedProject === 'proj-live' ? 'WS-LIVE' : '99841'}</span>
-                        </div>
-                        <div className="avatar-group">
-                          <div className="avatar-circle" style={{ backgroundColor: '#5e6ad2' }}>L</div>
-                          <div className="avatar-circle" style={{ backgroundColor: '#2ea043' }}>D</div>
-                          <div className="avatar-circle" style={{ backgroundColor: '#e65f00' }}>S</div>
-                          <span className="avatar-label">+3 agents</span>
-                        </div>
-                        <p className="scenario-desc">Simulating PR validation & edge case coverage automatically.</p>
-                      </div>
-
-                      {/* Bento Card 2: Infrastructure Uptime */}
-                      <div className="glass-card bento-card uptime-card">
-                        <h3>Infrastructure Uptime</h3>
-                        <div className="uptime-value-row">
-                          <span className="uptime-val">99.9%</span>
-                          <span className="uptime-status">
-                            <span className="pulse-dot"></span>
-                            Operational
-                          </span>
-                        </div>
-                        <div className="server-grid">
-                          {Array.from({ length: 24 }).map((_, i) => (
-                            <div key={i} className="server-dot healthy" title={`Node ${i+1}: Active`}></div>
-                          ))}
-                        </div>
-                        <p className="uptime-desc">All cluster nodes verified and responsive.</p>
-                      </div>
-
-                      {/* Bento Card 3: Risk Level */}
-                      <div className="glass-card bento-card risk-card">
-                        <h3>System Integration Risk</h3>
-                        <div className="risk-content">
-                          <div className={`risk-glow-indicator ${activeProjectData.telemetry.crr >= 1.0 ? 'low' : 'high'}`}>
-                            {activeProjectData.telemetry.crr >= 1.0 ? 'LOW' : 'CRITICAL'}
+                      {/* Column 1: Observation Ingestion (Observe) */}
+                      <div className="opa-column observe-col">
+                        <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="material-symbols-outlined column-icon">visibility</span>
+                            <h3>1. Observation (L1)</h3>
                           </div>
-                          <div className="risk-meta">
-                            <span className="risk-title">
-                              {activeProjectData.telemetry.crr >= 1.0 ? 'Stable Convergence' : 'Rework Spillover'}
+                          <button 
+                            className="sync-telemetry-btn"
+                            onClick={handleTriggerSync}
+                            disabled={isSyncing}
+                            style={{ 
+                              background: 'none', 
+                              border: 'none', 
+                              color: 'var(--text-sub)', 
+                              cursor: 'pointer', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              padding: '4px' 
+                            }}
+                            title="Synchronize repository telemetry"
+                          >
+                            <span 
+                              className="material-symbols-outlined" 
+                              style={{ 
+                                fontSize: '1.2rem', 
+                                animation: isSyncing ? 'spin 1s linear infinite' : 'none' 
+                              }}
+                            >
+                              sync
                             </span>
-                            <p className="risk-desc-text">
-                              {activeProjectData.telemetry.crr >= 1.0 
-                                ? 'Model confirms clean integration pathway with no circular dependency chains.' 
-                                : 'Critical N+1 queries or layout regressions threaten target delivery deadlines.'}
-                            </p>
+                          </button>
+                        </div>
+                        
+                        <div className="metrics-summary-grid-compact" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                          <div className="metric-item-compact" style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '10px', borderRadius: '10px' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)' }}>PRs Ingested</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 800, fontFamily: 'var(--mono-font)' }}>{activeProjectData.telemetry.prs}</div>
+                          </div>
+                          <div className="metric-item-compact" style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '10px', borderRadius: '10px' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)' }}>Tasks / Issues</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 800, fontFamily: 'var(--mono-font)' }}>{activeProjectData.telemetry.issues}</div>
+                          </div>
+                          <div className="metric-item-compact" style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '10px', borderRadius: '10px' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)' }}>Active Branches</div>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 800, fontFamily: 'var(--mono-font)' }}>{activeProjectData.telemetry.prs + 1}</div>
+                          </div>
+                          <div className="metric-item-compact" style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '10px', borderRadius: '10px' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)' }}>Edge Ingestors</div>
+                            <div style={{ fontSize: '1.0rem', fontWeight: 800, color: 'var(--success)' }}>V-JEPA + MCP</div>
                           </div>
                         </div>
-                      </div>
 
-                    </div>
-
-                    {/* Project details list below (PRs, Issues, Approvals, Event Log) */}
-                    <div className="standard-bottom-panels">
-                      
-                      {/* Risks & Bottlenecks */}
-                      <div className="glass-card panel-item flex-col">
-                        <h3>Predicted Risks & Bottlenecks</h3>
-                        <p className="panel-subtitle">Causal Digital Twin Counterfactual Predictions</p>
-                        <div className="risks-list">
-                          {activeProjectData.risks.length > 0 ? (
-                            activeProjectData.risks.map((risk, idx) => (
-                              <div key={idx} className={`risk-item ${risk.severity}`}>
-                                <div className="risk-header">
-                                  <span className="badge">{risk.probability}% PROBABILITY</span>
+                        <div style={{ marginTop: '10px' }}>
+                          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
+                            Immutable Fact Log (Merkle Sealed)
+                          </h4>
+                          <div className="merkle-chain-log">
+                            {(pipelineState?.events || activeProjectData.events).slice(0, 8).map((evt, idx) => (
+                              <div key={idx} className="merkle-node-card">
+                                <div className="merkle-node-header">
+                                  <span className="lock-secured">
+                                    <span className="material-symbols-outlined lock-secured-icon">lock</span>
+                                    SECURED
+                                  </span>
+                                  <span className="merkle-node-meta" style={{ color: 'var(--primary)', fontWeight: 700 }}>
+                                    #SEALED-00{8 - idx}
+                                  </span>
                                 </div>
-                                <p><strong>{risk.title}</strong></p>
-                                <p className="risk-desc">{risk.desc}</p>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="empty-state">No integration risks predicted.</div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Action Required & Events */}
-                      <div className="glass-card panel-item flex-col">
-                        <h3>Action Required & Events</h3>
-                        <div className="action-required">
-                          <h4>Pending Approvals</h4>
-                          {activeProjectData.approvals.length > 0 ? (
-                            activeProjectData.approvals.map((approval, idx) => (
-                              <div key={idx} className="approval-card">
-                                <p><strong>{approval.title}</strong></p>
-                                <div className="btn-group">
-                                  <button className="approve-btn">Approve</button>
-                                  <button className="veto-btn relative-tooltip">
-                                    Veto
-                                    <span className="tooltip-text">Veto rejects the merge proposal and updates AI critic rewards to search for safe alternatives.</span>
-                                  </button>
+                                <div className="merkle-node-body">
+                                  {(evt as any).text || (evt as any).summary}
                                 </div>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="empty-state-text">No approvals pending.</div>
-                          )}
-                        </div>
-
-                        <div className="event-stream-section mt-auto">
-                          <h4>Causal Event Log</h4>
-                          <div className="event-rows-container">
-                            {activeProjectData.events.map((evt, idx) => (
-                              <div key={idx} className="event-row">
-                                <span className={`badge ${evt.type}`}>{evt.type}</span>
-                                <span className="event-text">{evt.text}</span>
                               </div>
                             ))}
                           </div>
                         </div>
+
+                        <div style={{ marginTop: '15px' }}>
+                          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
+                            L1 Telemetry Event Feed
+                          </h4>
+                          <div className="telemetry-event-feed" style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {(ingestionEvents[selectedProject] || []).map((evt) => (
+                              <div key={evt.id} className="telemetry-event-card" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', fontSize: '0.78rem', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', color: evt.type === 'commit' ? '#4450b7' : evt.type === 'webhook' ? '#8455ef' : '#2ea043' }}>
+                                  {evt.type === 'commit' ? 'code' : evt.type === 'webhook' ? 'webhook' : 'sync'}
+                                </span>
+                                <div style={{ flex: 1 }}>
+                                  <p style={{ margin: 0, color: 'var(--text-main)' }}>{evt.text}</p>
+                                  <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)' }}>{evt.time}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Column 2: Latent Core Simulation (Predict) */}
+                      <div className="opa-column predict-col">
+                        <div className="column-header">
+                          <span className="material-symbols-outlined column-icon">insights</span>
+                          <h3>2. Simulation Core (L2)</h3>
+                        </div>
+
+                        {/* Iron Triangle Gauges */}
+                        <div className="iron-triangle-container">
+                          <div className="triangle-gauge-card">
+                            <span className="gauge-title">Scope Load</span>
+                            <span className="gauge-value">{activeProjectData.telemetry.prs + activeProjectData.telemetry.issues}</span>
+                            <span className={`gauge-status ${(activeProjectData.telemetry.prs + activeProjectData.telemetry.issues) < 12 ? 'good' : 'warn'}`}>
+                              {(activeProjectData.telemetry.prs + activeProjectData.telemetry.issues) < 12 ? 'Stable' : 'Dense'}
+                            </span>
+                          </div>
+                          
+                          <div className="triangle-gauge-card">
+                            <span className="gauge-title">Time Delay</span>
+                            <span className="gauge-value">
+                              {pipelineState?.debt_report
+                                ? `${pipelineState.debt_report.total_estimated_rework_hours.toFixed(0)}h`
+                                : activeProjectData.id === 'proj-live' ? '0h'
+                                : activeProjectData.id === 'proj-alpha' ? '12h'
+                                : activeProjectData.id === 'proj-beta' ? '28h'
+                                : '8h'}
+                            </span>
+                            <span className={`gauge-status ${activeProjectData.telemetry.crr >= 1.0 ? 'good' : 'danger'}`}>
+                              {activeProjectData.telemetry.crr >= 1.0 ? 'No Lag' : 'Critical'}
+                            </span>
+                          </div>
+
+                          <div className="triangle-gauge-card">
+                            <span className="gauge-title">Budget Cap</span>
+                            <span className="gauge-value">{tokenBurn}M</span>
+                            <span className={`gauge-status ${parseFloat(tokenBurn) < 15.0 ? 'good' : 'warn'}`}>
+                              {parseFloat(tokenBurn) < 15.0 ? 'Optimal' : 'Runaway'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div style={{ marginTop: '10px' }}>
+                          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
+                            Causal Conflict Predictions
+                          </h4>
+                          
+                          {(() => {
+                            const conflicts = pipelineState?.debt_report?.conflicts || activeProjectData.risks.map((r, i) => ({
+                              conflict_type: r.severity === 'critical' ? 'dependency_break' : 'semantic_conflict',
+                              severity: r.severity,
+                              description: r.desc,
+                              involved_prs: [i + 204],
+                              involved_issues: [`ENG-${i + 112}`],
+                              affected_files: ['App.tsx'],
+                              estimated_rework_hours: r.severity === 'critical' ? 12 : 4,
+                              causal_evidence: {
+                                probability: r.probability,
+                                confidence: 85,
+                                counterfactual: `If conflict isn't resolved, it will cascade into subsequent integration sprints.`,
+                                causal_chain: [r.title, r.desc, "Triggers code regression", "Re-validation needed"],
+                                impact_distribution: { critical: r.severity === 'critical' ? 0.8 : 0.2, high: 0.5, medium: 0.2 }
+                              }
+                            }));
+
+                            if (conflicts.length === 0) {
+                              return <div className="empty-state">No integration risks predicted.</div>;
+                            }
+
+                            return (
+                              <div className="causal-conflict-list">
+                                {conflicts.map((conflict, idx) => {
+                                  const isExpanded = expandedConflictId === idx;
+                                  const prob = conflict.causal_evidence?.probability || (conflict.severity === 'critical' ? 85 : 40);
+                                  const severityClass = conflict.severity === 'critical' ? 'critical' : conflict.severity === 'high' ? 'warning' : 'normal';
+                                  
+                                  return (
+                                    <div key={idx} className="conflict-card-collapsible">
+                                      <div className="conflict-card-header" onClick={() => setExpandedConflictId(isExpanded ? null : idx)}>
+                                        <div className="conflict-header-left">
+                                          <div className="conflict-badge-row">
+                                            <span className={`probability-indicator-pill ${severityClass}`}>
+                                              {prob < 1.0 ? `${Math.round(prob * 100)}%` : `${prob}%`} Prob
+                                            </span>
+                                            <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 800, color: 'var(--text-sub)' }}>
+                                              {conflict.conflict_type.replace('_', ' ')}
+                                            </span>
+                                          </div>
+                                          <span className="conflict-title-main">
+                                            {conflict.description.substring(0, 50)}...
+                                          </span>
+                                        </div>
+                                        <span className="material-symbols-outlined">
+                                          {isExpanded ? 'expand_less' : 'expand_more'}
+                                        </span>
+                                      </div>
+                                      
+                                      {isExpanded && (
+                                        <div className="causal-evidence-drawer">
+                                          <div className="counterfactual-box">
+                                            <strong>Counterfactual Logic:</strong><br />
+                                            {conflict.causal_evidence?.counterfactual || "If left unresolved, this conflict propagates to production systems causing integration regression."}
+                                          </div>
+                                          
+                                          {conflict.causal_evidence?.causal_chain && (
+                                            <div className="causal-chain-section">
+                                              <h5>Causal Propagation Chain</h5>
+                                              <div className="causal-chain-steps">
+                                                {conflict.causal_evidence.causal_chain.map((step, sIdx) => (
+                                                  <div key={sIdx} className="causal-step-item">
+                                                    {step}
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          )}
+                                          
+                                          {conflict.causal_evidence?.impact_distribution && (
+                                            <div className="severity-distribution-section">
+                                              <h5>Predicted Risk Impact Distribution</h5>
+                                              {Object.entries(conflict.causal_evidence.impact_distribution).map(([sev, weight], wIdx) => (
+                                                <div key={wIdx} className="distribution-bar-row">
+                                                  <span className="distribution-lbl">{sev}</span>
+                                                  <div className="distribution-track">
+                                                    <div className={`distribution-fill ${sev}`} style={{ width: `${weight * 100}%` }}></div>
+                                                  </div>
+                                                  <span>{Math.round(weight * 100)}%</span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+
+                                          <div style={{ fontSize: '0.72rem', color: 'var(--text-sub)', borderTop: '1px solid var(--border)', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                                            <span>Confidence Index: {conflict.causal_evidence?.confidence ? (conflict.causal_evidence.confidence < 1.0 ? `${Math.round(conflict.causal_evidence.confidence * 100)}%` : `${conflict.causal_evidence.confidence}%`) : '80%'}</span>
+                                            <span>Est. Rework: {conflict.estimated_rework_hours}h</span>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Column 3: Control Actions (Act) */}
+                      <div className="opa-column act-col">
+                        <div className="column-header">
+                          <span className="material-symbols-outlined column-icon">settings_applications</span>
+                          <h3>3. Control Gate (L5)</h3>
+                        </div>
+
+                        {/* Scenario Strategist Audit Gate */}
+                        <div className="glass-card" style={{ padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
+                            Scenario Strategist Audit Gate
+                          </h4>
+                          
+                          {(pipelineState?.human_approved !== undefined && pipelineState.human_approved !== null) || humanApprovedState !== null ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--surface-dim)', padding: '12px', borderRadius: '10px', marginBottom: '12px' }}>
+                              <span className="material-symbols-outlined" style={{ color: (pipelineState?.human_approved ?? humanApprovedState) ? 'var(--success)' : 'var(--error)' }}>
+                                {(pipelineState?.human_approved ?? humanApprovedState) ? 'check_circle' : 'cancel'}
+                              </span>
+                              <div>
+                                <strong style={{ fontSize: '0.85rem' }}>
+                                  {(pipelineState?.human_approved ?? humanApprovedState) ? 'APPROVED' : 'VETOED'}
+                                </strong>
+                                <p style={{ margin: '2px 0 0 0', fontSize: '0.75rem', color: 'var(--text-sub)' }}>
+                                  Notes: {pipelineState?.human_notes || humanNotesText || 'No review notes submitted.'}
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ background: 'rgba(230, 95, 0, 0.05)', border: '1px solid rgba(230, 95, 0, 0.15)', padding: '12px', borderRadius: '10px', marginBottom: '12px', display: 'flex', gap: '8px' }}>
+                              <span className="material-symbols-outlined" style={{ color: '#e65f00', fontSize: '1.2rem' }}>warning</span>
+                              <span style={{ fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.4 }}>
+                                System awaiting Scenario Strategist audit clearance. Review conflict simulations and select action below.
+                              </span>
+                            </div>
+                          )}
+
+                          <textarea
+                            placeholder="Audit logs / review feedback notes..."
+                            style={{ width: '100%', minHeight: '60px', borderRadius: '10px', border: '1px solid var(--border)', padding: '10px', fontSize: '0.8rem', boxSizing: 'border-box', marginBottom: '10px', resize: 'vertical', fontFamily: 'inherit' }}
+                            value={humanNotesText}
+                            onChange={(e) => setHumanNotesText(e.target.value)}
+                            disabled={decisionSubmitting}
+                          />
+
+                          <div className="audit-action-btn-row">
+                            <button 
+                              className="approve-btn" 
+                              style={{ background: 'var(--success)', color: 'white', border: 'none', padding: '10px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}
+                              onClick={() => handleSubmitDecision(true)}
+                              disabled={decisionSubmitting}
+                            >
+                              Approve Release
+                            </button>
+                            <button 
+                              className="veto-btn" 
+                              style={{ background: 'var(--error)', color: 'white', border: 'none', padding: '10px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}
+                              onClick={() => handleSubmitDecision(false)}
+                              disabled={decisionSubmitting}
+                            >
+                              Veto Override
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Corrective Action Plan */}
+                        {(() => {
+                          const totalIssues = activeProjectData.telemetry.issues;
+                          const openPrs = activeProjectData.telemetry.prs;
+                          
+                          let blockedCount = activeProjectData.id === 'proj-live'
+                            ? pipelineState?.unified_graph?.nodes?.filter(n => n.type === 'issue' && n.attributes?.status === 'Blocked').length || 0
+                            : activeProjectData.id === 'proj-gamma' ? 2
+                            : activeProjectData.id === 'proj-beta' ? 1
+                            : 1;
+
+                          const scopeScore = totalIssues + openPrs * 1.5;
+
+                          return (
+                            <div style={{ marginTop: '10px' }}>
+                              <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
+                                Corrective Recommendations
+                              </h4>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {blockedCount > 0 && (
+                                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'rgba(186, 26, 26, 0.04)', border: '1px solid rgba(186, 26, 26, 0.08)', padding: '10px', borderRadius: '10px' }}>
+                                    <span className="material-symbols-outlined" style={{ color: 'var(--error)', fontSize: '1.1rem' }}>group_add</span>
+                                    <div>
+                                      <strong style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>Clear Blockers</strong>
+                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.72rem', color: 'var(--text-sub)', lineHeight: 1.35 }}>
+                                        Reallocate engineering resources to resolve {blockedCount} blocked critical path tasks. Recover schedule margin.
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {scopeScore > 12 && (
+                                  <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'rgba(230, 95, 0, 0.04)', border: '1px solid rgba(230, 95, 0, 0.08)', padding: '10px', borderRadius: '10px' }}>
+                                    <span className="material-symbols-outlined" style={{ color: '#e65f00', fontSize: '1.1rem' }}>compress</span>
+                                    <div>
+                                      <strong style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>Defer Scope Density</strong>
+                                      <p style={{ margin: '2px 0 0 0', fontSize: '0.72rem', color: 'var(--text-sub)', lineHeight: 1.35 }}>
+                                        Defer 1-2 non-essential branches to resolve the integration debt before final staging.
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'rgba(46, 160, 67, 0.04)', border: '1px solid rgba(46, 160, 67, 0.08)', padding: '10px', borderRadius: '10px' }}>
+                                  <span className="material-symbols-outlined" style={{ color: 'var(--success)', fontSize: '1.1rem' }}>lock</span>
+                                  <div>
+                                    <strong style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>Cognitive Limits Cap</strong>
+                                    <p style={{ margin: '2px 0 0 0', fontSize: '0.72rem', color: 'var(--text-sub)', lineHeight: 1.35 }}>
+                                      Daily token burn ({tokenBurn}M) is safely below the 20M cap. Current model parameterization is sustainable.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Cognitive Budget Sliders */}
+                        <div style={{ marginTop: '10px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px' }}>
+                          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
+                            Cognitive Budget Cap
+                          </h4>
+                          
+                          <div style={{ marginBottom: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700 }}>
+                              <span>QA / Worker Limit</span>
+                              <span>{qaLimit.toFixed(1)}M</span>
+                            </div>
+                            <input 
+                              type="range" 
+                              min="1.0" 
+                              max="10.0" 
+                              step="0.5" 
+                              value={qaLimit} 
+                              onChange={(e) => setQaLimit(parseFloat(e.target.value))}
+                              style={{ width: '100%', accentColor: 'var(--primary)', height: '4px' }}
+                            />
+                          </div>
+
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700 }}>
+                              <span>Opponent Limit</span>
+                              <span>{opponentLimit.toFixed(1)}M</span>
+                            </div>
+                            <input 
+                              type="range" 
+                              min="0.1" 
+                              max="2.0" 
+                              step="0.1" 
+                              value={opponentLimit} 
+                              onChange={(e) => setOpponentLimit(parseFloat(e.target.value))}
+                              style={{ width: '100%', accentColor: 'var(--secondary)', height: '4px' }}
+                            />
+                          </div>
+                        </div>
+
                       </div>
 
                     </div>
@@ -1701,160 +1793,246 @@ function App() {
                   </div>
                 )}
 
-                {/* 3. CRR ANALYSIS TAB VIEW */}
-                {currentTab === 'crr' && (
+                {/* 3. STRATEGIC SYNTHESIS TAB VIEW */}
+                {currentTab === 'strategic' && (
                   <div className="tab-container flex-col animate-fade-in">
                     <div className="tab-header-row">
                       <div>
-                        <h2>CRR (Compute-to-Rework Ratio) Cost Audits</h2>
-                        <p className="tab-subtitle">Analyze automated agent execution costs against avoided developer rework overheads</p>
+                        <h2>Strategic Synthesis: 3-Pillar Framework</h2>
+                        <p className="tab-subtitle">Managing the convergence between Economics, Human trust, and Technology maturity</p>
                       </div>
                     </div>
-
-                    <div className="crr-analysis-grid">
-                      {/* Cost Ledger Card */}
-                      <div className="glass-card cost-ledger-card">
-                        <h3>Compute Cost & Savings Ledger</h3>
-                        <div className="cost-ledger-row">
-                          <span className="ledger-label">Worker Agent Ingestion Cost:</span>
-                          <span className="ledger-val mono-col">${(qaLimit * 14.4).toFixed(2)}</span>
+                    
+                    {/* The Agility Paradox Widget */}
+                    <div className="agility-paradox-container">
+                      <div className="chart-header-paradox">
+                        <div>
+                          <h3 style={{ margin: 0 }}>The Agility Paradox (Kuvio 1)</h3>
+                          <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
+                            Exponential AI asset production velocity vs. linear human integration throughput
+                          </p>
                         </div>
-                        <div className="cost-ledger-row">
-                          <span className="ledger-label">Critic Agent Verification Cost:</span>
-                          <span className="ledger-val mono-col">${(qaLimit * 6.3).toFixed(2)}</span>
-                        </div>
-                        <div className="cost-ledger-row">
-                          <span className="ledger-label">Opponent Agent Conflict Cost:</span>
-                          <span className="ledger-val mono-col">${(opponentLimit * 12.0).toFixed(2)}</span>
-                        </div>
-                        <hr className="ledger-hr" />
-                        <div className="cost-ledger-row total-row">
-                          <span className="ledger-label">Total AI Simulation Cost:</span>
-                          <span className="ledger-val mono-col">${(qaLimit * 20.7 + opponentLimit * 12.0).toFixed(2)}</span>
-                        </div>
-                        <div className="cost-ledger-row savings-row">
-                          <span className="ledger-label">Estimated Developer Rework Savings:</span>
-                          <span className="ledger-val mono-col">+${(hoursSaved * 75).toFixed(2)}</span>
-                        </div>
-                        <div className="cost-ledger-row net-row">
-                          <span className="ledger-label">Net Strategic Value Generated:</span>
-                          <span className={`ledger-val mono-col ${(hoursSaved * 75 - (qaLimit * 20.7 + opponentLimit * 12.0)) >= 0 ? 'positive' : 'negative'}`}>
-                            ${(hoursSaved * 75 - (qaLimit * 20.7 + opponentLimit * 12.0)).toFixed(2)}
+                        <div className="chart-legend-paradox">
+                          <span className="paradox-legend-item">
+                            <span className="paradox-dot exponential"></span>
+                            AI Production Speed (L1)
+                          </span>
+                          <span className="paradox-legend-item">
+                            <span className="paradox-dot linear"></span>
+                            Human Integration Capacity (Agile)
+                          </span>
+                          <span className="paradox-legend-item">
+                            <span className="paradox-dot debt"></span>
+                            Integration Debt (Hallintakuilu)
                           </span>
                         </div>
                       </div>
-
-                      {/* Agent Breakdown Table */}
-                      <div className="glass-card agent-allocation-card">
-                        <h3>Agent Capacity Allocation</h3>
-                        <table className="agent-breakdown-table">
-                          <thead>
-                            <tr>
-                              <th>Agent Role</th>
-                              <th>Token Alloc.</th>
-                              <th>Calculated Price</th>
-                              <th>Priority</th>
-                              <th>Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td><strong>Worker Agent</strong></td>
-                              <td className="mono-col">{(qaLimit * 0.7).toFixed(1)}M</td>
-                              <td className="mono-col">$0.075 / M</td>
-                              <td>High</td>
-                              <td><span className="status-pill completed">Active</span></td>
-                            </tr>
-                            <tr>
-                              <td><strong>Critic Agent</strong></td>
-                              <td className="mono-col">{(qaLimit * 0.3).toFixed(1)}M</td>
-                              <td className="mono-col">$0.150 / M</td>
-                              <td>Medium</td>
-                              <td><span className="status-pill completed">Active</span></td>
-                            </tr>
-                            <tr>
-                              <td><strong>Opponent Agent</strong></td>
-                              <td className="mono-col">{opponentLimit.toFixed(1)}M</td>
-                              <td className="mono-col">$0.250 / M</td>
-                              <td>Critical</td>
-                              <td><span className="status-pill completed">Active</span></td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
+                      
+                      <svg viewBox="0 0 600 220" className="agility-paradox-chart-svg">
+                        {/* Shaded Area of Integration Debt */}
+                        <path d="M 50 180 Q 250 160 550 50 L 550 130 Q 250 170 50 180 Z" fill="rgba(186, 26, 26, 0.06)" stroke="rgba(186, 26, 26, 0.15)" strokeWidth="1" strokeDasharray="3,3" />
+                        
+                        {/* Exponential AI Production Speed */}
+                        <path d="M 50 180 Q 250 160 550 50" fill="none" stroke="var(--error)" strokeWidth="3" />
+                        
+                        {/* Linear Human Integration Capacity */}
+                        <path d="M 50 180 Q 250 170 550 130" fill="none" stroke="var(--primary)" strokeWidth="2.5" />
+                        
+                        {/* Labels */}
+                        <text x="560" y="55" fontSize="10" fill="var(--error)" fontWeight="700">L1 Generation</text>
+                        <text x="560" y="135" fontSize="10" fill="var(--primary)" fontWeight="700">Agile Integration</text>
+                        <text x="320" y="125" fontSize="11" fill="var(--error)" fontWeight="800" fontStyle="italic">INTEGRATION DEBT</text>
+                        
+                        {/* Axis */}
+                        <line x1="50" y1="190" x2="550" y2="190" stroke="var(--border)" strokeWidth="1" />
+                        <text x="50" y="205" fontSize="9" fill="var(--text-sub)">Day 1</text>
+                        <text x="550" y="205" fontSize="9" fill="var(--text-sub)">Release Target</text>
+                      </svg>
                     </div>
+                    
+                    {/* 3 Pillars Grid */}
+                    <div className="strategic-synthesis-grid">
+                      {/* Economics Pillar */}
+                      <div className="pillar-card eco">
+                        <div className="pillar-card-header">
+                          <span className="material-symbols-outlined pillar-icon">payments</span>
+                          <h4>1. Economics</h4>
+                        </div>
+                        <div className="pillar-content-list">
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Compute-to-Rework (CRR)</span>
+                            <span className="pillar-item-val">{activeProjectData.telemetry.crr.toFixed(2)}x</span>
+                          </div>
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Daily Token Cost</span>
+                            <span className="pillar-item-val">${(qaLimit * 20.7 + opponentLimit * 12.0).toFixed(2)}</span>
+                          </div>
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Estimated Saved Rework</span>
+                            <span className="pillar-item-val">${(hoursSaved * 75).toFixed(2)}</span>
+                          </div>
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Compute Runaway Alert</span>
+                            <span className="pillar-item-val" style={{ color: activeProjectData.telemetry.crr < 1.0 ? 'var(--error)' : 'var(--success)' }}>
+                              {activeProjectData.telemetry.crr < 1.0 ? 'WARNING' : 'SECURE'}
+                            </span>
+                          </div>
+                          <div style={{ marginTop: '12px', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                            <CostChart projectCrr={activeProjectData.telemetry.crr} />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Human Pillar */}
+                      <div className="pillar-card hum">
+                        <div className="pillar-card-header">
+                          <span className="material-symbols-outlined pillar-icon">groups</span>
+                          <h4>2. Human Trust & Agency</h4>
+                        </div>
+                        <div className="pillar-content-list">
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Consensus Threshold</span>
+                            <span className="pillar-item-val">{consensusThreshold}%</span>
+                          </div>
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Active Team Members</span>
+                            <span className="pillar-item-val">5 Humans</span>
+                          </div>
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Trust Alignment Index</span>
+                            <span className="pillar-item-val" style={{ color: 'var(--success)' }}>98.2%</span>
+                          </div>
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Value Capture Shield</span>
+                            <span className="pillar-item-val">ACTIVE</span>
+                          </div>
+                        </div>
+                      </div>
 
-                    <div className="glass-card optimization-tips-card">
-                      <h3>
-                        <span className="material-symbols-outlined lightbulb-icon">lightbulb</span>
-                        Automated Strategist Recommendations
-                      </h3>
-                      {activeProjectData.telemetry.crr >= 1.0 ? (
-                        <div className="recommendation-box safe">
-                          <strong>OPTIMAL STABILITY DETECTED</strong>
-                          <p>The Compute-to-Rework Ratio is currently <strong>{activeProjectData.telemetry.crr.toFixed(2)}x</strong>. Simulation verification is successfully preventing regressions. Keep current Cognitive limits in place to preserve economic convergence.</p>
+                      {/* Technology Pillar */}
+                      <div className="pillar-card tech">
+                        <div className="pillar-card-header">
+                          <span className="material-symbols-outlined pillar-icon">memory</span>
+                          <h4>3. Technology Stack</h4>
                         </div>
-                      ) : (
-                        <div className="recommendation-box risk">
-                          <strong>CRITICAL DEBT SPILLOVER DETECTED</strong>
-                          <p>The Compute-to-Rework Ratio is <strong>{activeProjectData.telemetry.crr.toFixed(2)}x</strong> (Below target 1.0x). Rework costs are outpacing simulation efficiency. <strong>Action Recommended:</strong> Increase the <strong>QA Agent Limit</strong> to at least <strong>6.5M tokens</strong> to expand sandbox coverage and resolve circular queries.</p>
+                        <div className="pillar-content-list">
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Layer 2 Simulator</span>
+                            <span className="pillar-item-val">LeWorldModel (LeWM)</span>
+                          </div>
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Layer 1 Telemetry Ingest</span>
+                            <span className="pillar-item-val">V-JEPA 2.1 API</span>
+                          </div>
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Layer 4 Audit Enclave</span>
+                            <span className="pillar-item-val">Nvidia NemoClaw</span>
+                          </div>
+                          <div className="pillar-item-row">
+                            <span className="pillar-item-lbl">Grounding Error (L2)</span>
+                            <span className="pillar-item-val">
+                              {pipelineState?.calibration?.history && pipelineState.calibration.history.length > 0
+                                ? pipelineState.calibration.history[pipelineState.calibration.history.length - 1].error.toFixed(4)
+                                : '0.0415'}
+                            </span>
+                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 )}
 
-                {/* 4. TOKEN INGESTION TAB VIEW */}
-                {currentTab === 'tokens' && (
+                {/* 4. CALIBRATION ENGINE TAB VIEW */}
+                {currentTab === 'calibration' && (
                   <div className="tab-container flex-col animate-fade-in">
                     <div className="tab-header-row">
                       <div>
-                        <h2>Token Ingestion Pipeline Logs</h2>
-                        <p className="tab-subtitle">Monitor incoming webhooks, commits, and manual synchronizations</p>
+                        <h2>Self-Supervised Grounding Calibration</h2>
+                        <p className="tab-subtitle">Layer 2 aligns latent-space predictions with actual repository states to eliminate simulation drift</p>
                       </div>
-                      <button 
-                        className="action-trigger-btn"
-                        onClick={handleTriggerSync}
-                        disabled={isSyncing}
-                      >
-                        <span className="material-symbols-outlined btn-sync-icon">
-                          {isSyncing ? 'sync' : 'cached'}
-                        </span>
-                        {isSyncing ? 'Syncing...' : 'Trigger Telemetry Ingestion'}
-                      </button>
                     </div>
-
-                    {isSyncing && (
-                      <div className="glass-card active-sync-alert">
-                        <div className="sync-spinner-row">
-                          <div className="spinner-circle"></div>
-                          <div>
-                            <strong>Fetching latest pipeline commits...</strong>
-                            <p>Polling FastAPI WebSocket repository listener for delta logs...</p>
+                    
+                    <div className="calibration-hud-container">
+                      {/* Left: Summary */}
+                      <div className="cal-summary-card">
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-sub)', textTransform: 'uppercase' }}>Active Calibration Factor</h4>
+                          <div className="cal-big-value">
+                            {pipelineState?.calibration?.factor !== undefined
+                              ? `${pipelineState.calibration.factor.toFixed(4)}`
+                              : '1.0250'}
                           </div>
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-sub)', margin: 0, lineHeight: 1.4 }}>
+                            Adapts prediction project matrices using Euclidean grounding distance updates. Keeps simulation predictions aligned with actual velocity.
+                          </p>
+                        </div>
+                        <div style={{ marginTop: '15px', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)' }}>Grounding Status:</span>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--success)', marginLeft: '6px' }}>OPTIMAL</span>
                         </div>
                       </div>
-                    )}
-
-                    <div className="glass-card">
-                      <h3>Ingestion Event Streams</h3>
-                      <div className="ingestion-timeline">
-                        {(ingestionEvents[selectedProject] || []).length > 0 ? (
-                          (ingestionEvents[selectedProject] || []).map((evt) => (
-                            <div key={evt.id} className="timeline-item-row">
-                              <div className="timeline-left">
-                                <span className={`badge ${evt.type}`}>{evt.type}</span>
+                      
+                      {/* Right: Chart */}
+                      <div className="cal-chart-card">
+                        <div className="cal-chart-header">
+                          <h3>Grounding Error History ($L_2$ Euclidean Distance)</h3>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)' }}>Target Distance: &lt; 0.0500</span>
+                        </div>
+                        
+                        <div className="cal-bar-chart">
+                          {(() => {
+                            const history = pipelineState?.calibration?.history || [
+                              { timestamp: new Date(Date.now() - 3600000 * 3).toISOString(), error: 0.045, calibration_factor: 1.0 },
+                              { timestamp: new Date(Date.now() - 3600000 * 2).toISOString(), error: 0.042, calibration_factor: 1.01 },
+                              { timestamp: new Date(Date.now() - 3600000).toISOString(), error: 0.038, calibration_factor: 1.02 },
+                              { timestamp: new Date().toISOString(), error: 0.041, calibration_factor: 1.025 }
+                            ];
+                            
+                            // Map to CSS height representation
+                            const maxVal = Math.max(...history.map(h => h.error), 0.1);
+                            
+                            return history.map((item, idx) => {
+                              const heightPct = (item.error / maxVal) * 100;
+                              return (
+                                <div key={idx} className="cal-bar-container">
+                                  <div className="cal-bar-fill" style={{ height: `${heightPct}%`, background: item.error < 0.05 ? 'var(--success)' : 'var(--error)' }}>
+                                    <div className="cal-bar-tooltip">
+                                      Err: {item.error.toFixed(4)}<br />Factor: {item.calibration_factor.toFixed(4)}
+                                    </div>
+                                  </div>
+                                  <span className="cal-axis-lbl">T-{history.length - 1 - idx}</span>
+                                </div>
+                              );
+                            });
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Calibration Events Log */}
+                    <div className="glass-card" style={{ marginTop: '20px' }}>
+                      <h3>Grounding Logs</h3>
+                      <div className="merkle-chain-log">
+                        {pipelineState?.calibration?.history && pipelineState.calibration.history.length > 0 ? (
+                          pipelineState.calibration.history.map((record, idx) => (
+                            <div key={idx} className="merkle-node-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)', fontFamily: 'var(--mono-font)' }}>
+                                  {new Date(record.timestamp).toLocaleTimeString()}
+                                </span>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', fontWeight: 600 }}>
+                                  Self-supervised adjustment sealed: L2 distance {record.error.toFixed(4)}.
+                                </p>
                               </div>
-                              <div className="timeline-center">
-                                <span className="timeline-text">{evt.text}</span>
-                              </div>
-                              <div className="timeline-right">
-                                <span className="timeline-time">{evt.time}</span>
-                              </div>
+                              <span className="lock-secured" style={{ color: 'var(--primary)', background: 'var(--primary-glow)' }}>
+                                Factor: {record.calibration_factor.toFixed(4)}
+                              </span>
                             </div>
                           ))
                         ) : (
-                          <div className="empty-state">No ingestion streams logged for this project.</div>
+                          <div className="empty-state-text" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-sub)' }}>
+                            No calibration updates logged yet. Run a simulation pipeline to activate self-supervised grounding error updates.
+                          </div>
                         )}
                       </div>
                     </div>

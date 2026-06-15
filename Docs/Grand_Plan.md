@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary
 
-The PWM framework addresses the **"Paradox of Agility" (Ketteryyden paradoksi)** — the phenomenon where exponential asset generation by L1 AI models creates massive "integration debt," completely overwhelming linear, human-driven Agile/Scrum pipelines (Thesis §1.1). PWM solves this by acting as a **Causal Digital Twin (CDT)** (Thesis §5.2), orchestrating an asynchronous **Agent Verification Engine** (Thesis §5.5) to resolve embedded integration debt before it hits production.
+The PWM framework addresses the **"Paradox of Agility"** — the phenomenon where exponential asset generation by L1 AI models creates massive "integration debt," completely overwhelming linear, human-driven Agile/Scrum pipelines (Thesis §1.1). PWM solves this by acting as a **Causal Digital Twin (CDT)** (Thesis §5.2), orchestrating an asynchronous **Agent Verification Engine** (Thesis §5.5) to resolve embedded integration debt before it hits production.
 
 The system operates using **Causal Counterfactual Reasoning** (Thesis §2.2), enabling "what if we had done X differently?" scenario analysis in latent space — a capability fundamentally beyond traditional Agile tools that operate only at Level 1 (Association/correlation).
 

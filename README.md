@@ -7,7 +7,7 @@ Eradicating integration debt via **Causal Digital Twins** and an asynchronous **
 ---
 
 ## 📖 Theoretical Foundation
-The **Project World Model (PWM)** framework addresses the **"Paradox of Agility" (Ketteryyden paradoksi)**: the phenomenon where exponential asset generation by L1 AI models creates massive "integration debt" that completely overwhelms linear, human-driven Agile/Scrum pipelines. 
+The **Project World Model (PWM)** framework addresses the **"Paradox of Agility"**: the phenomenon where exponential asset generation by L1 AI models creates massive "integration debt" that completely overwhelms linear, human-driven Agile/Scrum pipelines. 
 
 PWM solves this by acting as a **Causal Digital Twin (CDT)**. It orchestrates an asynchronous **Agent Verification Engine** using specialized Worker and Critic agents to simulate, detect, and resolve integration debt before it hits production. 
 
