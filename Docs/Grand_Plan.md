@@ -102,7 +102,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 
 ---
 
-## 4. The 7-Phase Development Roadmap
+## 4. The 8-Phase Development Roadmap
 
 > [!NOTE]
 > All phases from Phase 1 through Phase 6 are now fully completed. The framework utilizes a robust modular package `pwm/layers` incorporating REST connectors to V-JEPA 2.1, LeWM, LMMs-Engine, and NVIDIA NemoClaw endpoints, complete with dynamic Vertex AI (Gemini 2.5 Pro/Flash) semantic fallbacks.
@@ -116,6 +116,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 | **5** | Simulation Sandbox & Visualization | ✅ **DONE** | Dashboard, What-If Sandbox, telemetry visualizers, 24h phase tracker |
 | **6** | MVP & GCP Deployment | ✅ **DONE** | Cloud Run deployed, GCE GPU setup templates & automated lifecycle controls |
 | **7** | Commercial V1.0 & XPRIZE | ⏳ **PENDING** | Demo video & narrative pending. Rebranding complete. Deadline: August 17, 2026 |
+| **8** | Advanced World Model Grounding & Multi-Modal Latent Space | ⏳ **PENDING** | Self-supervised LeWM grounding and multi-modal causal embeddings |
 
 ---
 
@@ -212,6 +213,17 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 | 7.4 | Establish Subscription Pricing Tiers: Basic ($19.99), Pro ($49.99), Enterprise ($99.99) | ❌ Not started |
 | 7.5 | Execute localized Finnish game dev ecosystem launch (§6.5) | ❌ Not started |
 | 7.6 | De-academicization & Commercial Rebranding: Remove thesis academicisms (Pearl L3, Jevons Paradox) from UI/UX and documentation to prepare the product for commercial launch. | ✅ Done |
+
+---
+
+### ⏳ Phase 8 — Advanced World Model Grounding & Multi-Modal Causal Latent Space
+
+- **Objective**: Ground LeWM simulation predictions against actual outcomes and build a unified multi-modal causal embedding space.
+
+| Task | Description | Status |
+|------|-------------|--------|
+| 8.1 | **Self-Supervised LeWM Grounding & Calibration**: Implement background prediction monitoring that compares LeWM's `next_state_prediction` against observed actual project state vectors over time, calculating prediction error to continuously calibrate and fine-tune LeWM. | ⏳ Not started |
+| 8.2 | **Multi-Modal Causal Latent Space**: Develop a joint embedding projector that fuses text tokens, unified dependency graphs, and visual layout features (Gantt, wireframes) into a single $768d$ state vector for LeWM simulation. | ⏳ Not started |
 
 ---
 
