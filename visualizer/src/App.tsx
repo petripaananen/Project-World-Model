@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html, Sparkles, Environment, ContactShadows, Float } from '@react-three/drei';
 import * as THREE from 'three';
 import './App.css';
+import { GameGardenScene } from './spark/GameGardenScene';
 
 // --- Types for DTO Graph ---
 interface FusedNode {
@@ -661,6 +662,7 @@ function CostChart({ projectCrr }: { projectCrr: number }) {
 function App() {
   const [pipelineState, setPipelineState] = useState<PipelineState | null>(null);
   const [zenMode, setZenMode] = useState(false);
+  const [selectedGardenNode, setSelectedGardenNode] = useState<FusedNode | null>(null);
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [expandedConflictId, setExpandedConflictId] = useState<number | null>(null);
   const [humanApprovedState, setHumanApprovedState] = useState<boolean | null>(null);
@@ -770,6 +772,10 @@ function App() {
   };
 
   useEffect(() => {
+    setSelectedGardenNode(null);
+  }, [selectedProject]);
+
+  useEffect(() => {
     const ws = new WebSocket('ws://localhost:8765/ws');
     ws.onmessage = (event) => {
       try {
@@ -835,6 +841,40 @@ function App() {
           graph: pipelineState?.unified_graph || { nodes: [], edges: [] }
         }
       : null;
+
+  // Enrich graph nodes with risk probabilities, comment count (reviews), and priority for classical garden
+  const enrichedGraph = useMemo(() => {
+    if (!activeProjectData?.graph) return undefined;
+    const nodes = activeProjectData.graph.nodes.map((node, i) => {
+      // Find if this node is involved in any active conflicts
+      const conflicts = pipelineState?.debt_report?.conflicts || [];
+      const conflict = conflicts.find(c => 
+        (node.type === 'pr' && c.involved_prs?.some(id => node.name.includes(id.toString()))) ||
+        (node.type === 'issue' && c.involved_issues?.some(id => node.name.includes(id)))
+      );
+      
+      let riskProbability = conflict?.causal_evidence?.probability ?? 0;
+      if (node.type === 'issue' && !conflict) {
+        // Fallback or default risk based on mock data risks
+        const risks = activeProjectData.risks || [];
+        const riskIdx = i % Math.max(risks.length, 1);
+        const risk = risks[riskIdx];
+        riskProbability = risk ? risk.probability / 100 : 0.35;
+      }
+      
+      // Enrich attributes
+      return {
+        ...node,
+        attributes: {
+          ...node.attributes,
+          riskProbability,
+          reviews: node.type === 'pr' ? (node.attributes.status === 'Approved' ? 2 : node.attributes.status === 'Under Review' ? 1 : 0) : undefined,
+          priority: node.type === 'issue' ? (i % 3 === 0 ? 'High' : i % 3 === 1 ? 'Medium' : 'Low') : undefined,
+        }
+      };
+    });
+    return { ...activeProjectData.graph, nodes };
+  }, [activeProjectData, pipelineState]);
 
   // Derived dashboard metrics based on limits
   const tokenBurn = (qaLimit * 1.8 + opponentLimit * 0.9).toFixed(1);
@@ -1175,15 +1215,30 @@ function App() {
           
           {/* 3D Background Canvas Layer */}
           <div className="canvas-container">
-            <Canvas shadows camera={{ position: [0, 8, 12], fov: 48 }}>
-              <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 - 0.05} minDistance={5} maxDistance={25} />
-              <DTOSimulation 
-                graph={activeProjectData?.graph || null} 
-                crr={activeProjectData?.telemetry?.crr} 
-                qaLimit={qaLimit}
-                opponentLimit={opponentLimit}
-              />
-            </Canvas>
+            {/* Standard mode: React-Three-Fiber DTO Simulation */}
+            {!zenMode && (
+              <Canvas shadows camera={{ position: [0, 8, 12], fov: 48 }}>
+                <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 - 0.05} minDistance={5} maxDistance={25} />
+                <DTOSimulation 
+                  graph={activeProjectData?.graph || null} 
+                  crr={activeProjectData?.telemetry?.crr} 
+                  qaLimit={qaLimit}
+                  opponentLimit={opponentLimit}
+                />
+              </Canvas>
+            )}
+
+            {/* Zen mode: Classical Garden Simulation */}
+            <GameGardenScene
+              active={zenMode}
+              crr={activeProjectData?.telemetry?.crr}
+              projectName={activeProjectData?.name}
+              graph={enrichedGraph}
+              qaLimit={qaLimit}
+              opponentLimit={opponentLimit}
+              eventCount={selectedProject ? (ingestionEvents[selectedProject]?.length || 0) : 0}
+              onSelectNode={setSelectedGardenNode}
+            />
           </div>
 
           {/* Dynamic UI Overlay Layer */}
@@ -1518,15 +1573,18 @@ function App() {
                                           {conflict.causal_evidence?.impact_distribution && (
                                             <div className="severity-distribution-section">
                                               <h5>Predicted Risk Impact Distribution</h5>
-                                              {Object.entries(conflict.causal_evidence.impact_distribution).map(([sev, weight], wIdx) => (
-                                                <div key={wIdx} className="distribution-bar-row">
-                                                  <span className="distribution-lbl">{sev}</span>
-                                                  <div className="distribution-track">
-                                                    <div className={`distribution-fill ${sev}`} style={{ width: `${weight * 100}%` }}></div>
+                                              {Object.entries(conflict.causal_evidence.impact_distribution).map(([sev, weight], wIdx) => {
+                                                const wNum = Number(weight);
+                                                return (
+                                                  <div key={wIdx} className="distribution-bar-row">
+                                                    <span className="distribution-lbl">{sev}</span>
+                                                    <div className="distribution-track">
+                                                      <div className={`distribution-fill ${sev}`} style={{ width: `${wNum * 100}%` }}></div>
+                                                    </div>
+                                                    <span>{Math.round(wNum * 100)}%</span>
                                                   </div>
-                                                  <span>{Math.round(weight * 100)}%</span>
-                                                </div>
-                                              ))}
+                                                );
+                                              })}
                                             </div>
                                           )}
 
@@ -2167,23 +2225,112 @@ function App() {
               // Zen Mode overlay: Miniature floating HUDs over 3D coordinates space
               <div className="zen-hud-overlay">
                 
-                {/* Top Left: Workspace Overview HUD */}
-                <div className="glass-card hud-card workspace-hud animate-hud-left">
-                  <div className="hud-header">
-                    <span className="material-symbols-outlined">analytics</span>
-                    <h3>Workspace Overview</h3>
-                  </div>
-                  <p className="hud-project-title"><strong>{activeProjectData.name}</strong></p>
-                  <div className="hud-metric-row">
-                    <div>
-                      <span className="hud-val">{activeProjectData.telemetry.prs}</span>
-                      <span className="hud-lbl">PRs Nodes</span>
+                {/* Left side: Workspace Overview + Node Details Container */}
+                <div className="animate-hud-left" style={{ gridArea: 'overview', display: 'flex', flexDirection: 'column', gap: '16px', pointerEvents: 'none', width: '320px' }}>
+                  
+                  {/* Workspace Overview HUD */}
+                  <div className="glass-card hud-card workspace-hud" style={{ pointerEvents: 'auto', margin: 0 }}>
+                    <div className="hud-header">
+                      <span className="material-symbols-outlined">analytics</span>
+                      <h3>Workspace Overview</h3>
                     </div>
-                    <div>
-                      <span className="hud-val">{activeProjectData.telemetry.issues}</span>
-                      <span className="hud-lbl">Issues Nodes</span>
+                    <p className="hud-project-title"><strong>{activeProjectData.name}</strong></p>
+                    <div className="hud-metric-row">
+                      <div>
+                        <span className="hud-val">{activeProjectData.telemetry.prs}</span>
+                        <span className="hud-lbl">PRs Nodes</span>
+                      </div>
+                      <div>
+                        <span className="hud-val">{activeProjectData.telemetry.issues}</span>
+                        <span className="hud-lbl">Issues Nodes</span>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Node Details HUD */}
+                  {selectedGardenNode && (
+                    <div className="glass-card hud-card details-hud" style={{ 
+                      pointerEvents: 'auto',
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      margin: 0
+                    }}>
+                      <div className="hud-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className="material-symbols-outlined" style={{ color: selectedGardenNode.type === 'pr' ? '#d4a520' : '#c44030', fontSize: '1.2rem' }}>
+                            {selectedGardenNode.type === 'pr' ? 'layers' : 'bug_report'}
+                          </span>
+                          <h3>{selectedGardenNode.type === 'pr' ? 'PR Details' : 'Issue Details'}</h3>
+                        </div>
+                        <button 
+                          onClick={() => setSelectedGardenNode(null)}
+                          style={{ 
+                            background: 'none', 
+                            border: 'none', 
+                            color: 'var(--text-sub)', 
+                            cursor: 'pointer', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            padding: '4px' 
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>close</span>
+                        </button>
+                      </div>
+                      
+                      <div className="details-content" style={{ marginTop: '12px', fontSize: '0.82rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-main)' }}>{selectedGardenNode.name}</p>
+                        
+                        {selectedGardenNode.type === 'pr' ? (
+                          <>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                              <span style={{ color: 'var(--text-sub)' }}>Status:</span>
+                              <span style={{ 
+                                fontWeight: 600, 
+                                color: selectedGardenNode.attributes.status?.toLowerCase() === 'approved' ? '#3aaa5e' : selectedGardenNode.attributes.status?.toLowerCase() === 'draft' ? '#8a9090' : '#d4a520' 
+                              }}>{selectedGardenNode.attributes.status}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                              <span style={{ color: 'var(--text-sub)' }}>Author:</span>
+                              <span style={{ fontWeight: 600 }}>{selectedGardenNode.attributes.author}</span>
+                            </div>
+                            {selectedGardenNode.attributes.reviews !== undefined && (
+                              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                                <span style={{ color: 'var(--text-sub)' }}>Reviews:</span>
+                                <span style={{ fontWeight: 600 }}>{selectedGardenNode.attributes.reviews} approved</span>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                              <span style={{ color: 'var(--text-sub)' }}>Status:</span>
+                              <span style={{ 
+                                fontWeight: 600, 
+                                color: selectedGardenNode.attributes.status?.toLowerCase() === 'active' ? '#c44030' : selectedGardenNode.attributes.status?.toLowerCase() === 'backlog' ? '#6a7a7a' : '#d47820'
+                              }}>{selectedGardenNode.attributes.status}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                              <span style={{ color: 'var(--text-sub)' }}>Priority:</span>
+                              <span style={{ 
+                                fontWeight: 600, 
+                                color: selectedGardenNode.attributes.priority === 'High' ? '#c44030' : selectedGardenNode.attributes.priority === 'Medium' ? '#d47820' : 'var(--text-sub)' 
+                              }}>{selectedGardenNode.attributes.priority}</span>
+                            </div>
+                            {selectedGardenNode.attributes.riskProbability !== undefined && (
+                              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                                <span style={{ color: 'var(--text-sub)' }}>Conflict Risk:</span>
+                                <span style={{ 
+                                  fontWeight: 700, 
+                                  color: selectedGardenNode.attributes.riskProbability > 0.6 ? '#c44030' : selectedGardenNode.attributes.riskProbability > 0.3 ? '#d47820' : '#3aaa5e'
+                                }}>{Math.round(selectedGardenNode.attributes.riskProbability * 100)}%</span>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Top Right: Causal Efficiency HUD */}
