@@ -20,7 +20,7 @@ The system targets **Causal Counterfactual Reasoning** (Thesis §2.2), enabling 
 ## 2. The 7-Phase Roadmap — Status Assessment
 
 > [!NOTE]
-> **Modular Model Architecture Deployed**: Phases 3, 4, and 6 have been fully closed. The monolith design has been replaced with a modular `pwm/layers` package implementing connectors for V-JEPA 2.1 (L1), LeWM (L2), LMMs-Engine (L3), and NVIDIA NemoClaw (L4), complete with robust Vertex AI (Gemini 2.5 Pro/Flash) semantic fallbacks when external GPU endpoints are not configured.
+> **Modular Model & Visualizer Architecture Deployed**: Phases 3, 4, 5, and 6 have been fully closed. The backend monolith design has been replaced with a modular `pwm/layers` package implementing connectors for V-JEPA 2.1 (L1), LeWM (L2), LMMs-Engine (L3), and NVIDIA NemoClaw (L4) with robust Gemini fallbacks. The frontend includes an interactive **3D Classical Garden Simulation** (Zen Mode) visualizer built with React-Three-Fiber and Three.js under the `visualizer/` subdirectory.
 
 | Phase | Name | Status | Thesis Alignment |
 |-------|------|--------|-----------------|
@@ -28,7 +28,7 @@ The system targets **Causal Counterfactual Reasoning** (Thesis §2.2), enabling 
 | **2** | Proof of Concept (PoC) | ✅ **DONE** | L1 observation via MCP (Thesis §5.2 — version control and tasks streams implemented) |
 | **3** | Prototype & OSS Orchestration | ✅ **DONE** | Connectors for V-JEPA, LeWM, LMMs-Engine deployed with Vertex AI fallback integrations (Taulukko 4). |
 | **4** | Security & Compliance (SAIF) | ✅ **DONE** | NVIDIA NemoClaw sandbox checks and Merkle-chained event logs implemented (Thesis §6.3.2). |
-| **5** | Simulation Sandbox & Visualization | ✅ **DONE** | Dashboard shows CRR, What-If Sandbox, conflict cards, debate logs, and 24h cycle tracker. |
+| **5** | Simulation Sandbox & Visualization | ✅ **DONE** | Dashboard shows CRR, What-If Sandbox, conflict cards, debate logs, 24h cycle tracker, and interactive 3D Classical Garden visualizer. |
 | **6** | MVP & GCP Deployment | ✅ **DONE** | Cloud Run deployed, GCE GPU vm lifecycle controls and setup templates operationalized. |
 | **7** | Commercial V1.0 & XPRIZE | ⏳ **PENDING** | Demo video and written narrative pending. Rebranding complete. Deadline: August 17, 2026. |
 
@@ -81,6 +81,7 @@ The system targets **Causal Counterfactual Reasoning** (Thesis §2.2), enabling 
 | 24h async cycle visualization (Thesis Kuvio 8) | Day/night phase indicator via /api/cycle | ✅ Closed |
 | Agent Verification Engine debate log (Thesis Kuvio 7) | Negotiation tree with specialist agent verdicts | ✅ Closed |
 | Causal evidence cards with probability distributions | Conflict cards with Causal Risk Forecast probability bars | ✅ Closed |
+| 3D Classical Garden digital twin visualization mapping metrics to organic 3D elements | React-Three-Fiber visualizer under `visualizer/` with detailed map legend and details card | ✅ Closed |
 | Qualitative objective function editor (Thesis §5.3) | Not implemented | ❌ Future phase |
 
 ---
@@ -123,6 +124,15 @@ Project World Model/
 │   ├── test_budget_and_loop.py   ← Budget and Critic loop tests
 │   ├── test_gcp_config.py       ← GCP config, VM, and modular layers tests
 │   └── test_security_adversarial.py ← Security hardening tests
+├── visualizer/                  ← React + Vite + Three.js frontend visualizer (Layer 5)
+│   ├── package.json
+│   ├── src/
+│   │   ├── App.tsx              ← Main dashboard entry, UI layouts, detail panels
+│   │   ├── App.css              ← Styling, animations, layout grids, collapsible legend styles
+│   │   └── spark/
+│   │       ├── GameGardenScene.tsx ← 3D classical garden digital twin visualizer
+│   │       └── SparkGardenScene.tsx ← World Labs 3DGS integration placeholder
+└── README.md                    ← Project overview & XPRIZE framing
 ```
 
 ### ✅ Completed & Thesis-Aligned
@@ -132,7 +142,7 @@ Project World Model/
 - **Layer 2 Simulation**: LeWM connector for action-conditioned simulation, CRR token/GPU/electricity cost tracking, and local/Gemini fallbacks.
 - **Layer 3 Orchestration**: Specialized Worker agents (QA, Build, Art Integration), WorkerAgentFactory, and LMMs-Engine visual context parsing.
 - **Layer 4 Validation**: NVIDIA NemoClaw sandbox connector, safety/critique filters, adversarial test suite, and loop-detection.
-- **Layer 5**: FastAPI glassmorphic web dashboard, What-If Sandbox, WebSocket telemetry, day/night cycle phases, and CRR cost gauges.
+- **Layer 5**: FastAPI glassmorphic web dashboard, What-If Sandbox, WebSocket telemetry, day/night cycle phases, CRR cost gauges, and interactive 3D Classical Garden digital twin visualization (mapping metrics to organic 3D elements like flowering bushes, wilted weeds, well water colors, stepping stone dependency paths, and butterfly agents; featuring dynamic seasons, water ripples, custom animations, a detailed collapsible map legend, and flexbox layout stacking).
 - **GCP deployment**: Cloud Run + Firestore + Vertex AI endpoints deployed, and resilient Firestore exponential backoffs.
 - **VM Lifecycle & Setup**: GCE GPU driver and mock service configuration setup script template, with automated `gcloud` lifecycle commands in `run_gpu_pipeline.py`.
 - **SAIF compliance**: Safety filters, input sanitizer, sandbox instructions, red-team tests.

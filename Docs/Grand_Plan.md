@@ -58,6 +58,7 @@ The human-in-the-loop executive layer. The thesis replaces the traditional produ
 - Exercises **absolute veto power** to prevent creative vision erosion
 - Operates as a **reward architect** (palkkioarkkitehti; Thesis §2.5), tuning agent incentives
 - Follows the **24-hour async cycle** (Thesis §5.7): agents simulate overnight, humans review and set objectives during the day.
+- Audits the **Causal Digital Twin** using the interactive **3D Classical Garden Simulation** (Zen Mode), where project health and integration debt are mapped onto organic elements (well water, flowering PR bushes, wilted Issue weeds, and orbiting agent butterflies).
 
 ### 🔄 Dynamic Control Flows (Thesis Kuvio 4)
 
@@ -105,7 +106,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 ## 4. The 8-Phase Development Roadmap
 
 > [!NOTE]
-> All phases from Phase 1 through Phase 6 are now fully completed. The framework utilizes a robust modular package `pwm/layers` incorporating REST connectors to V-JEPA 2.1, LeWM, LMMs-Engine, and NVIDIA NemoClaw endpoints, complete with dynamic Vertex AI (Gemini 2.5 Pro/Flash) semantic fallbacks.
+> All phases from Phase 1 through Phase 6 are now fully completed. The framework utilizes a robust modular package `pwm/layers` incorporating REST connectors to V-JEPA 2.1, LeWM, LMMs-Engine, and NVIDIA NemoClaw endpoints, complete with dynamic Vertex AI (Gemini 2.5 Pro/Flash) semantic fallbacks. The frontend includes an interactive **3D Classical Garden Simulation** (Zen Mode) built with React-Three-Fiber and Three.js under the `visualizer/` subdirectory.
 
 | Phase | Name | Status | Thesis Grounding |
 |-------|------|--------|-----------------|
@@ -184,6 +185,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 | 5.3 | Develop telemetry visualizers for agent negotiation trees | ✅ Done |
 | 5.4 | Use Stitch MCP for design system consistency | ✅ Done |
 | 5.5 | Iterate UI/UX for full 5-layer architecture with causal evidence, debate logs, CRR gauges | ✅ Done |
+| 5.6 | Implement 3D Classical Garden Simulation (Zen Mode) mapping code integration metrics to 3D elements (PR bushes, Issue weeds, Well health, Butterfly agents, seasons) with an interactive details HUD and collapsible map legend | ✅ Done |
 
 ---
 
