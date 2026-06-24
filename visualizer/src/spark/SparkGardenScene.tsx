@@ -79,7 +79,7 @@ interface SparkGardenSceneProps {
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
-export function SparkGardenScene({ crr, projectName, active }: SparkGardenSceneProps) {
+export function SparkGardenScene({ crr, projectName: _projectName, active }: SparkGardenSceneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sparkRef = useRef<any>(null);
@@ -87,7 +87,6 @@ export function SparkGardenScene({ crr, projectName, active }: SparkGardenSceneP
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rafRef = useRef<number>(0);
-  const isMovingRef = useRef(false);
   const keysRef = useRef<Set<string>>(new Set());
   const mouseRef = useRef({ x: 0, y: 0, isDown: false, lastX: 0, lastY: 0 });
   const yawRef = useRef(0);
@@ -173,13 +172,11 @@ export function SparkGardenScene({ crr, projectName, active }: SparkGardenSceneP
 
     const splatMesh = new SplatMesh({
       url: selectedWorld.url,
-      onProgress: (loaded: number, total: number) => {
-        if (total > 0) setStreamProgress(Math.round((loaded / total) * 100));
+      ...(selectedWorld.splatLimit ? { maxSplats: selectedWorld.splatLimit } : {}),
+      onProgress: (event: ProgressEvent) => {
+        if (event.total > 0) setStreamProgress(Math.round((event.loaded / event.total) * 100));
       },
     });
-    if (selectedWorld.splatLimit) {
-      splatMesh.splatLimit = selectedWorld.splatLimit;
-    }
 
     scene.add(splatMesh);
     splatMeshRef.current = splatMesh;

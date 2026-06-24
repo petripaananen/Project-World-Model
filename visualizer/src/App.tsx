@@ -661,7 +661,7 @@ function CostChart({ projectCrr }: { projectCrr: number }) {
 // --- Main App ---
 function App() {
   const [pipelineState, setPipelineState] = useState<PipelineState | null>(null);
-  const [zenMode, setZenMode] = useState(false);
+  const [dtoSimActive, setDtoSimActive] = useState(false);
   const [selectedGardenNode, setSelectedGardenNode] = useState<FusedNode | null>(null);
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [expandedConflictId, setExpandedConflictId] = useState<number | null>(null);
@@ -1082,10 +1082,10 @@ function App() {
   };
 
   return (
-    <div className={`app-container ${zenMode ? 'zen-active' : 'standard-active'}`}>
+    <div className={`app-container ${dtoSimActive ? 'dto-sim-active' : 'standard-active'}`}>
       
       {/* Left Sidebar Nav Drawer (B rebranding renames to Project World Model) */}
-      <aside className={`sidebar-nav ${zenMode ? 'collapsed' : ''}`}>
+      <aside className={`sidebar-nav ${dtoSimActive ? 'collapsed' : ''}`}>
         <div className="sidebar-brand">
           <span className="material-symbols-outlined brand-icon">query_stats</span>
           <span className="brand-text">Project World Model</span>
@@ -1159,7 +1159,7 @@ function App() {
               value={selectedProject} 
               onChange={(e) => {
                 setSelectedProject(e.target.value);
-                if (!e.target.value) setZenMode(false);
+                if (!e.target.value) setDtoSimActive(false);
               }}
             >
               <option value="">-- Select Project Workspace --</option>
@@ -1189,15 +1189,15 @@ function App() {
             </button>
 
             <button 
-              className={`toggle-btn ${zenMode ? 'active' : ''}`} 
-              onClick={() => setZenMode(!zenMode)}
+              className={`toggle-btn ${dtoSimActive ? 'active' : ''}`} 
+              onClick={() => setDtoSimActive(!dtoSimActive)}
               disabled={!selectedProject}
               title={!selectedProject ? "Select a project to enable simulation" : "Toggle DTO Simulation"}
             >
               <span className="material-symbols-outlined btn-icon-span">
-                {zenMode ? 'grid_view' : '3d_rotation'}
+                {dtoSimActive ? 'grid_view' : '3d_rotation'}
               </span>
-              {zenMode ? 'Exit DTO Simulation' : 'Enter DTO Simulation'}
+              {dtoSimActive ? 'Exit DTO Simulation' : 'Enter DTO Simulation'}
             </button>
             
             <div className="user-profile">
@@ -1216,7 +1216,7 @@ function App() {
           {/* 3D Background Canvas Layer */}
           <div className="canvas-container">
             {/* Standard mode: React-Three-Fiber DTO Simulation */}
-            {!zenMode && (
+            {!dtoSimActive && (
               <Canvas shadows camera={{ position: [0, 8, 12], fov: 48 }}>
                 <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 - 0.05} minDistance={5} maxDistance={25} />
                 <DTOSimulation 
@@ -1228,9 +1228,9 @@ function App() {
               </Canvas>
             )}
 
-            {/* Zen mode: Classical Garden Simulation */}
+            {/* DTO Simulation: Classical Garden Simulation */}
             <GameGardenScene
-              active={zenMode}
+              active={dtoSimActive}
               crr={activeProjectData?.telemetry?.crr}
               projectName={activeProjectData?.name}
               graph={enrichedGraph}
@@ -1319,7 +1319,7 @@ function App() {
                   </div>
                 </div>
               </div>
-            ) : !zenMode ? (
+            ) : !dtoSimActive ? (
               // Option 2 Layout: Switchable tabs standard views
               <div className="standard-main-content">
                                {/* 1. OVERVIEW TAB VIEW */}
@@ -2222,8 +2222,8 @@ function App() {
 
               </div>
             ) : (
-              // Zen Mode overlay: Miniature floating HUDs over 3D coordinates space
-              <div className="zen-hud-overlay">
+              // DTO Simulation overlay: Miniature floating HUDs over 3D coordinates space
+              <div className="dto-sim-hud-overlay">
                 
                 {/* Left side: Workspace Overview + Node Details Container */}
                 <div className="animate-hud-left" style={{ gridArea: 'overview', display: 'flex', flexDirection: 'column', gap: '16px', pointerEvents: 'none', width: '320px' }}>

@@ -20,7 +20,7 @@ The system targets **Causal Counterfactual Reasoning** (Thesis §2.2), enabling 
 ## 2. The 7-Phase Roadmap — Status Assessment
 
 > [!NOTE]
-> **Modular Model & Visualizer Architecture Deployed**: Phases 3, 4, 5, and 6 have been fully closed. The backend monolith design has been replaced with a modular `pwm/layers` package implementing connectors for V-JEPA 2.1 (L1), LeWM (L2), LMMs-Engine (L3), and NVIDIA NemoClaw (L4) with robust Gemini fallbacks. The frontend includes an interactive **3D Classical Garden Simulation** (Zen Mode) visualizer built with React-Three-Fiber and Three.js under the `visualizer/` subdirectory.
+> **Modular Model & Visualizer Architecture Deployed**: Phases 3, 4, 5, and 6 have been fully closed. The backend monolith design has been replaced with a modular `pwm/layers` package implementing connectors for V-JEPA 2.1 (L1), LeWM (L2), LMMs-Engine (L3), and NVIDIA NemoClaw (L4) with robust Gemini fallbacks. The frontend includes an interactive **3D Classical Garden Simulation** (DTO Simulation) visualizer built with React-Three-Fiber and Three.js under the `visualizer/` subdirectory.
 
 | Phase | Name | Status | Thesis Alignment |
 |-------|------|--------|-----------------|
