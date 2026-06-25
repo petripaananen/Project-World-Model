@@ -313,17 +313,19 @@ function GardenWell({ crr, eventCount = 0 }: { crr?: number; eventCount?: number
       </mesh>
 
       {/* CRR label */}
-      <Html position={[0, 2.1, 0]} center>
-        <div className="garden-well-label">
-          <span className="garden-well-title">CRR</span>
-          <span
-            className="garden-well-value"
-            style={{ color: isDebt ? '#d47820' : '#3aaa5e' }}
-          >
-            {crr !== undefined ? crr.toFixed(2) + 'x' : '—'}
-          </span>
-        </div>
-      </Html>
+      {!hovered && (
+        <Html position={[0, 2.1, 0]} center>
+          <div className="garden-well-label">
+            <span className="garden-well-title">CRR</span>
+            <span
+              className="garden-well-value"
+              style={{ color: isDebt ? '#d47820' : '#3aaa5e' }}
+            >
+              {crr !== undefined ? crr.toFixed(2) + 'x' : '—'}
+            </span>
+          </div>
+        </Html>
+      )}
 
       {hovered && (
         <Html position={[0, 2.3, 0]} center zIndexRange={[100, 0]}>

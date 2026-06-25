@@ -309,6 +309,16 @@ class CriticAgent(BaseAgent):
         if project_context:
             parts.append(f"\n## PROJECT CONTEXT\n{project_context}")
 
+        # Enforce Definition of Done (DoD) constraints
+        dod = self.config.scrum.definition_of_done
+        if dod:
+            parts.append(
+                f"\n## DEFINITION OF DONE (DoD) CONSTRAINTS\n"
+                "The proposal MUST satisfy the following Definition of Done criteria:\n"
+                + "\n".join(f"- {criterion.replace('_', ' ').capitalize()}" for criterion in dod)
+                + "\nVerify if the proposed changes will successfully meet these criteria."
+            )
+
         parts.append(
             "\n## INSTRUCTION\n"
             "Audit this proposal across all four critique dimensions. "

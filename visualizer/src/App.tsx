@@ -18,6 +18,11 @@ import { OrbitControls, Html, Sparkles, Environment, ContactShadows, Float } fro
 import * as THREE from 'three';
 import './App.css';
 import { GameGardenScene } from './spark/GameGardenScene';
+import { KanbanBoard } from './components/KanbanBoard';
+import { SprintDashboard } from './components/SprintDashboard';
+import { StakeholderMap } from './components/StakeholderMap';
+import { FlowMetrics } from './components/FlowMetrics';
+import { ProjectLifecycle } from './components/ProjectLifecycle';
 
 // --- Types for DTO Graph ---
 interface FusedNode {
@@ -1108,9 +1113,45 @@ function App() {
           <button 
             onClick={() => setCurrentTab('overview')} 
             className={`menu-item-btn ${currentTab === 'overview' ? 'active' : ''}`}
+            title="Observe, Predict, Act — The central dashboard mapping real-time observation, AI simulation predictions, and control actions."
           >
             <span className="material-symbols-outlined">dashboard</span>
             <span className="menu-text">Console (OPA)</span>
+          </button>
+          <button 
+            onClick={() => setCurrentTab('kanban')} 
+            className={`menu-item-btn ${currentTab === 'kanban' ? 'active' : ''}`}
+          >
+            <span className="material-symbols-outlined">view_kanban</span>
+            <span className="menu-text">Board</span>
+          </button>
+          <button 
+            onClick={() => setCurrentTab('sprint')} 
+            className={`menu-item-btn ${currentTab === 'sprint' ? 'active' : ''}`}
+          >
+            <span className="material-symbols-outlined">alarm</span>
+            <span className="menu-text">Sprint Panel</span>
+          </button>
+          <button 
+            onClick={() => setCurrentTab('stakeholders')} 
+            className={`menu-item-btn ${currentTab === 'stakeholders' ? 'active' : ''}`}
+          >
+            <span className="material-symbols-outlined">groups</span>
+            <span className="menu-text">Stakeholder Map</span>
+          </button>
+          <button 
+            onClick={() => setCurrentTab('flow')} 
+            className={`menu-item-btn ${currentTab === 'flow' ? 'active' : ''}`}
+          >
+            <span className="material-symbols-outlined">insights</span>
+            <span className="menu-text">Flow Metrics</span>
+          </button>
+          <button 
+            onClick={() => setCurrentTab('lifecycle')} 
+            className={`menu-item-btn ${currentTab === 'lifecycle' ? 'active' : ''}`}
+          >
+            <span className="material-symbols-outlined">route</span>
+            <span className="menu-text">Project Lifecycle</span>
           </button>
           <button 
             onClick={() => setCurrentTab('scenarios')} 
@@ -1129,6 +1170,7 @@ function App() {
           <button 
             onClick={() => setCurrentTab('calibration')} 
             className={`menu-item-btn ${currentTab === 'calibration' ? 'active' : ''}`}
+            title="Simulation Alignment — Aligns AI predictions with actual repository history to eliminate simulation drift."
           >
             <span className="material-symbols-outlined">query_stats</span>
             <span className="menu-text">Calibration Engine</span>
@@ -1298,6 +1340,36 @@ function App() {
                             <p>Please select a repository workspace to unlock settings controls, Consensus threshold parameters, and alert notification destinations.</p>
                           </>
                         )}
+                        {currentTab === 'kanban' && (
+                          <>
+                            <h4>Workflow Board View</h4>
+                            <p>Please select a repository workspace to view the active work items, track WIP limit status, and identify aging items violating the SLE.</p>
+                          </>
+                        )}
+                        {currentTab === 'sprint' && (
+                          <>
+                            <h4>Sprint Dashboard View</h4>
+                            <p>Please select a repository workspace to view the current Sprint Goal, burn down/up charts, and check items against the Definition of Done (DoD).</p>
+                          </>
+                        )}
+                        {currentTab === 'stakeholders' && (
+                          <>
+                            <h4>Stakeholder Map View</h4>
+                            <p>Please select a repository workspace to explore communication link strength, assign RACI matrices, and monitor stakeholder inactivity risks.</p>
+                          </>
+                        )}
+                        {currentTab === 'flow' && (
+                          <>
+                            <h4>Flow Metrics View</h4>
+                            <p>Please select a repository workspace to view the Cumulative Flow Diagram (CFD), Cycle Time Scatterplot, and Throughput Histograms.</p>
+                          </>
+                        )}
+                        {currentTab === 'lifecycle' && (
+                          <>
+                            <h4>Project Lifecycle View</h4>
+                            <p>Please select a repository workspace to trace the phase timeline (Ideation to Support) and check the PMBOK Risk Register.</p>
+                          </>
+                        )}
                       </div>
                     </div>
                     
@@ -1376,7 +1448,7 @@ function App() {
                         <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span className="material-symbols-outlined column-icon">visibility</span>
-                            <h3>1. Observation (L1)</h3>
+                            <h3>1. Observation</h3>
                           </div>
                           <button 
                             className="sync-telemetry-btn"
@@ -1450,7 +1522,7 @@ function App() {
 
                         <div style={{ marginTop: '15px' }}>
                           <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
-                            L1 Telemetry Event Feed
+                            Telemetry Event Feed
                           </h4>
                           <div className="telemetry-event-feed" style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             {(ingestionEvents[selectedProject] || []).map((evt) => (
@@ -1472,7 +1544,7 @@ function App() {
                       <div className="opa-column predict-col">
                         <div className="column-header">
                           <span className="material-symbols-outlined column-icon">insights</span>
-                          <h3>2. Simulation Core (L2)</h3>
+                          <h3>2. Simulation Core</h3>
                         </div>
 
                         {/* Iron Triangle Gauges */}
@@ -1621,7 +1693,7 @@ function App() {
                       <div className="opa-column act-col">
                         <div className="column-header">
                           <span className="material-symbols-outlined column-icon">settings_applications</span>
-                          <h3>3. Control Gate (L5)</h3>
+                          <h3>3. Control Gate</h3>
                         </div>
 
                         {/* Scenario Strategist Audit Gate */}
@@ -2019,8 +2091,8 @@ function App() {
                   <div className="tab-container flex-col animate-fade-in">
                     <div className="tab-header-row">
                       <div>
-                        <h2>Self-Supervised Grounding Calibration</h2>
-                        <p className="tab-subtitle">Layer 2 aligns latent-space predictions with actual repository states to eliminate simulation drift</p>
+                        <h2>Simulation Alignment & Calibration</h2>
+                        <p className="tab-subtitle">Aligns simulated AI predictions with actual repository history (commits, PRs, issues) to eliminate prediction drift and maintain accuracy.</p>
                       </div>
                     </div>
                     
@@ -2028,18 +2100,21 @@ function App() {
                       {/* Left: Summary */}
                       <div className="cal-summary-card">
                         <div>
-                          <h4 style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-sub)', textTransform: 'uppercase' }}>Active Calibration Factor</h4>
+                          <h4 style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-sub)', textTransform: 'uppercase' }}>Simulation Scaling Factor</h4>
                           <div className="cal-big-value">
                             {pipelineState?.calibration?.factor !== undefined
                               ? `${pipelineState.calibration.factor.toFixed(4)}`
                               : '1.0250'}
                           </div>
-                          <p style={{ fontSize: '0.75rem', color: 'var(--text-sub)', margin: 0, lineHeight: 1.4 }}>
-                            Adapts prediction project matrices using Euclidean grounding distance updates. Keeps simulation predictions aligned with actual velocity.
+                          <p 
+                            style={{ fontSize: '0.75rem', color: 'var(--text-sub)', margin: 0, lineHeight: 1.4, cursor: 'help' }}
+                            title="Tuned automatically using the difference vector magnitude (Euclidean distance) between predicted project states and actual observed repository states."
+                          >
+                            A dynamic tuning multiplier that fine-tunes AI prediction models. If simulated forecasts start drifting from actual developer progress, this factor auto-adjusts to align the simulation with reality.
                           </p>
                         </div>
                         <div style={{ marginTop: '15px', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)' }}>Grounding Status:</span>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)' }}>Alignment Status:</span>
                           <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--success)', marginLeft: '6px' }}>OPTIMAL</span>
                         </div>
                       </div>
@@ -2047,8 +2122,17 @@ function App() {
                       {/* Right: Chart */}
                       <div className="cal-chart-card">
                         <div className="cal-chart-header">
-                          <h3>Grounding Error History ($L_2$ Euclidean Distance)</h3>
-                          <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)' }}>Target Distance: &lt; 0.0500</span>
+                          <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                            Simulation Drift History (Alignment Error)
+                            <span 
+                              className="material-symbols-outlined help-icon" 
+                              style={{ fontSize: '1.0rem', color: 'var(--text-sub)', cursor: 'help' }}
+                              title="Overall error distance measures the straight-line difference between the simulated multidimensional state and the actual state. Lower is better."
+                            >
+                              help
+                            </span>
+                          </h3>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)' }}>Target Drift: &lt; 0.0500</span>
                         </div>
                         
                         <div className="cal-bar-chart">
@@ -2069,7 +2153,7 @@ function App() {
                                 <div key={idx} className="cal-bar-container">
                                   <div className="cal-bar-fill" style={{ height: `${heightPct}%`, background: item.error < 0.05 ? 'var(--success)' : 'var(--error)' }}>
                                     <div className="cal-bar-tooltip">
-                                      Err: {item.error.toFixed(4)}<br />Factor: {item.calibration_factor.toFixed(4)}
+                                      Drift (Error): {item.error.toFixed(4)}<br />Scaling Factor: {item.calibration_factor.toFixed(4)}
                                     </div>
                                   </div>
                                   <span className="cal-axis-lbl">T-{history.length - 1 - idx}</span>
@@ -2083,7 +2167,7 @@ function App() {
                     
                     {/* Calibration Events Log */}
                     <div className="glass-card" style={{ marginTop: '20px' }}>
-                      <h3>Grounding Logs</h3>
+                      <h3>Alignment & Calibration Logs</h3>
                       <div className="merkle-chain-log">
                         {pipelineState?.calibration?.history && pipelineState.calibration.history.length > 0 ? (
                           pipelineState.calibration.history.map((record, idx) => (
@@ -2093,7 +2177,7 @@ function App() {
                                   {new Date(record.timestamp).toLocaleTimeString()}
                                 </span>
                                 <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', fontWeight: 600 }}>
-                                  Self-supervised adjustment sealed: L2 distance {record.error.toFixed(4)}.
+                                  Alignment check sealed: Simulation drift {record.error.toFixed(4)}.
                                 </p>
                               </div>
                               <span className="lock-secured" style={{ color: 'var(--primary)', background: 'var(--primary-glow)' }}>
@@ -2103,7 +2187,7 @@ function App() {
                           ))
                         ) : (
                           <div className="empty-state-text" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-sub)' }}>
-                            No calibration updates logged yet. Run a simulation pipeline to activate self-supervised grounding error updates.
+                            No calibration logs yet. Run a simulation pipeline to activate alignment checks.
                           </div>
                         )}
                       </div>
@@ -2231,6 +2315,40 @@ function App() {
 
                       </form>
                     </div>
+                  </div>
+                )}
+                {/* 5. KANBAN BOARD VIEW */}
+                {currentTab === 'kanban' && (
+                  <div className="tab-container flex-col animate-fade-in" style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', flex: 1, minHeight: 'calc(100vh - 180px)' }}>
+                    <KanbanBoard projectData={activeProjectData} pipelineState={pipelineState} />
+                  </div>
+                )}
+
+                {/* 6. SPRINT DASHBOARD VIEW */}
+                {currentTab === 'sprint' && (
+                  <div className="tab-container flex-col animate-fade-in" style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', flex: 1, minHeight: 'calc(100vh - 180px)' }}>
+                    <SprintDashboard projectData={activeProjectData} pipelineState={pipelineState} />
+                  </div>
+                )}
+
+                {/* 7. STAKEHOLDER MAP VIEW */}
+                {currentTab === 'stakeholders' && (
+                  <div className="tab-container flex-col animate-fade-in" style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', flex: 1, minHeight: 'calc(100vh - 180px)' }}>
+                    <StakeholderMap projectData={activeProjectData} pipelineState={pipelineState} />
+                  </div>
+                )}
+
+                {/* 8. FLOW METRICS VIEW */}
+                {currentTab === 'flow' && (
+                  <div className="tab-container flex-col animate-fade-in" style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', flex: 1, minHeight: 'calc(100vh - 180px)' }}>
+                    <FlowMetrics projectData={activeProjectData} pipelineState={pipelineState} />
+                  </div>
+                )}
+
+                {/* 9. PROJECT LIFECYCLE VIEW */}
+                {currentTab === 'lifecycle' && (
+                  <div className="tab-container flex-col animate-fade-in" style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', flex: 1, minHeight: 'calc(100vh - 180px)' }}>
+                    <ProjectLifecycle projectData={activeProjectData} pipelineState={pipelineState} />
                   </div>
                 )}
 

@@ -160,6 +160,82 @@ class CRRConfig(BaseModel):
     )
 
 
+class ScrumConfig(BaseModel):
+    """Scrum framework configuration."""
+    sprint_length_days: int = Field(
+        default=14, description="Sprint duration in days"
+    )
+    sprint_goal: Optional[str] = Field(
+        default=None, description="Current Sprint Goal statement"
+    )
+    definition_of_done: list[str] = Field(
+        default=["tests_pass", "code_reviewed", "docs_updated"],
+        description="Criteria that must be met for an Increment to be Done",
+    )
+    sprint_planning_timebox_hours: float = Field(
+        default=4.0, description="Sprint Planning timebox in hours"
+    )
+    daily_scrum_timebox_minutes: int = Field(
+        default=15, description="Daily Scrum timebox in minutes"
+    )
+    sprint_review_timebox_hours: float = Field(
+        default=2.0, description="Sprint Review timebox in hours"
+    )
+    sprint_retrospective_timebox_hours: float = Field(
+        default=1.5, description="Sprint Retrospective timebox in hours"
+    )
+
+
+class KanbanConfig(BaseModel):
+    """Kanban framework configuration — flow optimization."""
+    wip_limits: dict[str, int] = Field(
+        default={
+            "backlog": 20,
+            "in_progress": 5,
+            "review": 3,
+            "done": 0,  # 0 = unlimited
+        },
+        description="Work-in-Progress limits per workflow state",
+    )
+    sle_percentile: float = Field(
+        default=0.85,
+        description="Service Level Expectation percentile (e.g., 0.85 = 85th percentile)",
+    )
+    sle_target_days: int = Field(
+        default=8,
+        description="Target days for SLE (e.g., 85% of items finish in 8 days)",
+    )
+    workflow_states: list[str] = Field(
+        default=["backlog", "in_progress", "review", "done"],
+        description="Ordered workflow states from started to finished",
+    )
+    aging_warning_threshold_days: int = Field(
+        default=5,
+        description="Days after which a work item is flagged as aging",
+    )
+
+
+class PortfolioConfig(BaseModel):
+    """Multi-project portfolio management configuration."""
+    portfolio_mode: bool = Field(
+        default=False,
+        description="Enable multi-project portfolio aggregation",
+    )
+    stakeholder_tracking_enabled: bool = Field(
+        default=True,
+        description="Enable stakeholder activity tracking and risk analysis",
+    )
+    project_lifecycle_phase: str = Field(
+        default="execution",
+        description="Current project lifecycle phase "
+        "(ideation, preparation, initiation, planning, execution, closure, support)",
+    )
+    cross_project_resource_alert: bool = Field(
+        default=True,
+        description="Alert when a contributor is overloaded across projects",
+    )
+
+
 class PWMConfig(BaseModel):
     """
     Master configuration for the PWM framework.
@@ -178,6 +254,10 @@ class PWMConfig(BaseModel):
     ingestion: IngestionConfig = Field(default_factory=IngestionConfig)
     crr: CRRConfig = Field(default_factory=CRRConfig)
     dashboard: DashboardConfig = Field(default_factory=DashboardConfig)
+    # Agile framework configs
+    scrum: ScrumConfig = Field(default_factory=ScrumConfig)
+    kanban: KanbanConfig = Field(default_factory=KanbanConfig)
+    portfolio: PortfolioConfig = Field(default_factory=PortfolioConfig)
 
     # Runtime
     project_root: Path = Field(

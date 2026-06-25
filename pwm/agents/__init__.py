@@ -23,6 +23,10 @@ from .art_agent import ArtIntegrationAgent
 from .planner_agent import GoalPlannerAgent
 from .opponent_agent import OpponentAgent
 from .monitor_agent import ExecutionMonitorAgent
+from .kanban_flow_agent import KanbanFlowAgent
+from .scrum_master_agent import ScrumMasterAgent
+from .stakeholder_agent import StakeholderAgent
+from .portfolio_agent import RiskPortfolioAgent
 
 __all__ = [
     "BaseAgent",
@@ -35,4 +39,9 @@ __all__ = [
     "GoalPlannerAgent",
     "OpponentAgent",
     "ExecutionMonitorAgent",
+    "KanbanFlowAgent",
+    "ScrumMasterAgent",
+    "StakeholderAgent",
+    "RiskPortfolioAgent",
 ]
+
