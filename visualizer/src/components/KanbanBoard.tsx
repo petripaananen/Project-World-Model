@@ -127,22 +127,29 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectData, pipelineS
       <div className="board-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div>
           <h2 style={{ margin: 0 }}>{projectData?.name || 'Project'} Board</h2>
-          <p className="tab-subtitle" style={{ margin: '4px 0 0 0' }}>
-            Actively managing items in progress. SLE target is <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{sleTargetDays} days</span> (85th percentile).
+          <p className="tab-subtitle" style={{ margin: '4px 0 0 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            Actively managing items in progress. Target completion time is <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{sleTargetDays} days</span> (85% of tasks should finish within this limit).
+            <span 
+              className="material-symbols-outlined" 
+              style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
+              title="Service Level Expectation (SLE) represents the target turnaround time for a task once active development starts."
+            >
+              help
+            </span>
           </p>
         </div>
         <div style={{ display: 'flex', gap: '15px' }}>
           <span style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--success)' }}></span>
-            Normal Flow
+            On Track
           </span>
           <span style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'orange' }}></span>
-            Approaching SLE
+            Approaching Target Date
           </span>
           <span style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <span style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--error)' }}></span>
-            SLE Exceeded (Aging Alert)
+            Overdue / Stuck (Aging Alert)
           </span>
         </div>
       </div>
@@ -201,7 +208,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectData, pipelineS
               {isOverLimit && (
                 <div className="wip-alert-banner" style={{ background: 'rgba(186, 26, 26, 0.08)', color: 'var(--error)', padding: '8px 12px', borderRadius: '8px', fontSize: '0.72rem', fontWeight: 700, marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>warning</span>
-                  WIP limit exceeded by {col.cards.length - col.limit}!
+                  Open task limit exceeded by {col.cards.length - col.limit}! (Slowing down team delivery).
                 </div>
               )}
 
@@ -264,9 +271,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectData, pipelineS
                                 color: isAgingAlert ? 'var(--error)' : isApproachingSle ? 'orange' : 'var(--text-sub)', 
                                 fontWeight: isAgingAlert || isApproachingSle ? 800 : 500 
                               }}
-                              title={isAgingAlert ? 'Aging Alert: Exceeds SLE Target' : 'Days in current state'}
+                              title={isAgingAlert ? 'Aging Alert: Exceeds target completion time' : 'Days in current state'}
                             >
-                              Age: {card.ageDays}d
+                              In Progress: {card.ageDays} {card.ageDays === 1 ? 'day' : 'days'}{isAgingAlert ? ' (Stuck)' : ''}
                             </span>
                           )}
                         </div>

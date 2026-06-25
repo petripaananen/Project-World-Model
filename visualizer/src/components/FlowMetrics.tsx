@@ -111,7 +111,16 @@ export const FlowMetrics: React.FC<FlowMetricsProps> = ({ projectData, pipelineS
           
           {/* Cumulative Flow Diagram (CFD) */}
           <div className="glass-card" style={{ padding: '20px' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem' }}>Cumulative Flow Diagram (CFD)</h3>
+            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Work Status Flow (CFD)
+              <span 
+                className="material-symbols-outlined" 
+                style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
+                title="Visualizes how tasks accumulate across states over time. Widening bands point to operational bottlenecks."
+              >
+                help
+              </span>
+            </h3>
             <div style={{ height: '180px' }}>
               <svg viewBox="0 0 400 180" style={{ width: '100%', height: '100%' }}>
                 {/* Stacked area paths */}
@@ -154,7 +163,16 @@ export const FlowMetrics: React.FC<FlowMetricsProps> = ({ projectData, pipelineS
 
           {/* Cycle Time Scatterplot */}
           <div className="glass-card" style={{ padding: '20px' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem' }}>Cycle Time Scatterplot</h3>
+            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Task Completion Times
+              <span 
+                className="material-symbols-outlined" 
+                style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
+                title="Plots the total active days taken for each completed task. The red line represents our 8-day target."
+              >
+                help
+              </span>
+            </h3>
             <div style={{ height: '180px', position: 'relative' }}>
               <svg viewBox="0 0 400 180" style={{ width: '100%', height: '100%' }}>
                 {/* SLE Target Line (85th percentile) */}
@@ -209,7 +227,16 @@ export const FlowMetrics: React.FC<FlowMetricsProps> = ({ projectData, pipelineS
           
           {/* Work Item Age Chart */}
           <div className="glass-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '240px' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem' }}>Active Work Item Age (In-Progress)</h3>
+            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Stuck Task Durations
+              <span 
+                className="material-symbols-outlined" 
+                style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
+                title="Shows how long open tasks have been lingering in their current state."
+              >
+                help
+              </span>
+            </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowY: 'auto', flex: 1 }}>
               {agingItems.length > 0 ? (
                 agingItems.map((item: any) => (
@@ -244,7 +271,16 @@ export const FlowMetrics: React.FC<FlowMetricsProps> = ({ projectData, pipelineS
 
           {/* Throughput Histogram */}
           <div className="glass-card" style={{ padding: '20px' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem' }}>Weekly Throughput Histogram</h3>
+            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Task Completion Velocity
+              <span 
+                className="material-symbols-outlined" 
+                style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
+                title="Distribution of completed tasks per week. Measures consistency of team output."
+              >
+                help
+              </span>
+            </h3>
             <div style={{ height: '140px' }}>
               <svg viewBox="0 0 400 140" style={{ width: '100%', height: '100%' }}>
                 {/* Horizontal grid lines */}

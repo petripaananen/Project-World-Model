@@ -91,12 +91,21 @@ export const StakeholderMap: React.FC<StakeholderMapProps> = (props) => {
         });
       }
 
+      if (s.health === 'critical') {
+        list.push({
+          name: s.name,
+          risk: 'Isolation Alert',
+          severity: 'critical',
+          desc: `Isolation Alert: Developer is working with minimal interaction, increasing integration risk.`
+        });
+      }
+
       if (s.activityCount > 30) {
         list.push({
           name: s.name,
-          risk: 'Resource Overload Warning',
+          risk: 'Burnout Risk',
           severity: 'warning',
-          desc: `${s.name} handles excessive share of sprint deliverables (${s.activityCount} actions). Susceptible to burn-out.`
+          desc: `Burnout Risk: Developer has excessive task assignments.`
         });
       }
     });
@@ -197,7 +206,7 @@ export const StakeholderMap: React.FC<StakeholderMapProps> = (props) => {
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'orange' }}></span> Inactive/At-Risk
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--error)' }}></span> Siloed / Blocker
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--error)' }}></span> Isolated / Blocker
               </div>
             </div>
           </div>
@@ -282,7 +291,16 @@ export const StakeholderMap: React.FC<StakeholderMapProps> = (props) => {
 
       {/* RACI Matrix section */}
       <div className="glass-card" style={{ padding: '20px' }}>
-        <h3 style={{ margin: '0 0 12px 0', fontSize: '0.9rem' }}>Responsibility Assignment Matrix (RACI)</h3>
+        <h3 style={{ margin: '0 0 12px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          Responsibility Assignment Matrix (RACI)
+          <span 
+            className="material-symbols-outlined" 
+            style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
+            title="RACI stands for Responsible (does the work), Accountable (approves), Consulted (provides input), and Informed (kept updated) for each system area."
+          >
+            help
+          </span>
+        </h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>

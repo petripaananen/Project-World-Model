@@ -1113,10 +1113,10 @@ function App() {
           <button 
             onClick={() => setCurrentTab('overview')} 
             className={`menu-item-btn ${currentTab === 'overview' ? 'active' : ''}`}
-            title="Observe, Predict, Act — The central dashboard mapping real-time observation, AI simulation predictions, and control actions."
+            title="Command Console — Your central command dashboard mapping real-time observation, predictive risk simulations, and project control gates."
           >
             <span className="material-symbols-outlined">dashboard</span>
-            <span className="menu-text">Console (OPA)</span>
+            <span className="menu-text">Command Console</span>
           </button>
           <button 
             onClick={() => setCurrentTab('kanban')} 
@@ -1156,24 +1156,26 @@ function App() {
           <button 
             onClick={() => setCurrentTab('scenarios')} 
             className={`menu-item-btn ${currentTab === 'scenarios' ? 'active' : ''}`}
+            title="Scenario Sandbox — Simulate project changes (like adding developers or scope) to preview the impact on delivery timelines and costs."
           >
             <span className="material-symbols-outlined">schema</span>
-            <span className="menu-text">What-If Sandbox</span>
+            <span className="menu-text">Scenario Sandbox</span>
           </button>
           <button 
             onClick={() => setCurrentTab('strategic')} 
             className={`menu-item-btn ${currentTab === 'strategic' ? 'active' : ''}`}
+            title="Strategic Balance Sheet — Monitors system compute costs, development activity, and efficiency balance alerts (Jevons Paradox)."
           >
             <span className="material-symbols-outlined">analytics</span>
-            <span className="menu-text">Strategic Synthesis</span>
+            <span className="menu-text">Strategic Balance Sheet</span>
           </button>
           <button 
             onClick={() => setCurrentTab('calibration')} 
             className={`menu-item-btn ${currentTab === 'calibration' ? 'active' : ''}`}
-            title="Simulation Alignment — Aligns AI predictions with actual repository history to eliminate simulation drift."
+            title="Simulation Alignment — Auto-corrects AI forecast models against actual repository history to maintain simulation accuracy."
           >
             <span className="material-symbols-outlined">query_stats</span>
-            <span className="menu-text">Calibration Engine</span>
+            <span className="menu-text">Simulation Alignment</span>
           </button>
           <button 
             onClick={() => setCurrentTab('settings')} 
@@ -1318,20 +1320,20 @@ function App() {
                         )}
                         {currentTab === 'scenarios' && (
                           <>
-                            <h4>Configure Active Scenarios</h4>
-                            <p>Select a workspace first. Once initialized, you can model counterfactual sandboxes and trigger sandbox simulations to detect circular dependency conflicts.</p>
+                            <h4>Scenario Sandbox</h4>
+                            <p>Select a workspace first. Once initialized, you can simulate scenario changes (like team scaling or scope changes) and predict interdependency conflicts.</p>
                           </>
                         )}
                         {currentTab === 'strategic' && (
                           <>
-                            <h4>View Strategic Synthesis</h4>
-                            <p>Choose a repository to view the 3-pillar (Economics, Human, Technology) framework dashboard. Audit compute costs and check for Jevons Paradox runaway alerts.</p>
+                            <h4>Strategic Balance Sheet</h4>
+                            <p>Choose a repository to view the balance sheet (Economics, Human, Technology). Audit compute costs and check for efficiency balance alerts (Jevons Paradox).</p>
                           </>
                         )}
                         {currentTab === 'calibration' && (
                           <>
-                            <h4>Calibration Engine</h4>
-                            <p>Monitor self-supervised grounding error metrics and calibration weights as the world model aligns simulated predictions with real observed states.</p>
+                            <h4>Simulation Alignment</h4>
+                            <p>Monitor AI forecast accuracy metrics as the model aligns simulated predictions with real observed history.</p>
                           </>
                         )}
                         {currentTab === 'settings' && (
@@ -1342,8 +1344,8 @@ function App() {
                         )}
                         {currentTab === 'kanban' && (
                           <>
-                            <h4>Workflow Board View</h4>
-                            <p>Please select a repository workspace to view the active work items, track WIP limit status, and identify aging items violating the SLE.</p>
+                            <h4>Task Board View</h4>
+                            <p>Please select a repository workspace to view the active work items, track open task capacity limits, and identify overdue items.</p>
                           </>
                         )}
                         {currentTab === 'sprint' && (
@@ -1376,16 +1378,16 @@ function App() {
                     <div className="onboarding-step">
                       <span className="step-num">2</span>
                       <div className="step-content">
-                        <h4>Audit Counterfactual Predictions</h4>
-                        <p>Review high-probability bottlenecks and cascading integration risks simulated in the latent sandboxes overnight.</p>
+                        <h4>Audit Predicted Project Risks</h4>
+                        <p>Review predicted bottlenecks and delivery delays simulated by the AI models overnight.</p>
                       </div>
                     </div>
                     
                     <div className="onboarding-step">
                       <span className="step-num">3</span>
                       <div className="step-content">
-                        <h4>Exercise your Veto override</h4>
-                        <p>Calibrate autonomous verification agent incentive structures and reject unstable code merges to preserve system convergence.</p>
+                        <h4>Make Management Decisions</h4>
+                        <p>Decide whether to approve recommendations and prevent risky code changes from being merged.</p>
                       </div>
                     </div>
                   </div>
@@ -1448,7 +1450,10 @@ function App() {
                         <div className="column-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span className="material-symbols-outlined column-icon">visibility</span>
-                            <h3>1. Observation</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <h3 style={{ margin: 0 }}>1. Real-time Observation</h3>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)' }}>Monitors active repositories and imports task/code history</span>
+                            </div>
                           </div>
                           <button 
                             className="sync-telemetry-btn"
@@ -1491,14 +1496,21 @@ function App() {
                             <div style={{ fontSize: '1.2rem', fontWeight: 800, fontFamily: 'var(--mono-font)' }}>{activeProjectData.telemetry.prs + 1}</div>
                           </div>
                           <div className="metric-item-compact" style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '10px', borderRadius: '10px' }}>
-                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)' }}>Edge Ingestors</div>
-                            <div style={{ fontSize: '1.0rem', fontWeight: 800, color: 'var(--success)' }}>V-JEPA + MCP</div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)' }}>Workspace Connectors</div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--success)' }} title="Model Context Protocol (MCP) + AI visual analysis ingestion engines.">GitHub + Linear</div>
                           </div>
                         </div>
 
                         <div style={{ marginTop: '10px' }}>
-                          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
-                            Immutable Fact Log (Merkle Sealed)
+                          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            Secured Activity Log
+                            <span 
+                              className="material-symbols-outlined" 
+                              style={{ fontSize: '0.9rem', color: 'var(--text-sub)', cursor: 'help' }}
+                              title="An unalterable record of all repository events. Used by prediction algorithms to guarantee that input data hasn't been altered."
+                            >
+                              help
+                            </span>
                           </h4>
                           <div className="merkle-chain-log">
                             {(pipelineState?.events || activeProjectData.events).slice(0, 8).map((evt, idx) => (
@@ -1544,21 +1556,24 @@ function App() {
                       <div className="opa-column predict-col">
                         <div className="column-header">
                           <span className="material-symbols-outlined column-icon">insights</span>
-                          <h3>2. Simulation Core</h3>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <h3 style={{ margin: 0 }}>2. AI Risk Simulation</h3>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)' }}>Predicts delivery delays and resource bottlenecks</span>
+                          </div>
                         </div>
 
                         {/* Iron Triangle Gauges */}
                         <div className="iron-triangle-container">
                           <div className="triangle-gauge-card">
-                            <span className="gauge-title">Scope Load</span>
+                            <span className="gauge-title" style={{ cursor: 'help' }} title="Workload Density: The total number of active Pull Requests and Issues currently open. High density delays tasks.">Workload Density</span>
                             <span className="gauge-value">{activeProjectData.telemetry.prs + activeProjectData.telemetry.issues}</span>
                             <span className={`gauge-status ${(activeProjectData.telemetry.prs + activeProjectData.telemetry.issues) < 12 ? 'good' : 'warn'}`}>
-                              {(activeProjectData.telemetry.prs + activeProjectData.telemetry.issues) < 12 ? 'Stable' : 'Dense'}
+                              {(activeProjectData.telemetry.prs + activeProjectData.telemetry.issues) < 12 ? 'Normal' : 'High Load'}
                             </span>
                           </div>
                           
                           <div className="triangle-gauge-card">
-                            <span className="gauge-title">Time Delay</span>
+                            <span className="gauge-title" style={{ cursor: 'help' }} title="Timeline Risk: Estimated total rework hours needed to resolve all code interdependency conflicts and merge issues.">Timeline Risk</span>
                             <span className="gauge-value">
                               {pipelineState?.debt_report
                                 ? `${pipelineState.debt_report.total_estimated_rework_hours.toFixed(0)}h`
@@ -1568,12 +1583,12 @@ function App() {
                                 : '8h'}
                             </span>
                             <span className={`gauge-status ${activeProjectData.telemetry.crr >= 1.0 ? 'good' : 'danger'}`}>
-                              {activeProjectData.telemetry.crr >= 1.0 ? 'No Lag' : 'Critical'}
+                              {activeProjectData.telemetry.crr >= 1.0 ? 'Low Risk' : 'High Delay'}
                             </span>
                           </div>
 
                           <div className="triangle-gauge-card">
-                            <span className="gauge-title">Budget Cap</span>
+                            <span className="gauge-title" style={{ cursor: 'help' }} title="Budget Health: Tracks AI tokens consumed to run the simulation against allocated resources.">Budget Health</span>
                             <span className="gauge-value">{tokenBurn}M</span>
                             <span className={`gauge-status ${parseFloat(tokenBurn) < 15.0 ? 'good' : 'warn'}`}>
                               {parseFloat(tokenBurn) < 15.0 ? 'Optimal' : 'Runaway'}
@@ -1583,7 +1598,7 @@ function App() {
 
                         <div style={{ marginTop: '10px' }}>
                           <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
-                            Causal Conflict Predictions
+                            Predicted Integration Risks
                           </h4>
                           
                           {(() => {
@@ -1624,7 +1639,7 @@ function App() {
                                               {prob < 1.0 ? `${Math.round(prob * 100)}%` : `${prob}%`} Prob
                                             </span>
                                             <span style={{ fontSize: '0.68rem', textTransform: 'uppercase', fontWeight: 800, color: 'var(--text-sub)' }}>
-                                              {conflict.conflict_type.replace('_', ' ')}
+                                              {conflict.conflict_type === 'dependency_break' ? 'Code Conflict (databases overlap)' : conflict.conflict_type === 'semantic_conflict' ? 'Logic Conflict (client session mismatch)' : conflict.conflict_type.replace('_', ' ')}
                                             </span>
                                           </div>
                                           <span className="conflict-title-main">
@@ -1693,13 +1708,16 @@ function App() {
                       <div className="opa-column act-col">
                         <div className="column-header">
                           <span className="material-symbols-outlined column-icon">settings_applications</span>
-                          <h3>3. Control Gate</h3>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <h3 style={{ margin: 0 }}>3. Decision Control Gate</h3>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)' }}>Approve or decline recommendations based on simulated risk analysis</span>
+                          </div>
                         </div>
 
                         {/* Scenario Strategist Audit Gate */}
                         <div className="glass-card" style={{ padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)' }}>
                           <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
-                            Scenario Strategist Audit Gate
+                            Management Release Gate
                           </h4>
                           
                           {(pipelineState?.human_approved !== undefined && pipelineState.human_approved !== null) || humanApprovedState !== null ? (
@@ -1709,7 +1727,7 @@ function App() {
                               </span>
                               <div>
                                 <strong style={{ fontSize: '0.85rem' }}>
-                                  {(pipelineState?.human_approved ?? humanApprovedState) ? 'APPROVED' : 'VETOED'}
+                                  {(pipelineState?.human_approved ?? humanApprovedState) ? 'APPROVED' : 'REJECTED'}
                                 </strong>
                                 <p style={{ margin: '2px 0 0 0', fontSize: '0.75rem', color: 'var(--text-sub)' }}>
                                   Notes: {pipelineState?.human_notes || humanNotesText || 'No review notes submitted.'}
@@ -1720,7 +1738,7 @@ function App() {
                             <div style={{ background: 'rgba(230, 95, 0, 0.05)', border: '1px solid rgba(230, 95, 0, 0.15)', padding: '12px', borderRadius: '10px', marginBottom: '12px', display: 'flex', gap: '8px' }}>
                               <span className="material-symbols-outlined" style={{ color: '#e65f00', fontSize: '1.2rem' }}>warning</span>
                               <span style={{ fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.4 }}>
-                                System awaiting Scenario Strategist audit clearance. Review conflict simulations and select action below.
+                                System awaiting review of predicted risks. Select an action below.
                               </span>
                             </div>
                           )}
@@ -1740,7 +1758,7 @@ function App() {
                               onClick={() => handleSubmitDecision(true)}
                               disabled={decisionSubmitting}
                             >
-                              Approve Release
+                              Approve Recommendations
                             </button>
                             <button 
                               className="veto-btn" 
@@ -1748,7 +1766,7 @@ function App() {
                               onClick={() => handleSubmitDecision(false)}
                               disabled={decisionSubmitting}
                             >
-                              Veto Override
+                              Reject Recommendations
                             </button>
                           </div>
                         </div>
@@ -1769,7 +1787,7 @@ function App() {
                           return (
                             <div style={{ marginTop: '10px' }}>
                               <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
-                                Corrective Recommendations
+                                Suggested Actions to Fix Risks
                               </h4>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {blockedCount > 0 && (
@@ -1799,7 +1817,7 @@ function App() {
                                 <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'rgba(46, 160, 67, 0.04)', border: '1px solid rgba(46, 160, 67, 0.08)', padding: '10px', borderRadius: '10px' }}>
                                   <span className="material-symbols-outlined" style={{ color: 'var(--success)', fontSize: '1.1rem' }}>lock</span>
                                   <div>
-                                    <strong style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>Cognitive Limits Cap</strong>
+                                    <strong style={{ fontSize: '0.8rem', color: 'var(--text-main)' }}>AI Resource Usage Health</strong>
                                     <p style={{ margin: '2px 0 0 0', fontSize: '0.72rem', color: 'var(--text-sub)', lineHeight: 1.35 }}>
                                       Daily token burn ({tokenBurn}M) is safely below the 20M cap. Current model parameterization is sustainable.
                                     </p>
@@ -1813,12 +1831,12 @@ function App() {
                         {/* Cognitive Budget Sliders */}
                         <div style={{ marginTop: '10px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '12px' }}>
                           <h4 style={{ margin: '0 0 10px 0', fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>
-                            Cognitive Budget Cap
+                            AI Simulation Resource Limits
                           </h4>
                           
                           <div style={{ marginBottom: '8px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700 }}>
-                              <span>QA / Worker Limit</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700 }} title="AI Analysis Depth Limit: Controls how thorough the AI checks are. Higher limits allow deeper analysis but cost more system credits.">
+                              <span>AI Analysis Depth Limit</span>
                               <span>{qaLimit.toFixed(1)}M</span>
                             </div>
                             <input 
@@ -1833,8 +1851,8 @@ function App() {
                           </div>
 
                           <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700 }}>
-                              <span>Opponent Limit</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700 }} title="AI Stress-Testing Limit: Controls the complexity of simulated scenarios generated to stress-test your codebase.">
+                              <span>AI Stress-Testing Limit</span>
                               <span>{opponentLimit.toFixed(1)}M</span>
                             </div>
                             <input 
@@ -1860,8 +1878,8 @@ function App() {
                   <div className="tab-container flex-col animate-fade-in">
                     <div className="tab-header-row">
                       <div>
-                        <h2>Scenario Modeling & Sandbox Runs</h2>
-                        <p className="tab-subtitle">Trigger counterfactual pipeline sandboxes to audit code integrations</p>
+                        <h2>Scenario Sandbox & Simulator</h2>
+                        <p className="tab-subtitle">Simulate project changes (like adding developers, reducing QA capacity, or modifying scope) to see their predicted impact on your project schedule and costs.</p>
                       </div>
                       <button 
                         className="action-trigger-btn"
@@ -1869,7 +1887,7 @@ function App() {
                         disabled={activeSimId !== null}
                       >
                         <span className="material-symbols-outlined">play_circle</span>
-                        {activeSimId ? 'Running Sandbox...' : 'Trigger New Simulation Sandbox'}
+                        {activeSimId ? 'Running Sandbox...' : 'Trigger New Risk Simulation'}
                       </button>
                     </div>
 
@@ -1879,7 +1897,7 @@ function App() {
                           <div className="sync-spinner"></div>
                           <div>
                             <strong>Active Simulation Running: {activeSimId}</strong>
-                            <p>Orchestrator invoking Worker and critic agents to construct Merkle chains...</p>
+                            <p>AI Simulator invoking analysis agents to predict integration risks...</p>
                           </div>
                         </div>
                         <div className="sim-progress-bar-container">
@@ -1889,15 +1907,15 @@ function App() {
                     )}
 
                     <div className="glass-card">
-                      <h3>Simulation Execution Log</h3>
+                      <h3>Simulation History Log</h3>
                       <table className="scenario-table">
                         <thead>
                           <tr>
                             <th>Run ID</th>
                             <th>Scenario Title</th>
                             <th>Status</th>
-                            <th>QA Limit</th>
-                            <th>Opponent Limit</th>
+                            <th>AI Analysis Limit</th>
+                            <th>Stress-Test Limit</th>
                             <th>Conflicts Detected</th>
                             <th>Execution Date</th>
                           </tr>
@@ -1927,7 +1945,7 @@ function App() {
                           ) : (
                             <tr>
                               <td colSpan={7} className="table-empty">
-                                No simulation sandboxes executed for this project yet. Click the trigger button above to initialize.
+                                No simulations run for this project yet. Click the button above to run a simulation.
                               </td>
                             </tr>
                           )}
@@ -1942,8 +1960,8 @@ function App() {
                   <div className="tab-container flex-col animate-fade-in">
                     <div className="tab-header-row">
                       <div>
-                        <h2>Strategic Synthesis: 3-Pillar Framework</h2>
-                        <p className="tab-subtitle">Managing the convergence between Economics, Human trust, and Technology maturity</p>
+                        <h2>Strategic Balance Sheet: Business, Team & Tech Pillars</h2>
+                        <p className="tab-subtitle">Monitors the balance between project costs, team workload health, and technical quality to prevent runaway issues.</p>
                       </div>
                     </div>
                     
@@ -1951,23 +1969,23 @@ function App() {
                     <div className="agility-paradox-container">
                       <div className="chart-header-paradox">
                         <div>
-                          <h3 style={{ margin: 0 }}>The Agility Paradox (Kuvio 1)</h3>
+                          <h3 style={{ margin: 0 }}>The Team Capacity Gap</h3>
                           <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
-                            Exponential AI asset production velocity vs. linear human integration throughput
+                            How fast tasks are created by AI or backlog vs. how fast humans can merge and verify them.
                           </p>
                         </div>
                         <div className="chart-legend-paradox">
                           <span className="paradox-legend-item">
                             <span className="paradox-dot exponential"></span>
-                            AI Production Speed (L1)
+                            Task Creation Velocity
                           </span>
                           <span className="paradox-legend-item">
                             <span className="paradox-dot linear"></span>
-                            Human Integration Capacity (Agile)
+                            Team Verification Capacity
                           </span>
                           <span className="paradox-legend-item">
                             <span className="paradox-dot debt"></span>
-                            Integration Debt (Hallintakuilu)
+                            Task Backlog Overload (Integration Debt)
                           </span>
                         </div>
                       </div>
@@ -1983,9 +2001,9 @@ function App() {
                         <path d="M 50 180 Q 250 170 550 130" fill="none" stroke="var(--primary)" strokeWidth="2.5" />
                         
                         {/* Labels */}
-                        <text x="560" y="55" fontSize="10" fill="var(--error)" fontWeight="700">L1 Generation</text>
-                        <text x="560" y="135" fontSize="10" fill="var(--primary)" fontWeight="700">Agile Integration</text>
-                        <text x="320" y="125" fontSize="11" fill="var(--error)" fontWeight="800" fontStyle="italic">INTEGRATION DEBT</text>
+                        <text x="560" y="55" fontSize="10" fill="var(--error)" fontWeight="700">Task Creation</text>
+                        <text x="560" y="135" fontSize="10" fill="var(--primary)" fontWeight="700">Team Progress</text>
+                        <text x="320" y="125" fontSize="11" fill="var(--error)" fontWeight="800" fontStyle="italic">BACKLOG OVERLOAD</text>
                         
                         {/* Axis */}
                         <line x1="50" y1="190" x2="550" y2="190" stroke="var(--border)" strokeWidth="1" />
@@ -2000,15 +2018,15 @@ function App() {
                       <div className="pillar-card eco">
                         <div className="pillar-card-header">
                           <span className="material-symbols-outlined pillar-icon">payments</span>
-                          <h4>1. Economics</h4>
+                          <h4>1. Economics & Costs</h4>
                         </div>
                         <div className="pillar-content-list">
                           <div className="pillar-item-row">
-                            <span className="pillar-item-lbl">Compute-to-Rework (CRR)</span>
+                            <span className="pillar-item-lbl">Rework Savings Ratio (CRR)</span>
                             <span className="pillar-item-val">{activeProjectData.telemetry.crr.toFixed(2)}x</span>
                           </div>
                           <div className="pillar-item-row">
-                            <span className="pillar-item-lbl">Daily Token Cost</span>
+                            <span className="pillar-item-lbl">Daily AI Operation Cost</span>
                             <span className="pillar-item-val">${(qaLimit * 20.7 + opponentLimit * 12.0).toFixed(2)}</span>
                           </div>
                           <div className="pillar-item-row">
@@ -2016,7 +2034,7 @@ function App() {
                             <span className="pillar-item-val">${(hoursSaved * 75).toFixed(2)}</span>
                           </div>
                           <div className="pillar-item-row">
-                            <span className="pillar-item-lbl">Compute Runaway Alert</span>
+                            <span className="pillar-item-lbl">Efficiency Loophole Alert</span>
                             <span className="pillar-item-val" style={{ color: activeProjectData.telemetry.crr < 1.0 ? 'var(--error)' : 'var(--success)' }}>
                               {activeProjectData.telemetry.crr < 1.0 ? 'WARNING' : 'SECURE'}
                             </span>
@@ -2031,7 +2049,7 @@ function App() {
                       <div className="pillar-card hum">
                         <div className="pillar-card-header">
                           <span className="material-symbols-outlined pillar-icon">groups</span>
-                          <h4>2. Human Trust & Agency</h4>
+                          <h4>2. Team Trust & Workload</h4>
                         </div>
                         <div className="pillar-content-list">
                           <div className="pillar-item-row">
@@ -2043,37 +2061,37 @@ function App() {
                             <span className="pillar-item-val">5 Humans</span>
                           </div>
                           <div className="pillar-item-row">
-                            <span className="pillar-item-lbl">Trust Alignment Index</span>
+                            <span className="pillar-item-lbl">Team Feedback Rating</span>
                             <span className="pillar-item-val" style={{ color: 'var(--success)' }}>98.2%</span>
                           </div>
                           <div className="pillar-item-row">
-                            <span className="pillar-item-lbl">Value Capture Shield</span>
+                            <span className="pillar-item-lbl">Workload Protection Shield</span>
                             <span className="pillar-item-val">ACTIVE</span>
                           </div>
                         </div>
                       </div>
-
+ 
                       {/* Technology Pillar */}
                       <div className="pillar-card tech">
                         <div className="pillar-card-header">
                           <span className="material-symbols-outlined pillar-icon">memory</span>
-                          <h4>3. Technology Stack</h4>
+                          <h4>3. Technical Health</h4>
                         </div>
                         <div className="pillar-content-list">
                           <div className="pillar-item-row">
-                            <span className="pillar-item-lbl">Layer 2 Simulator</span>
+                            <span className="pillar-item-lbl">AI Simulator Engine</span>
                             <span className="pillar-item-val">LeWorldModel (LeWM)</span>
                           </div>
                           <div className="pillar-item-row">
-                            <span className="pillar-item-lbl">Layer 1 Telemetry Ingest</span>
+                            <span className="pillar-item-lbl">Activity Data Connector</span>
                             <span className="pillar-item-val">V-JEPA 2.1 API</span>
                           </div>
                           <div className="pillar-item-row">
-                            <span className="pillar-item-lbl">Layer 4 Audit Enclave</span>
+                            <span className="pillar-item-lbl">AI Safety Guardrail</span>
                             <span className="pillar-item-val">Nvidia NemoClaw</span>
                           </div>
                           <div className="pillar-item-row">
-                            <span className="pillar-item-lbl">Grounding Error (L2)</span>
+                            <span className="pillar-item-lbl">Simulation Drift (Error)</span>
                             <span className="pillar-item-val">
                               {pipelineState?.calibration?.history && pipelineState.calibration.history.length > 0
                                 ? pipelineState.calibration.history[pipelineState.calibration.history.length - 1].error.toFixed(4)
@@ -2156,7 +2174,9 @@ function App() {
                                       Drift (Error): {item.error.toFixed(4)}<br />Scaling Factor: {item.calibration_factor.toFixed(4)}
                                     </div>
                                   </div>
-                                  <span className="cal-axis-lbl">T-{history.length - 1 - idx}</span>
+                                  <span className="cal-axis-lbl" title={`Checked ${history.length - 1 - idx} hours ago`}>
+                                    {idx === history.length - 1 ? 'Latest Check' : `${history.length - 1 - idx}h ago`}
+                                  </span>
                                 </div>
                               );
                             });

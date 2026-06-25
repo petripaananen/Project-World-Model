@@ -150,7 +150,16 @@ export const SprintDashboard: React.FC<SprintDashboardProps> = ({ projectData, p
           
           {/* Burndown Chart */}
           <div className="glass-card" style={{ padding: '20px' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem' }}>Sprint Burndown (Story Points)</h3>
+            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Sprint Progress Tracker (Story Points)
+              <span 
+                className="material-symbols-outlined" 
+                style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
+                title="Tracks remaining tasks versus the ideal timeline. Helps ensure the team finishes all Sprint commitments."
+              >
+                help
+              </span>
+            </h3>
             <div style={{ height: '180px', position: 'relative' }}>
               <svg viewBox="0 0 400 180" style={{ width: '100%', height: '100%' }}>
                 {/* Horizontal Grid */}
@@ -198,7 +207,16 @@ export const SprintDashboard: React.FC<SprintDashboardProps> = ({ projectData, p
 
           {/* Velocity History */}
           <div className="glass-card" style={{ padding: '20px' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem' }}>Sprint Velocity Trend</h3>
+            <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Team Completion Rate
+              <span 
+                className="material-symbols-outlined" 
+                style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
+                title="Average number of tasks completed per iteration. Used to plan future workloads."
+              >
+                help
+              </span>
+            </h3>
             <div style={{ height: '140px' }}>
               <svg viewBox="0 0 400 140" style={{ width: '100%', height: '100%' }}>
                 {/* Horizontal grid lines */}
@@ -238,7 +256,7 @@ export const SprintDashboard: React.FC<SprintDashboardProps> = ({ projectData, p
           <div>
             <h3 style={{ margin: 0, fontSize: '0.9rem' }}>Definition of Done (DoD) Validator</h3>
             <p className="tab-subtitle" style={{ margin: '2px 0 0 0', fontSize: '0.72rem' }}>
-              Quality audit gate checking if active increments comply with project standards before release.
+              Quality checklist that all tasks must satisfy before they are considered finished.
             </p>
           </div>
 

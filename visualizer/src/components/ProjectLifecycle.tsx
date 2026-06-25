@@ -176,7 +176,16 @@ export const ProjectLifecycle: React.FC<ProjectLifecycleProps> = () => {
       
       {/* 1. Horizontal Timeline */}
       <div className="glass-card" style={{ padding: '20px' }}>
-        <h3 style={{ margin: '0 0 20px 0', fontSize: '0.9rem' }}>Project Lifecycle Stage Gate Timeline</h3>
+        <h3 style={{ margin: '0 0 20px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          Project Lifecycle Stage Gate Timeline
+          <span 
+            className="material-symbols-outlined" 
+            style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
+            title="Timeline divided into phases. Stage gates act as validation steps before moving to the next phase."
+          >
+            help
+          </span>
+        </h3>
         
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px', margin: '20px 0' }}>
           
@@ -252,7 +261,7 @@ export const ProjectLifecycle: React.FC<ProjectLifecycleProps> = () => {
         {/* Left: Work Breakdown Structure (WBS) Tree */}
         <div className="glass-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '400px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <h3 style={{ margin: 0, fontSize: '0.9rem' }}>Work Breakdown Structure (WBS)</h3>
+            <h3 style={{ margin: 0, fontSize: '0.9rem' }}>Task Hierarchy Explorer (WBS)</h3>
             <span style={{ fontSize: '0.72rem', color: 'var(--text-sub)', background: 'var(--border)', padding: '2px 8px', borderRadius: '10px' }}>
               Total: 210 hours
             </span>
@@ -265,7 +274,16 @@ export const ProjectLifecycle: React.FC<ProjectLifecycleProps> = () => {
 
         {/* Right: Risk Register mapped to 9 Knowledge Areas */}
         <div className="glass-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '400px' }}>
-          <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem' }}>Project Risk Register (PMBOK 9 Areas)</h3>
+          <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            Project Risk Register
+            <span 
+              className="material-symbols-outlined" 
+              style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
+              title="Tracks potential project risks across areas like Budget, Time, Quality, and Communication."
+            >
+              help
+            </span>
+          </h3>
           
           <div style={{ flex: 1, overflowY: 'auto', paddingRight: '2px' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', textAlign: 'left' }}>
