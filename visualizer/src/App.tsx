@@ -108,6 +108,7 @@ interface ProjectData {
     issues: number;
     agents: number;
     crr: number;
+    sprintVelocity?: number;
   };
   risks: {
     title: string;
@@ -148,7 +149,7 @@ const mockProjects: Record<string, ProjectData> = {
   'proj-alpha': {
     id: 'proj-alpha',
     name: 'Project Alpha (Frontend)',
-    telemetry: { prs: 3, issues: 5, agents: 3, crr: 1.45 },
+    telemetry: { prs: 3, issues: 5, agents: 3, crr: 1.45, sprintVelocity: 85 },
     risks: [
       {
         title: 'CSS Regressions in Component Library',
@@ -173,22 +174,24 @@ const mockProjects: Record<string, ProjectData> = {
     ],
     graph: {
       nodes: [
-        { id: 'a-pr1', type: 'pr', name: 'PR #204: Design System Migration', attributes: { status: 'Under Review', author: 'Lara' } },
-        { id: 'a-pr2', type: 'pr', name: 'PR #205: Update Nav Bar', attributes: { status: 'Draft', author: 'Dan' } },
-        { id: 'a-pr3', type: 'pr', name: 'PR #206: Lazy Load Images', attributes: { status: 'Approved', author: 'Sarah' } },
-        { id: 'a-is1', type: 'issue', name: 'Issue #55: Button Alignment Broken', attributes: { status: 'Active', author: 'Alex' } },
-        { id: 'a-is2', type: 'issue', name: 'Issue #56: Mobile Menu Layout', attributes: { status: 'Active', author: 'Alex' } },
-        { id: 'a-is3', type: 'issue', name: 'Issue #57: Font Loading Flash', attributes: { status: 'Backlog', author: 'Sarah' } },
-        { id: 'a-is4', type: 'issue', name: 'Issue #58: Tab Accessibility', attributes: { status: 'Active', author: 'Dan' } },
-        { id: 'a-is5', type: 'issue', name: 'Issue #59: Redundant CSS Selectors', attributes: { status: 'Active', author: 'Lara' } }
+        { id: 'a-pr1', type: 'pr', name: 'PR #204: Design System Migration', attributes: { status: 'Under Review', author: 'Lara', epic: 'Epic: UI Redesign', storyPoints: 5, commentCount: 3 } },
+        { id: 'a-pr2', type: 'pr', name: 'PR #205: Update Nav Bar', attributes: { status: 'Draft', author: 'Dan', epic: 'Epic: UI Redesign', storyPoints: 3, commentCount: 1 } },
+        { id: 'a-pr3', type: 'pr', name: 'PR #206: Lazy Load Images', attributes: { status: 'Approved', author: 'Sarah', epic: 'Epic: Performance Optimization', storyPoints: 2, commentCount: 4 } },
+        { id: 'a-is1', type: 'issue', name: 'Issue #55: Button Alignment Broken', attributes: { status: 'Active', author: 'Alex', epic: 'Epic: UI Redesign', priority: 'High', storyPoints: 5, component: 'Frontend', dueDaysRemaining: 2, commentCount: 6, subTasks: [{ name: 'Fix padding', status: 'Done' }, { name: 'Update tokens', status: 'In Progress' }] } },
+        { id: 'a-is2', type: 'issue', name: 'Issue #56: Mobile Menu Layout', attributes: { status: 'Active', author: 'Alex', epic: 'Epic: UI Redesign', priority: 'Medium', storyPoints: 3, component: 'Frontend', dueDaysRemaining: 5, commentCount: 2, flagged: true, subTasks: [{ name: 'Design mockup', status: 'Done' }, { name: 'Write media queries', status: 'In Progress' }] } },
+        { id: 'a-is3', type: 'issue', name: 'Issue #57: Font Loading Flash', attributes: { status: 'Backlog', author: 'Sarah', epic: 'Epic: Performance Optimization', priority: 'Low', storyPoints: 1, component: 'Frontend', dueDaysRemaining: 15, commentCount: 0 } },
+        { id: 'a-is4', type: 'issue', name: 'Issue #58: Tab Accessibility', attributes: { status: 'Active', author: 'Dan', epic: 'Epic: UI Redesign', priority: 'Medium', storyPoints: 3, component: 'Frontend', dueDaysRemaining: 1, commentCount: 4 } },
+        { id: 'a-is5', type: 'issue', name: 'Issue #59: Redundant CSS Selectors', attributes: { status: 'Active', author: 'Lara', epic: 'Epic: Technical Debt Clean', priority: 'Low', storyPoints: 2, component: 'Frontend', dueDaysRemaining: -1, commentCount: 1 } }
       ],
-      edges: []
+      edges: [
+        { id: 'e-a1', source: 'a-is1', target: 'a-is2', type: 'blocks' }
+      ]
     }
   },
   'proj-beta': {
     id: 'proj-beta',
     name: 'Project Beta (Backend API)',
-    telemetry: { prs: 6, issues: 8, agents: 3, crr: 0.72 },
+    telemetry: { prs: 6, issues: 8, agents: 3, crr: 0.72, sprintVelocity: 40 },
     risks: [
       {
         title: 'SQL Query N+1 Bottleneck in Auth Middleware',
@@ -213,22 +216,25 @@ const mockProjects: Record<string, ProjectData> = {
     ],
     graph: {
       nodes: [
-        { id: 'b-pr1', type: 'pr', name: 'PR #411: Redis Cache Integration', attributes: { status: 'Under Review', author: 'Mikael' } },
-        { id: 'b-pr2', type: 'pr', name: 'PR #412: Database Indexing', attributes: { status: 'Approved', author: 'John' } },
-        { id: 'b-pr3', type: 'pr', name: 'PR #413: Refactor Session Auth', attributes: { status: 'Draft', author: 'Mikael' } },
-        { id: 'b-pr4', type: 'pr', name: 'PR #414: Rate Limiter Settings', attributes: { status: 'Under Review', author: 'Elena' } },
-        { id: 'b-pr5', type: 'pr', name: 'PR #415: Fix CORS Settings', attributes: { status: 'Draft', author: 'Elena' } },
-        { id: 'b-pr6', type: 'pr', name: 'PR #416: Update Stripe SDK', attributes: { status: 'Under Review', author: 'John' } },
-        { id: 'b-is1', type: 'issue', name: 'Issue #112: Auth Latency Spike', attributes: { status: 'Active', author: 'Elena' } },
-        { id: 'b-is2', type: 'issue', name: 'Issue #113: DB Connection Pool Exhaustion', attributes: { status: 'Active', author: 'John' } },
-        { id: 'b-is3', type: 'issue', name: 'Issue #114: Rate Limit Bypass', attributes: { status: 'Active', author: 'Mikael' } },
-        { id: 'b-is4', type: 'issue', name: 'Issue #115: CORS Wildcard Warning', attributes: { status: 'Backlog', author: 'Elena' } },
-        { id: 'b-is5', type: 'issue', name: 'Issue #116: User Profile Slow Loading', attributes: { status: 'Active', author: 'John' } },
-        { id: 'b-is6', type: 'issue', name: 'Issue #117: Unhandled Exception in Webhook', attributes: { status: 'Active', author: 'Mikael' } },
-        { id: 'b-is7', type: 'issue', name: 'Issue #118: Session Expiry Window', attributes: { status: 'Active', author: 'John' } },
-        { id: 'b-is8', type: 'issue', name: 'Issue #119: API Spec Discrepancy', attributes: { status: 'Backlog', author: 'Elena' } }
+        { id: 'b-pr1', type: 'pr', name: 'PR #411: Redis Cache Integration', attributes: { status: 'Under Review', author: 'Mikael', epic: 'Epic: Cache Infrastructure', storyPoints: 8, commentCount: 5 } },
+        { id: 'b-pr2', type: 'pr', name: 'PR #412: Database Indexing', attributes: { status: 'Approved', author: 'John', epic: 'Epic: Cache Infrastructure', storyPoints: 3, commentCount: 2 } },
+        { id: 'b-pr3', type: 'pr', name: 'PR #413: Refactor Session Auth', attributes: { status: 'Draft', author: 'Mikael', epic: 'Epic: Security Audit', storyPoints: 5, commentCount: 0 } },
+        { id: 'b-pr4', type: 'pr', name: 'PR #414: Rate Limiter Settings', attributes: { status: 'Under Review', author: 'Elena', epic: 'Epic: Security Audit', storyPoints: 3, commentCount: 4 } },
+        { id: 'b-pr5', type: 'pr', name: 'PR #415: Fix CORS Settings', attributes: { status: 'Draft', author: 'Elena', epic: 'Epic: Security Audit', storyPoints: 1, commentCount: 1 } },
+        { id: 'b-pr6', type: 'pr', name: 'PR #416: Update Stripe SDK', attributes: { status: 'Under Review', author: 'John', epic: 'Epic: Stripe Billing integration', storyPoints: 5, commentCount: 3 } },
+        { id: 'b-is1', type: 'issue', name: 'Issue #112: Auth Latency Spike', attributes: { status: 'Active', author: 'Elena', epic: 'Epic: Security Audit', priority: 'High', storyPoints: 8, component: 'Backend', dueDaysRemaining: 1, commentCount: 10, flagged: true, subTasks: [{ name: 'Audit JWT validation', status: 'Done' }, { name: 'Optimize DB query', status: 'In Progress' }] } },
+        { id: 'b-is2', type: 'issue', name: 'Issue #113: DB Connection Pool Exhaustion', attributes: { status: 'Active', author: 'John', epic: 'Epic: Cache Infrastructure', priority: 'High', storyPoints: 5, component: 'Database', dueDaysRemaining: 3, commentCount: 7, subTasks: [{ name: 'Increase pool size', status: 'Done' }, { name: 'Fix leak in transaction', status: 'In Progress' }] } },
+        { id: 'b-is3', type: 'issue', name: 'Issue #114: Rate Limit Bypass', attributes: { status: 'Active', author: 'Mikael', epic: 'Epic: Security Audit', priority: 'High', storyPoints: 5, component: 'Backend', dueDaysRemaining: -2, commentCount: 4, flagged: true } },
+        { id: 'b-is4', type: 'issue', name: 'Issue #115: CORS Wildcard Warning', attributes: { status: 'Backlog', author: 'Elena', epic: 'Epic: Security Audit', priority: 'Medium', storyPoints: 3, component: 'Backend', dueDaysRemaining: 10, commentCount: 1 } },
+        { id: 'b-is5', type: 'issue', name: 'Issue #116: User Profile Slow Loading', attributes: { status: 'Active', author: 'John', epic: 'Epic: Cache Infrastructure', priority: 'Medium', storyPoints: 5, component: 'Backend', dueDaysRemaining: 4, commentCount: 2 } },
+        { id: 'b-is6', type: 'issue', name: 'Issue #117: Unhandled Exception in Webhook', attributes: { status: 'Active', author: 'Mikael', epic: 'Epic: Stripe Billing integration', priority: 'High', storyPoints: 5, component: 'Backend', dueDaysRemaining: 2, commentCount: 8, subTasks: [{ name: 'Add try-catch', status: 'Done' }, { name: 'Alerting webhook errors', status: 'In Progress' }] } },
+        { id: 'b-is7', type: 'issue', name: 'Issue #118: Session Expiry Window', attributes: { status: 'Active', author: 'John', epic: 'Epic: Security Audit', priority: 'Low', storyPoints: 2, component: 'Backend', dueDaysRemaining: 6, commentCount: 2 } },
+        { id: 'b-is8', type: 'issue', name: 'Issue #119: API Spec Discrepancy', attributes: { status: 'Backlog', author: 'Elena', epic: 'Epic: Cache Infrastructure', priority: 'Low', storyPoints: 3, component: 'Backend', dueDaysRemaining: 14, commentCount: 0 } }
       ],
-      edges: []
+      edges: [
+        { id: 'e-b1', source: 'b-is1', target: 'b-is2', type: 'blocks' },
+        { id: 'e-b2', source: 'b-is3', target: 'b-is1', type: 'blocks' }
+      ]
     }
   },
   'proj-gamma': {
@@ -682,6 +688,17 @@ function App() {
   const [pipelineState, setPipelineState] = useState<PipelineState | null>(null);
   const [dtoSimActive, setDtoSimActive] = useState(false);
   const [selectedGardenNode, setSelectedGardenNode] = useState<FusedNode | null>(null);
+  const [filters, setFilters] = useState({
+    showEpics: true,
+    showBees: true,
+    showSubtasks: true,
+    showWebs: true,
+    showDewdrops: true,
+    showVines: true,
+    showWeather: true,
+    showAgents: true,
+  });
+  const [uiVisible, setUiVisible] = useState(true);
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [expandedConflictId, setExpandedConflictId] = useState<number | null>(null);
   const [humanApprovedState, setHumanApprovedState] = useState<boolean | null>(null);
@@ -807,6 +824,54 @@ function App() {
     return () => ws.close();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Guard: do not trigger hotkeys if user is focusing an input field
+      const activeEl = document.activeElement;
+      if (activeEl) {
+        const tag = activeEl.tagName.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || activeEl.getAttribute('contenteditable') === 'true') {
+          return;
+        }
+      }
+
+      const key = e.key.toLowerCase();
+      
+      // Toggle mappings
+      if (key === 'e') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showEpics: !prev.showEpics }));
+      } else if (key === 'b') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showBees: !prev.showBees }));
+      } else if (key === 's') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showSubtasks: !prev.showSubtasks }));
+      } else if (key === 'w') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showWebs: !prev.showWebs }));
+      } else if (key === 'd') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showDewdrops: !prev.showDewdrops }));
+      } else if (key === 'v') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showVines: !prev.showVines }));
+      } else if (key === 't') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showWeather: !prev.showWeather }));
+      } else if (key === 'a') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showAgents: !prev.showAgents }));
+      } else if (key === 'h' || key === '?') {
+        playHoverSound();
+        setUiVisible(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Resolve active project by ID (merging mock datasets and dynamically added projects)
   const allProjectsMap = {
     ...mockProjects,
@@ -887,8 +952,8 @@ function App() {
         attributes: {
           ...node.attributes,
           riskProbability,
-          reviews: node.type === 'pr' ? (node.attributes.status === 'Approved' ? 2 : node.attributes.status === 'Under Review' ? 1 : 0) : undefined,
-          priority: node.type === 'issue' ? (i % 3 === 0 ? 'High' : i % 3 === 1 ? 'Medium' : 'Low') : undefined,
+          reviews: node.attributes.reviews !== undefined ? node.attributes.reviews : (node.type === 'pr' ? (node.attributes.status === 'Approved' ? 2 : node.attributes.status === 'Under Review' ? 1 : 0) : undefined),
+          priority: node.attributes.priority !== undefined ? node.attributes.priority : (node.type === 'issue' ? (i % 3 === 0 ? 'High' : i % 3 === 1 ? 'Medium' : 'Low') : undefined),
         }
       };
     });
@@ -1296,6 +1361,9 @@ function App() {
               opponentLimit={opponentLimit}
               eventCount={selectedProject ? (ingestionEvents[selectedProject]?.length || 0) : 0}
               onSelectNode={setSelectedGardenNode}
+              sprintVelocity={activeProjectData?.telemetry?.sprintVelocity}
+              filters={filters}
+              uiVisible={uiVisible}
             />
           </div>
 
@@ -2378,10 +2446,11 @@ function App() {
               <div className="dto-sim-hud-overlay">
                 
                 {/* Left side: Workspace Overview + Node Details Container */}
-                <div className="animate-hud-left" style={{ gridArea: 'overview', display: 'flex', flexDirection: 'column', gap: '16px', pointerEvents: 'none', width: '320px' }}>
-                  
-                  {/* Workspace Overview HUD */}
-                  <div className="glass-card hud-card workspace-hud" style={{ pointerEvents: 'auto', margin: 0 }}>
+                {uiVisible && (
+                  <div className="animate-hud-left" style={{ gridArea: 'overview', display: 'flex', flexDirection: 'column', gap: '16px', pointerEvents: 'none', width: '320px' }}>
+                    
+                    {/* Workspace Overview HUD */}
+                    <div className="glass-card hud-card workspace-hud" style={{ pointerEvents: 'auto', margin: 0 }}>
                     <div className="hud-header">
                       <span className="material-symbols-outlined">analytics</span>
                       <h3>Workspace Overview</h3>
@@ -2433,19 +2502,53 @@ function App() {
                       <div className="details-content" style={{ marginTop: '12px', fontSize: '0.82rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-main)' }}>{selectedGardenNode.name}</p>
                         
+                        {/* Epic Label (if available) */}
+                        {selectedGardenNode.attributes.epic && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(68,80,183,0.15)', color: '#a2a9e2', padding: '2px 6px', borderRadius: '4px', width: 'fit-content', fontWeight: 600, fontSize: '0.75rem' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '0.85rem' }}>folder_open</span>
+                            {selectedGardenNode.attributes.epic}
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                          <span style={{ color: 'var(--text-sub)' }}>Type:</span>
+                          <span style={{ fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem', color: selectedGardenNode.type === 'pr' ? '#d4a520' : '#c44030' }}>
+                            {selectedGardenNode.type === 'pr' ? 'Pull Request' : 'Issue'}
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                          <span style={{ color: 'var(--text-sub)' }}>Status:</span>
+                          <span style={{ 
+                            fontWeight: 600, 
+                            color: selectedGardenNode.attributes.status?.toLowerCase() === 'approved' || selectedGardenNode.attributes.status?.toLowerCase() === 'done' ? '#3aaa5e' : selectedGardenNode.attributes.status?.toLowerCase() === 'draft' || selectedGardenNode.attributes.status?.toLowerCase() === 'backlog' ? '#8a9090' : '#d4a520' 
+                          }}>{selectedGardenNode.attributes.status}</span>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                          <span style={{ color: 'var(--text-sub)' }}>Assignee:</span>
+                          <span style={{ fontWeight: 600 }}>{selectedGardenNode.attributes.author}</span>
+                        </div>
+
+                        {selectedGardenNode.attributes.storyPoints !== undefined && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                            <span style={{ color: 'var(--text-sub)' }}>Story Points:</span>
+                            <span style={{ fontWeight: 700, color: 'var(--primary)' }}>{selectedGardenNode.attributes.storyPoints} pts</span>
+                          </div>
+                        )}
+
+                        {selectedGardenNode.attributes.commentCount !== undefined && (
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                            <span style={{ color: 'var(--text-sub)' }}>Comments:</span>
+                            <span style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px' }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>chat</span>
+                              {selectedGardenNode.attributes.commentCount}
+                            </span>
+                          </div>
+                        )}
+
                         {selectedGardenNode.type === 'pr' ? (
                           <>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
-                              <span style={{ color: 'var(--text-sub)' }}>Status:</span>
-                              <span style={{ 
-                                fontWeight: 600, 
-                                color: selectedGardenNode.attributes.status?.toLowerCase() === 'approved' ? '#3aaa5e' : selectedGardenNode.attributes.status?.toLowerCase() === 'draft' ? '#8a9090' : '#d4a520' 
-                              }}>{selectedGardenNode.attributes.status}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
-                              <span style={{ color: 'var(--text-sub)' }}>Author:</span>
-                              <span style={{ fontWeight: 600 }}>{selectedGardenNode.attributes.author}</span>
-                            </div>
                             {selectedGardenNode.attributes.reviews !== undefined && (
                               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
                                 <span style={{ color: 'var(--text-sub)' }}>Reviews:</span>
@@ -2456,26 +2559,56 @@ function App() {
                         ) : (
                           <>
                             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
-                              <span style={{ color: 'var(--text-sub)' }}>Status:</span>
-                              <span style={{ 
-                                fontWeight: 600, 
-                                color: selectedGardenNode.attributes.status?.toLowerCase() === 'active' ? '#c44030' : selectedGardenNode.attributes.status?.toLowerCase() === 'backlog' ? '#6a7a7a' : '#d47820'
-                              }}>{selectedGardenNode.attributes.status}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
                               <span style={{ color: 'var(--text-sub)' }}>Priority:</span>
                               <span style={{ 
                                 fontWeight: 600, 
                                 color: selectedGardenNode.attributes.priority === 'High' ? '#c44030' : selectedGardenNode.attributes.priority === 'Medium' ? '#d47820' : 'var(--text-sub)' 
                               }}>{selectedGardenNode.attributes.priority}</span>
                             </div>
-                            {selectedGardenNode.attributes.riskProbability !== undefined && (
+
+                            {selectedGardenNode.attributes.component && (
                               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
-                                <span style={{ color: 'var(--text-sub)' }}>Conflict Risk:</span>
+                                <span style={{ color: 'var(--text-sub)' }}>Component:</span>
+                                <span style={{ fontWeight: 600 }}>{selectedGardenNode.attributes.component}</span>
+                              </div>
+                            )}
+
+                            {selectedGardenNode.attributes.dueDaysRemaining !== undefined && (
+                              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '4px' }}>
+                                <span style={{ color: 'var(--text-sub)' }}>Due Date:</span>
                                 <span style={{ 
-                                  fontWeight: 700, 
-                                  color: selectedGardenNode.attributes.riskProbability > 0.6 ? '#c44030' : selectedGardenNode.attributes.riskProbability > 0.3 ? '#d47820' : '#3aaa5e'
-                                }}>{Math.round(selectedGardenNode.attributes.riskProbability * 100)}%</span>
+                                  fontWeight: 600, 
+                                  color: selectedGardenNode.attributes.dueDaysRemaining < 0 ? '#c44030' : selectedGardenNode.attributes.dueDaysRemaining <= 2 ? '#d47820' : 'var(--text-main)' 
+                                }}>
+                                  {selectedGardenNode.attributes.dueDaysRemaining < 0 ? 'OVERDUE' : `${selectedGardenNode.attributes.dueDaysRemaining} days remaining`}
+                                </span>
+                              </div>
+                            )}
+
+                            {selectedGardenNode.attributes.flagged && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#c44030', fontWeight: 700, padding: '4px 0' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>warning</span>
+                                BLOCKED / FLAGGED
+                              </div>
+                            )}
+
+                            {selectedGardenNode.attributes.subTasks && selectedGardenNode.attributes.subTasks.length > 0 && (
+                              <div style={{ marginTop: '8px', borderTop: '1px solid var(--border)', paddingTop: '8px' }}>
+                                <strong style={{ color: 'var(--text-sub)', display: 'block', marginBottom: '6px' }}>Sub-tasks Checklist:</strong>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingLeft: '4px' }}>
+                                  {selectedGardenNode.attributes.subTasks.map((st: any, idx: number) => (
+                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: st.status === 'Done' ? '#3aaa5e' : '#d4a520', cursor: 'default' }}>
+                                        {st.status === 'Done' ? 'check_box' : 'check_box_outline_blank'}
+                                      </span>
+                                      <span style={{ 
+                                        textDecoration: st.status === 'Done' ? 'line-through' : 'none', 
+                                        color: st.status === 'Done' ? 'var(--text-sub)' : 'var(--text-main)',
+                                        fontSize: '0.8rem'
+                                      }}>{st.name}</span>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             )}
                           </>
@@ -2484,23 +2617,150 @@ function App() {
                     </div>
                   )}
                 </div>
+                )}
 
                 {/* Top Right: Causal Efficiency HUD */}
-                <div className="glass-card hud-card efficiency-hud animate-hud-right">
-                  <div className="hud-header">
+                {uiVisible && (
+                  <div className="glass-card hud-card efficiency-hud animate-hud-right">
+                    <div className="hud-header">
                     <span className="material-symbols-outlined">speed</span>
                     <h3>Causal Efficiency</h3>
                   </div>
                   <div className="metric-value">{activeProjectData.telemetry.crr.toFixed(2)}x</div>
                   <div className="metric-sub">
-                    Sim Status: <strong className={activeProjectData.telemetry.crr >= 1.0 ? 'status-green' : 'status-red'}>
-                      {activeProjectData.telemetry.crr >= 1.0 ? 'Optimal' : 'Debt Warning'}
+                    Sim Status: <strong className={activeProjectData.telemetry.crr < 1.0 ? 'status-green' : 'status-red'}>
+                      {activeProjectData.telemetry.crr < 1.0 ? 'Optimal' : 'Debt Warning'}
                     </strong>
                   </div>
                 </div>
+                )}
+
+                {/* Bottom Center: Strategy Game Filter Dock HUD */}
+                {uiVisible && (
+                  <div className="garden-filter-dock animate-hud-bottom" style={{ pointerEvents: 'auto' }}>
+                    <div className="filter-dock-title">
+                      <span className="material-symbols-outlined icon-small">filter_alt</span>
+                      <span>Garden Filters</span>
+                    </div>
+                    <div className="filter-slots-container">
+                      {/* Slot 1: Epics */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showEpics ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showEpics: !prev.showEpics })); }}
+                      >
+                        <span className="material-symbols-outlined">grid_on</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [E]</div>
+                          <div className="tooltip-title">Epic Beds</div>
+                          <p className="tooltip-desc">Shows raised wooden plots dividing different project epics.</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 2: Assignees */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showBees ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showBees: !prev.showBees })); }}
+                      >
+                        <span className="material-symbols-outlined">pest_control</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [B]</div>
+                          <div className="tooltip-title">Assignee Bees</div>
+                          <p className="tooltip-desc">Shows orbiting bees representing team members working on tasks.</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 3: Sub-tasks */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showSubtasks ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showSubtasks: !prev.showSubtasks })); }}
+                      >
+                        <span className="material-symbols-outlined">spa</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [S]</div>
+                          <div className="tooltip-title">Sub-tasks Mushrooms</div>
+                          <p className="tooltip-desc">Shows mushrooms representing sub-tasks (resolved bloom into flowers).</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 4: Blocked Webs */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showWebs ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showWebs: !prev.showWebs })); }}
+                      >
+                        <span className="material-symbols-outlined">emergency_home</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [W]</div>
+                          <div className="tooltip-title">Blocked Webs</div>
+                          <p className="tooltip-desc">Envelops issues in spiderwebs to highlight blocked/flagged tasks.</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 5: Comment Dewdrops */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showDewdrops ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showDewdrops: !prev.showDewdrops })); }}
+                      >
+                        <span className="material-symbols-outlined">water_drop</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [D]</div>
+                          <div className="tooltip-title">Dewdrops</div>
+                          <p className="tooltip-desc">Shows shiny water droplets on leaves indicating fresh comment activity.</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 6: Dependency Vines */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showVines ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showVines: !prev.showVines })); }}
+                      >
+                        <span className="material-symbols-outlined">schema</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [V]</div>
+                          <div className="tooltip-title">Dependency Vines</div>
+                          <p className="tooltip-desc">Shows crawling leafy or thorny vines connecting related PRs and issues.</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 7: Sprint Weather */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showWeather ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showWeather: !prev.showWeather })); }}
+                      >
+                        <span className="material-symbols-outlined">cloudy_snowing</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [T]</div>
+                          <div className="tooltip-title">Sprint Weather</div>
+                          <p className="tooltip-desc">Displays rain (high velocity) or dry drought haze (low velocity).</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 8: Butterflies */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showAgents ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showAgents: !prev.showAgents })); }}
+                      >
+                        <span className="material-symbols-outlined">flutter_dash</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [A]</div>
+                          <div className="tooltip-title">Swarm Butterflies</div>
+                          <p className="tooltip-desc">Shows flying butterflies representing Worker, Critic, and Opponent simulation threads.</p>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Bottom Right: Cognitive Budget Controls HUD */}
-                <div className="glass-card hud-card budget-hud animate-hud-bottom">
+                {uiVisible && (
+                  <div className="glass-card hud-card budget-hud animate-hud-bottom">
                   <div className="hud-header">
                     <h3>Cognitive Budget HUD</h3>
                     {limitsEnforced && (
@@ -2555,6 +2815,7 @@ function App() {
                     {limitsEnforced ? 'Unlock' : 'Enforce Limits'}
                   </button>
                 </div>
+                )}
 
               </div>
             )}

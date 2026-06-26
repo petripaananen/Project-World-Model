@@ -52,6 +52,18 @@ export interface GameGardenSceneProps {
   opponentLimit?: number;
   eventCount?: number;
   onSelectNode?: (node: FusedNode | null) => void;
+  sprintVelocity?: number;
+  filters?: {
+    showEpics: boolean;
+    showBees: boolean;
+    showSubtasks: boolean;
+    showWebs: boolean;
+    showDewdrops: boolean;
+    showVines: boolean;
+    showWeather: boolean;
+    showAgents: boolean;
+  };
+  uiVisible?: boolean;
 }
 
 // ─── Colors ───────────────────────────────────────────────────────────────────
@@ -120,6 +132,157 @@ function ring(count: number, radius: number, startAngle = 0) {
     const a = startAngle + (i / Math.max(count, 1)) * Math.PI * 2;
     return [Math.cos(a) * radius, 0, Math.sin(a) * radius] as [number, number, number];
   });
+}
+
+const EPIC_CENTERS: [number, number][] = [
+  [-2.4, -2.4], // Bottom-Left
+  [ 2.4, -2.4], // Bottom-Right
+  [-2.4,  2.4], // Top-Left
+  [ 2.4,  2.4]  // Top-Right
+];
+
+function EpicGardenBed({ x, z, name }: { x: number; z: number; name: string }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <group 
+      position={[x, 0.01, z]}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+      onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
+    >
+      {/* Soil bed */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[2.0, 2.0]} />
+        <meshStandardMaterial color="#3a2512" roughness={0.9} />
+      </mesh>
+      {/* Wooden border - 4 sides */}
+      <mesh position={[0, 0.06, 1.0]} castShadow>
+        <boxGeometry args={[2.08, 0.12, 0.08]} />
+        <meshStandardMaterial color="#5a3d28" roughness={0.85} />
+      </mesh>
+      <mesh position={[0, 0.06, -1.0]} castShadow>
+        <boxGeometry args={[2.08, 0.12, 0.08]} />
+        <meshStandardMaterial color="#5a3d28" roughness={0.85} />
+      </mesh>
+      <mesh position={[1.0, 0.06, 0]} rotation={[0, Math.PI / 2, 0]} castShadow>
+        <boxGeometry args={[2.08, 0.12, 0.08]} />
+        <meshStandardMaterial color="#5a3d28" roughness={0.85} />
+      </mesh>
+      <mesh position={[-1.0, 0.06, 0]} rotation={[0, Math.PI / 2, 0]} castShadow>
+        <boxGeometry args={[2.08, 0.12, 0.08]} />
+        <meshStandardMaterial color="#5a3d28" roughness={0.85} />
+      </mesh>
+      {hovered && (
+        <Html position={[0, 0.4, 0]} center zIndexRange={[100, 0]}>
+          <div className="garden-tooltip" style={{ minWidth: '120px' }}>
+            <span className="garden-badge terrain-badge" style={{ background: 'var(--primary)' }}>EPIC</span>
+            <strong>{name}</strong>
+            <p>Garden plot grouping related issues and PRs.</p>
+          </div>
+        </Html>
+      )}
+    </group>
+  );
+}
+
+function AssigneeBee({ targetPos, name }: { targetPos: [number, number, number]; name: string }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const [hovered, setHovered] = useState(false);
+  
+  useFrame((state) => {
+    if (!groupRef.current) return;
+    const time = state.clock.elapsedTime;
+    const r = 0.4;
+    const speed = 2.0;
+    const orbitX = Math.cos(time * speed) * r;
+    const orbitZ = Math.sin(time * speed) * r;
+    const bobY = Math.sin(time * 5) * 0.06 + 0.35;
+    
+    groupRef.current.position.set(
+      targetPos[0] + orbitX,
+      targetPos[1] + bobY,
+      targetPos[2] + orbitZ
+    );
+    groupRef.current.rotation.y = -time * speed - Math.PI / 2;
+  });
+  
+  return (
+    <group 
+      ref={groupRef}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+      onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
+    >
+      {/* Bee Body */}
+      <mesh castShadow scale={[1, 0.7, 0.7]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshStandardMaterial color="#fcd116" roughness={0.5} />
+      </mesh>
+      {/* Bee Stripes */}
+      <mesh position={[0.015, 0, 0]} scale={[0.9, 0.65, 0.65]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshStandardMaterial color="#1a1a1a" />
+      </mesh>
+      <mesh position={[-0.015, 0, 0]} scale={[0.9, 0.65, 0.65]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshStandardMaterial color="#1a1a1a" />
+      </mesh>
+      {/* Bee Wings */}
+      <mesh position={[0, 0.035, 0.022]} rotation={[0.2, 0, 0.2]}>
+        <boxGeometry args={[0.015, 0.003, 0.06]} />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.65} roughness={0.1} />
+      </mesh>
+      <mesh position={[0, 0.035, -0.022]} rotation={[-0.2, 0, -0.2]}>
+        <boxGeometry args={[0.015, 0.003, 0.06]} />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.65} roughness={0.1} />
+      </mesh>
+      {hovered && (
+        <Html position={[0, 0.18, 0]} center zIndexRange={[100, 0]}>
+          <div className="garden-tooltip" style={{ minWidth: '100px' }}>
+            <span className="garden-badge terrain-badge" style={{ background: '#fcd116', color: '#1a1a1a' }}>ASSIGNEE</span>
+            <strong>{name}</strong>
+            <p>Assigned team member bee.</p>
+          </div>
+        </Html>
+      )}
+    </group>
+  );
+}
+
+function RainParticles({ count = 80 }: { count?: number }) {
+  const pointsRef = useRef<THREE.Points>(null);
+  const [positions, speeds] = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const sp = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 10.0;
+      pos[i * 3 + 1] = Math.random() * 5.0 + 1.0;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 10.0;
+      sp[i * 3 + 1] = -2.5 - Math.random() * 2.0; // fall down fast
+    }
+    return [pos, sp];
+  }, [count]);
+  useFrame((_, delta) => {
+    if (!pointsRef.current) return;
+    const posAttr = pointsRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
+    for (let i = 0; i < count; i++) {
+      let y = posAttr.getY(i);
+      y += speeds[i * 3 + 1] * delta;
+      if (y < 0.05) {
+        y = 5.0; // respawn at top
+        posAttr.setX(i, (Math.random() - 0.5) * 10.0);
+        posAttr.setZ(i, (Math.random() - 0.5) * 10.0);
+      }
+      posAttr.setY(i, y);
+    }
+    posAttr.needsUpdate = true;
+  });
+  return (
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial color="#94d0f5" size={0.045} transparent opacity={0.65} sizeAttenuation />
+    </points>
+  );
 }
 
 // ─── Ground: grass + stone cross-paths ────────────────────────────────────────
@@ -209,7 +372,7 @@ function GardenWell({ crr, eventCount = 0 }: { crr?: number; eventCount?: number
   const waterRef = useRef<THREE.Mesh>(null);
   const waterMatRef = useRef<THREE.MeshStandardMaterial>(null);
   const [hovered, setHovered] = useState(false);
-  const isDebt = crr !== undefined && crr < 1.0;
+  const isDebt = crr !== undefined && crr >= 1.0;
   const waterColor = isDebt ? C.waterDry : C.water;
 
   // Track ripples from websocket/webhook events
@@ -439,10 +602,14 @@ function FlowerBush({
   node,
   position,
   onSelectNode,
+  showBees = true,
+  showDewdrops = true,
 }: {
   node: FusedNode;
   position: [number, number, number];
   onSelectNode?: (node: FusedNode | null) => void;
+  showBees?: boolean;
+  showDewdrops?: boolean;
 }) {
   const bushRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
@@ -450,9 +617,12 @@ function FlowerBush({
   const shortName = node.name.split(':')[0].trim();
   const status = node.attributes.status?.toLowerCase() || '';
 
-  // Data-driven sizing: based on reviews count
+  // Data-driven sizing: based on reviews count & story points
   const reviewsCount = node.attributes.reviews ?? 0;
-  const sizeMult = 0.85 + reviewsCount * 0.15;
+  const storyPoints = node.attributes.storyPoints ?? 3;
+  const thicknessScale = 0.8 + (storyPoints / 8) * 0.55;
+  const sizeMult = (0.85 + reviewsCount * 0.15) * thicknessScale;
+  const comments = node.attributes.commentCount || 0;
 
   useFrame((state) => {
     if (!bushRef.current) return;
@@ -509,13 +679,35 @@ function FlowerBush({
         );
       })}
 
+      {/* Assignee Bee */}
+      {node.attributes.author && showBees && (
+        <AssigneeBee name={node.attributes.author} targetPos={[0, status === 'draft' ? 0.36 : 0.48, 0]} />
+      )}
+
+      {/* Comment Dewdrops */}
+      {showDewdrops && comments > 0 && Array.from({ length: Math.min(comments, 5) }).map((_, dewIdx) => {
+        const angle = (dewIdx / 5) * Math.PI * 2;
+        const dewRadius = 0.24;
+        const dewX = Math.cos(angle) * dewRadius;
+        const dewZ = Math.sin(angle) * dewRadius;
+        const dewY = (status === 'draft' ? 0.36 : 0.48) + Math.sin(dewIdx) * 0.08;
+        return (
+          <mesh key={dewIdx} position={[dewX, dewY, dewZ]} castShadow>
+            <sphereGeometry args={[0.032, 6, 6]} />
+            <meshStandardMaterial color="#ffffff" roughness={0.02} metalness={0.95} transparent opacity={0.85} />
+          </mesh>
+        );
+      })}
+
       {hovered && (
         <Html position={[0, 1.4, 0]} center zIndexRange={[100, 0]}>
           <div className="garden-tooltip">
             <span className="garden-badge pr-badge">PR</span>
             <strong>{node.name}</strong>
             <p>Status: {node.attributes.status}</p>
-            <p>Author: {node.attributes.author}</p>
+            {node.attributes.epic && <p>Epic: {node.attributes.epic}</p>}
+            {node.attributes.storyPoints && <p>Estimate: {node.attributes.storyPoints} pts</p>}
+            {node.attributes.author && <p>Author: {node.attributes.author}</p>}
           </div>
         </Html>
       )}
@@ -534,40 +726,80 @@ function WeedNode({
   node,
   position,
   onSelectNode,
+  showBees = true,
+  showDewdrops = true,
+  showSubtasks = true,
+  showWebs = true,
 }: {
   node: FusedNode;
   position: [number, number, number];
   onSelectNode?: (node: FusedNode | null) => void;
+  showBees?: boolean;
+  showDewdrops?: boolean;
+  showSubtasks?: boolean;
+  showWebs?: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
-  const color = issueColor(node);
 
-  // Data-driven sizing: based on priority
+  // Status and details
+  const status = node.attributes.status?.toLowerCase() || '';
+  const isBacklog = status === 'backlog';
+  const isDone = status === 'done' || status === 'approved';
+  const isBlocked = !!node.attributes.flagged;
+  const comments = node.attributes.commentCount || 0;
+  const storyPoints = node.attributes.storyPoints ?? 3;
   const priority = node.attributes.priority?.toLowerCase() || 'medium';
-  const sizeMult = priority === 'high' ? 1.3 : priority === 'low' ? 0.75 : 1.05;
+  const component = node.attributes.component || '';
+  const dueDays = node.attributes.dueDaysRemaining;
+  const subTasks = node.attributes.subTasks || [];
 
-  // Soil and debt shadow details based on risk probability
-  const riskProb = node.attributes.riskProbability ?? 0;
-  const soilColor = riskProb > 0.6 ? '#1c120c' : riskProb > 0.3 ? '#3a2b1f' : '#6b4c2a';
+  // Colors
+  let baseColor = issueColor(node);
+  if (isDone) baseColor = '#e8d8b0'; // daisy core color
+
+  // Due date wilting adjustments
+  let rotationX = 0;
+  let rotationZ = 0;
+  const finalColor = new THREE.Color(baseColor);
+  if (dueDays !== undefined && !isDone) {
+    if (dueDays < 0) {
+      rotationX = 0.65;
+      rotationZ = 0.25;
+      finalColor.lerp(new THREE.Color('#7a5c3a'), 0.85); // brown dead leaf color
+    } else if (dueDays <= 2) {
+      rotationX = 0.35;
+      finalColor.lerp(new THREE.Color('#8b7d2a'), 0.5); // yellowing/wilted color
+    }
+  }
+
+  // Sizing
+  const sizeMult = priority === 'high' ? 1.25 : priority === 'low' ? 0.75 : 1.0;
+  const thicknessScale = 0.75 + (storyPoints / 8) * 0.75;
+  const heightScale = sizeMult;
+
+  // Emissive and hover colors
+  const weedColorStr = hovered ? '#ffffff' : `#${finalColor.getHexString()}`;
 
   useFrame((state) => {
     if (!groupRef.current) return;
     const t = state.clock.elapsedTime;
     // Gentle wind sway
-    const swayX = Math.sin(t * 1.4 + position[0] * 1.5) * 0.03;
-    const swayZ = Math.cos(t * 1.2 + position[2] * 1.5) * 0.03;
+    const swayX = Math.sin(t * 1.4 + position[0] * 1.5) * 0.03 + rotationX;
+    const swayZ = Math.cos(t * 1.2 + position[2] * 1.5) * 0.03 + rotationZ;
     groupRef.current.rotation.x = swayX;
     groupRef.current.rotation.z = swayZ;
   });
 
+  const soilColor = node.attributes.riskProbability > 0.6 ? '#1c120c' : node.attributes.riskProbability > 0.3 ? '#3a2b1f' : '#6b4c2a';
+
   return (
     <group position={position}>
       {/* Dark debt patch */}
-      {riskProb > 0 && (
+      {node.attributes.riskProbability > 0 && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]} receiveShadow>
-          <ringGeometry args={[0, 0.45 + riskProb * 0.65, 16]} />
-          <meshBasicMaterial color="#0c0702" transparent opacity={0.15 + riskProb * 0.35} />
+          <ringGeometry args={[0, 0.45 + node.attributes.riskProbability * 0.65, 16]} />
+          <meshBasicMaterial color="#0c0702" transparent opacity={0.15 + node.attributes.riskProbability * 0.35} />
         </mesh>
       )}
 
@@ -577,39 +809,197 @@ function WeedNode({
         <meshStandardMaterial color={soilColor} roughness={0.9} metalness={0.05} />
       </mesh>
 
-      <group ref={groupRef} scale={[sizeMult, sizeMult, sizeMult]} onClick={(e) => { e.stopPropagation(); onSelectNode?.(node); }}>
-        {/* Stems */}
-        {[-0.1, 0, 0.1].map((ox, i) => (
-          <mesh key={i} position={[ox, 0.22 + i * 0.04, ox * 0.4]} rotation={[0.2 * (i - 1), 0, 0.15 * (i - 1)]} castShadow>
-            <cylinderGeometry args={[0.025, 0.03, 0.44 + i * 0.06, 5]} />
-            <meshStandardMaterial color={color} roughness={0.8} metalness={0.05} />
-          </mesh>
-        ))}
+      {/* Sub-task Mushrooms / Sprouts at the base */}
+      {showSubtasks && subTasks.map((st: any, idx: number) => {
+        const angle = (idx / Math.max(subTasks.length, 1)) * Math.PI * 2;
+        const r = 0.32;
+        const mushX = Math.cos(angle) * r;
+        const mushZ = Math.sin(angle) * r;
+        const completed = st.status === 'Done';
+        return (
+          <group key={idx} position={[mushX, 0.05, mushZ]}>
+            {completed ? (
+              // Completed sub-task -> Tiny White Flower
+              <group>
+                <mesh position={[0, 0.05, 0]}>
+                  <cylinderGeometry args={[0.008, 0.008, 0.1, 4]} />
+                  <meshStandardMaterial color="#4a8c3f" />
+                </mesh>
+                <mesh position={[0, 0.1, 0]}>
+                  <sphereGeometry args={[0.024, 6, 6]} />
+                  <meshStandardMaterial color="#ffe066" />
+                </mesh>
+                {/* Petals */}
+                <mesh position={[0, 0.1, 0]} rotation={[Math.PI/2, 0, 0]}>
+                  <torusGeometry args={[0.038, 0.008, 4, 8]} />
+                  <meshStandardMaterial color="#ffffff" />
+                </mesh>
+              </group>
+            ) : (
+              // Incomplete sub-task -> Tiny Red/Orange Mushroom
+              <group>
+                <mesh position={[0, 0.04, 0]}>
+                  <cylinderGeometry args={[0.012, 0.012, 0.08, 4]} />
+                  <meshStandardMaterial color="#eeeeee" roughness={0.9} />
+                </mesh>
+                <mesh position={[0, 0.075, 0]}>
+                  <sphereGeometry args={[0.03, 6, 6]} />
+                  <meshStandardMaterial color="#c44030" roughness={0.5} />
+                </mesh>
+              </group>
+            )}
+          </group>
+        );
+      })}
 
-        {/* Wilted flower heads */}
-        {[-0.1, 0, 0.1].map((ox, i) => (
-          <mesh
-            key={`head-${i}`}
-            position={[ox * 1.2, 0.48 + i * 0.04, ox * 0.5]}
-            castShadow
-            onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
-            onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
-          >
-            <dodecahedronGeometry args={[0.09, 0]} />
-            <meshStandardMaterial color={hovered ? '#ffffff' : color} roughness={0.7} metalness={0.1} />
+      <group 
+        ref={groupRef} 
+        scale={[thicknessScale, heightScale, thicknessScale]} 
+        onClick={(e) => { e.stopPropagation(); onSelectNode?.(node); }}
+      >
+        {isBacklog ? (
+          // BACKLOG: Dormant Seed Pod on the ground
+          <mesh position={[0, 0.06, 0]} castShadow>
+            <sphereGeometry args={[0.16, 8, 8]} />
+            <meshStandardMaterial color="#5c4033" roughness={0.9} metalness={0.1} />
           </mesh>
-        ))}
+        ) : isDone ? (
+          // DONE: Beautiful white daisy
+          <group>
+            {/* Stem */}
+            <mesh position={[0, 0.28, 0]} castShadow>
+              <cylinderGeometry args={[0.02, 0.025, 0.56, 6]} />
+              <meshStandardMaterial color="#4a8c3f" roughness={0.8} />
+            </mesh>
+            {/* Center Yellow Sphere */}
+            <mesh position={[0, 0.56, 0]} castShadow>
+              <sphereGeometry args={[0.08, 8, 8]} />
+              <meshStandardMaterial color="#ffe066" roughness={0.5} emissive="#ffe066" emissiveIntensity={0.2} />
+            </mesh>
+            {/* Petals */}
+            <mesh position={[0, 0.56, 0]} rotation={[Math.PI / 2, 0, 0]}>
+              <torusGeometry args={[0.13, 0.028, 4, 12]} />
+              <meshStandardMaterial color="#ffffff" roughness={0.6} />
+            </mesh>
+          </group>
+        ) : (
+          // ACTIVE / IN-PROGRESS / WILTED WEEDS
+          <group>
+            {/* Render different geometries based on Component Labels */}
+            {component === 'Frontend' ? (
+              // Fern-like geometry (leafy, multiple thin stems splayed out)
+              <group>
+                {[-0.14, -0.05, 0.05, 0.14].map((_, i) => {
+                  const angle = (i - 1.5) * 0.28;
+                  return (
+                    <group key={i} rotation={[0, 0, angle]}>
+                      <mesh position={[0, 0.22, 0]} castShadow>
+                        <cylinderGeometry args={[0.015, 0.022, 0.44, 4]} />
+                        <meshStandardMaterial color={weedColorStr} roughness={0.85} />
+                      </mesh>
+                      <mesh position={[0, 0.42, 0]} castShadow>
+                        <sphereGeometry args={[0.06, 6, 6]} />
+                        <meshStandardMaterial color={weedColorStr} roughness={0.7} />
+                      </mesh>
+                    </group>
+                  );
+                })}
+              </group>
+            ) : component === 'Database' ? (
+              // Cactus-like geometry (thick core cylinder + short side arms)
+              <group>
+                {/* Core stem */}
+                <mesh position={[0, 0.24, 0]} castShadow>
+                  <cylinderGeometry args={[0.06, 0.065, 0.48, 8]} />
+                  <meshStandardMaterial color={weedColorStr} roughness={0.9} />
+                </mesh>
+                {/* Side branch 1 */}
+                <mesh position={[0.08, 0.28, 0]} rotation={[0, 0, 0.5]} castShadow>
+                  <cylinderGeometry args={[0.03, 0.03, 0.15, 6]} />
+                  <meshStandardMaterial color={weedColorStr} roughness={0.9} />
+                </mesh>
+                {/* Side branch 2 */}
+                <mesh position={[-0.08, 0.2, 0]} rotation={[0, 0, -0.5]} castShadow>
+                  <cylinderGeometry args={[0.03, 0.03, 0.15, 6]} />
+                  <meshStandardMaterial color={weedColorStr} roughness={0.9} />
+                </mesh>
+              </group>
+            ) : (
+              // Default component (Backend or none): Spiky dandelion weed (standard 3 stems + dodecahedrons)
+              <group>
+                {/* Stems */}
+                {[-0.1, 0, 0.1].map((ox, i) => (
+                  <mesh key={i} position={[ox, 0.22 + i * 0.04, ox * 0.4]} rotation={[0.2 * (i - 1), 0, 0.15 * (i - 1)]} castShadow>
+                    <cylinderGeometry args={[0.025, 0.03, 0.44 + i * 0.06, 5]} />
+                    <meshStandardMaterial color={weedColorStr} roughness={0.8} />
+                  </mesh>
+                ))}
+                {/* Wilted flower heads */}
+                {[-0.1, 0, 0.1].map((ox, i) => (
+                  <mesh
+                    key={`head-${i}`}
+                    position={[ox * 1.2, 0.48 + i * 0.04, ox * 0.5]}
+                    castShadow
+                    onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+                    onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
+                  >
+                    <dodecahedronGeometry args={[0.09, 0]} />
+                    <meshStandardMaterial color={weedColorStr} roughness={0.7} />
+                  </mesh>
+                ))}
+              </group>
+            )}
+
+            {/* Dewdrops (Comments activity) on leaves */}
+            {showDewdrops && comments > 0 && Array.from({ length: Math.min(comments, 5) }).map((_, dewIdx) => {
+              const angle = (dewIdx / 5) * Math.PI * 2;
+              const dewRadius = 0.18;
+              const dewX = Math.cos(angle) * dewRadius;
+              const dewZ = Math.sin(angle) * dewRadius;
+              const dewY = 0.22 + Math.sin(dewIdx) * 0.08;
+              return (
+                <mesh key={dewIdx} position={[dewX, dewY, dewZ]} castShadow>
+                  <sphereGeometry args={[0.03, 6, 6]} />
+                  <meshStandardMaterial color="#ffffff" roughness={0.02} metalness={0.95} transparent opacity={0.85} />
+                </mesh>
+              );
+            })}
+          </group>
+        )}
       </group>
 
+      {/* Blocked / Flagged Spider Web wireframe overlay */}
+      {showWebs && isBlocked && !isDone && !isBacklog && (
+        <mesh position={[0, 0.35, 0]} castShadow>
+          <sphereGeometry args={[0.42 * thicknessScale, 8, 8]} />
+          <meshStandardMaterial color="#cccccc" wireframe transparent opacity={0.4} />
+        </mesh>
+      )}
+
+      {/* Assignee Bee */}
+      {node.attributes.author && !isBacklog && !isDone && showBees && (
+        <AssigneeBee name={node.attributes.author} targetPos={[0, 0.35, 0]} />
+      )}
+
+      {/* Hover tooltip HUD */}
       {hovered && (
-        <Html position={[0, 0.9, 0]} center zIndexRange={[100, 0]}>
+        <Html position={[0, 1.3, 0]} center zIndexRange={[100, 0]}>
           <div className="garden-tooltip">
             <span className="garden-badge issue-badge">ISSUE</span>
             <strong>{node.name}</strong>
             <p>Status: {node.attributes.status}</p>
+            {node.attributes.epic && <p>Epic: {node.attributes.epic}</p>}
+            {node.attributes.storyPoints && <p>Estimate: {node.attributes.storyPoints} pts</p>}
+            {node.attributes.author && <p>Assignee: {node.attributes.author}</p>}
           </div>
         </Html>
       )}
+
+      <Html position={[0, -0.1, 0]} center>
+        <div className="garden-tag" style={{ color: baseColor === '#e8d8b0' ? '#3aaa5e' : baseColor }}>
+          {node.name.split(':')[0].trim()}
+        </div>
+      </Html>
     </group>
   );
 }
@@ -761,8 +1151,16 @@ function FlowerPatch({ x, z }: { x: number; z: number }) {
   );
 }
 
-// ─── Dependency Path (stepping stones) ────────────────────────────────────────
-function DependencyPath({ start, end }: { start: [number, number, number]; end: [number, number, number] }) {
+// ─── Dependency Path (stepping stones or crawling vines) ──────────────────────
+function DependencyPath({
+  start,
+  end,
+  isBlocked,
+}: {
+  start: [number, number, number];
+  end: [number, number, number];
+  isBlocked?: boolean;
+}) {
   const [hovered, setHovered] = useState(false);
   const [x1, , z1] = start;
   const [x2, , z2] = end;
@@ -770,6 +1168,16 @@ function DependencyPath({ start, end }: { start: [number, number, number]; end: 
   const dz = z2 - z1;
   const dist = Math.sqrt(dx * dx + dz * dz);
   
+  const curve = useMemo(() => {
+    const pStart = new THREE.Vector3(...start);
+    const pEnd = new THREE.Vector3(...end);
+    pStart.y = 0.15;
+    pEnd.y = 0.15;
+    const pMid = new THREE.Vector3().addVectors(pStart, pEnd).multiplyScalar(0.5);
+    pMid.y += Math.min(dist * 0.25, 0.5); // arch height based on distance
+    return new THREE.QuadraticBezierCurve3(pStart, pMid, pEnd);
+  }, [start, end, dist]);
+
   const numStones = Math.max(Math.floor(dist / 0.55), 2);
   const stones = useMemo(() => {
     return Array.from({ length: numStones - 1 }, (_, idx) => {
@@ -779,6 +1187,55 @@ function DependencyPath({ start, end }: { start: [number, number, number]; end: 
       return [x1 + dx * t + noiseX, 0.008, z1 + dz * t + noiseZ] as [number, number, number];
     });
   }, [x1, z1, x2, z2, dist, numStones]);
+
+  if (isBlocked !== undefined) {
+    const vineColor = isBlocked ? '#6a2a4b' : '#3d7a42';
+    return (
+      <group
+        onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
+        onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
+      >
+        <mesh castShadow receiveShadow>
+          <tubeGeometry args={[curve, 16, 0.024, 6, false]} />
+          <meshStandardMaterial color={vineColor} roughness={0.8} />
+        </mesh>
+        
+        {isBlocked && Array.from({ length: 5 }).map((_, idx) => {
+          const t = 0.2 + idx * 0.15;
+          const pos = curve.getPointAt(t);
+          return (
+            <mesh key={idx} position={[pos.x, pos.y, pos.z]} rotation={[Math.sin(idx)*Math.PI, 0, Math.cos(idx)*Math.PI]}>
+              <coneGeometry args={[0.024, 0.08, 4]} />
+              <meshStandardMaterial color="#c44030" roughness={0.7} />
+            </mesh>
+          );
+        })}
+        
+        {!isBlocked && Array.from({ length: 5 }).map((_, idx) => {
+          const t = 0.2 + idx * 0.15;
+          const pos = curve.getPointAt(t);
+          return (
+            <mesh key={idx} position={[pos.x, pos.y, pos.z]} scale={[0.05, 0.02, 0.08]}>
+              <sphereGeometry args={[1, 6, 6]} />
+              <meshStandardMaterial color="#4a8c3f" roughness={0.9} />
+            </mesh>
+          );
+        })}
+
+        {hovered && (
+          <Html position={[curve.getPointAt(0.5).x, curve.getPointAt(0.5).y + 0.4, curve.getPointAt(0.5).z]} center zIndexRange={[100, 0]}>
+            <div className="garden-tooltip">
+              <span className="garden-badge path-badge" style={{ background: isBlocked ? '#6a2a4b' : '#3d7a42' }}>
+                {isBlocked ? 'BLOCKED' : 'PREREQ'}
+              </span>
+              <strong>{isBlocked ? 'Blocked Dependency Vine' : 'Clear Dependency Vine'}</strong>
+              <p>{isBlocked ? 'Indicates a blocking relationship (thorny vine).' : 'Indicates a clear prereq pipeline connection.'}</p>
+            </div>
+          </Html>
+        )}
+      </group>
+    );
+  }
 
   return (
     <group
@@ -882,17 +1339,39 @@ function GardenScene({
   opponentLimit = 1,
   eventCount = 0,
   onSelectNode,
+  sprintVelocity,
+  filters = {
+    showEpics: true,
+    showBees: true,
+    showSubtasks: true,
+    showWebs: true,
+    showDewdrops: true,
+    showVines: true,
+    showWeather: true,
+    showAgents: true,
+  },
 }: {
   crr?: number;
   graph?: { nodes: FusedNode[]; edges: any[] };
   opponentLimit?: number;
   eventCount?: number;
   onSelectNode?: (node: FusedNode | null) => void;
+  sprintVelocity?: number;
+  filters?: {
+    showEpics: boolean;
+    showBees: boolean;
+    showSubtasks: boolean;
+    showWebs: boolean;
+    showDewdrops: boolean;
+    showVines: boolean;
+    showWeather: boolean;
+    showAgents: boolean;
+  };
 }) {
   const season = useMemo(() => {
     if (crr === undefined) return SEASONS.summer;
-    if (crr >= 1.2) return SEASONS.summer;
-    if (crr >= 1.0) return SEASONS.lateSummer;
+    if (crr < 0.5) return SEASONS.summer;
+    if (crr < 1.0) return SEASONS.lateSummer;
     return SEASONS.autumn;
   }, [crr]);
 
@@ -900,13 +1379,62 @@ function GardenScene({
   const prNodes     = nodes.filter((n) => n.type === 'pr').slice(0, 10);
   const issueNodes  = nodes.filter((n) => n.type === 'issue').slice(0, 14);
 
-  // Layout positions
+  // Group unique Epics (up to 4)
+  const uniqueEpics = useMemo(() => {
+    const epics = nodes.map(n => n.attributes.epic).filter(Boolean);
+    return Array.from(new Set(epics)).slice(0, 4);
+  }, [nodes]);
+
+  // Position nodes inside Epic Beds or around the well
+  const nodePositions = useMemo(() => {
+    const positions: Record<string, [number, number, number]> = {};
+    const epicGroups: Record<string, FusedNode[]> = {};
+    const noEpicNodes: FusedNode[] = [];
+    
+    nodes.forEach(node => {
+      const epic = node.attributes.epic;
+      if (epic && uniqueEpics.includes(epic)) {
+        if (!epicGroups[epic]) epicGroups[epic] = [];
+        epicGroups[epic].push(node);
+      } else {
+        noEpicNodes.push(node);
+      }
+    });
+
+    uniqueEpics.forEach((epic, epicIdx) => {
+      const center = EPIC_CENTERS[epicIdx];
+      const groupNodes = epicGroups[epic] || [];
+      const count = groupNodes.length;
+      groupNodes.forEach((node, nodeIdx) => {
+        const angle = (nodeIdx / Math.max(count, 1)) * Math.PI * 2;
+        const r = count > 1 ? 0.65 : 0;
+        positions[node.id] = [
+          center[0] + Math.cos(angle) * r,
+          0,
+          center[1] + Math.sin(angle) * r
+        ];
+      });
+    });
+
+    const count = noEpicNodes.length;
+    noEpicNodes.forEach((node, nodeIdx) => {
+      const angle = (nodeIdx / Math.max(count, 1)) * Math.PI * 2;
+      const r = 2.0;
+      positions[node.id] = [
+        Math.cos(angle) * r,
+        0,
+        Math.sin(angle) * r
+      ];
+    });
+
+    return positions;
+  }, [nodes, uniqueEpics]);
+
   const prPos    = useMemo(() => ring(Math.max(prNodes.length, 1),    3.2, Math.PI / 6),    [prNodes.length]);
   const issuePos = useMemo(() => ring(Math.max(issueNodes.length, 1), 2.2, -Math.PI / 5), [issueNodes.length]);
 
   const orbitSpeed = 0.35 * Math.max(opponentLimit, 0.5);
 
-  // Decorative flower patches in the beds (quadrant corners)
   const bedPositions: [number, number][] = [
     [ 3.2,  3.2], [-3.2,  3.2],
     [-3.2, -3.2], [ 3.2, -3.2],
@@ -914,10 +1442,17 @@ function GardenScene({
     [ 0.0,  4.0], [ 0.0, -4.0],
   ];
 
+  // Adjust weather visual depending on velocity
+  const isDrought = sprintVelocity !== undefined && sprintVelocity < 50;
+  const isRaining = sprintVelocity !== undefined && sprintVelocity >= 70;
+
+  const skyColor = isDrought ? SEASONS.autumn.sky : season.sky;
+  const fogFarDist = isDrought ? 15 : season.fogFar;
+
   return (
     <>
-      <color attach="background" args={[season.sky]} />
-      <fog attach="fog" args={[season.sky, 18, season.fogFar]} />
+      <color attach="background" args={[skyColor]} />
+      <fog attach="fog" args={[skyColor, 18, fogFarDist]} />
 
       {/* Warm golden-hour lighting & Hemisphere Light */}
       <ambientLight intensity={0.6} color="#fff5e0" />
@@ -938,24 +1473,63 @@ function GardenScene({
       <directionalLight position={[-6, 5, -4]} intensity={0.2} color="#c8e8ff" />
 
       {/* Floating pollen particles */}
-      <FloatingPollen count={50} />
+      {!isRaining && <FloatingPollen count={50} />}
+
+      {/* Rain weather system */}
+      {isRaining && <RainParticles count={100} />}
 
       {/* Ground, paths, hedge, trees */}
-      <GardenGround grassColor={season.grass} />
+      <GardenGround grassColor={isDrought ? SEASONS.autumn.grass : season.grass} />
       <HedgeFence />
       {([[-4.3, -4.3], [4.3, -4.3], [-4.3, 4.3], [4.3, 4.3]] as [number, number][]).map(
-        ([x, z], i) => <OakTree key={i} position={[x, 0, z]} leavesColor={season.leaves} />
+        ([x, z], i) => <OakTree key={i} position={[x, 0, z]} leavesColor={isDrought ? SEASONS.autumn.leaves : season.leaves} />
       )}
 
-      {/* Dependency stepping stones paths */}
-      {prNodes.map((prNode, prIdx) => {
+      {/* Epic Garden Beds */}
+      {filters.showEpics && uniqueEpics.map((epicName, idx) => {
+        const center = EPIC_CENTERS[idx];
+        if (center) {
+          return (
+            <EpicGardenBed 
+              key={`bed-${idx}`}
+              x={center[0]}
+              z={center[1]}
+              name={epicName}
+            />
+          );
+        }
+        return null;
+      })}
+
+      {/* Stepping stones paths linking PRs and issues */}
+      {filters.showVines && prNodes.map((prNode, prIdx) => {
         const issueIdx = (prIdx + 1) % Math.max(issueNodes.length, 1);
-        if (issueNodes.length > 0 && prPos[prIdx] && issuePos[issueIdx]) {
+        const start = nodePositions[prNode.id];
+        const targetNode = issueNodes[issueIdx];
+        const end = targetNode ? nodePositions[targetNode.id] : undefined;
+        if (start && end) {
           return (
             <DependencyPath 
               key={`path-${prNode.id}`}
-              start={prPos[prIdx]}
-              end={issuePos[issueIdx]}
+              start={start}
+              end={end}
+            />
+          );
+        }
+        return null;
+      })}
+
+      {/* Issue-to-issue dependency crawling vines */}
+      {filters.showVines && graph?.edges?.map((edge, idx) => {
+        const start = nodePositions[edge.source];
+        const end = nodePositions[edge.target];
+        if (start && end) {
+          return (
+            <DependencyPath 
+              key={`edge-path-${idx}`}
+              start={start}
+              end={end}
+              isBlocked={edge.type === 'blocks'}
             />
           );
         }
@@ -963,7 +1537,7 @@ function GardenScene({
       })}
 
       {/* Decorative flower patches */}
-      {season !== SEASONS.autumn && bedPositions.map(([x, z], i) => (
+      {season !== SEASONS.autumn && !isDrought && bedPositions.map(([x, z], i) => (
         <FlowerPatch key={i} x={x} z={z} />
       ))}
 
@@ -981,19 +1555,38 @@ function GardenScene({
       <GardenWell crr={crr} eventCount={eventCount} />
 
       {/* Butterflies (Agents) */}
-      <Butterfly role="Worker"   color={C.agentWorker}   orbitRadius={1.2} orbitSpeed={orbitSpeed}       orbitOffset={0}    />
-      <Butterfly role="Critic"   color={C.agentCritic}   orbitRadius={1.4} orbitSpeed={orbitSpeed * 0.8} orbitOffset={2.09} />
-      <Butterfly role="Opponent" color={C.agentOpponent} orbitRadius={1.3} orbitSpeed={orbitSpeed * 1.2} orbitOffset={4.19} />
+      {filters.showAgents && (
+        <>
+          <Butterfly role="Worker"   color={C.agentWorker}   orbitRadius={1.2} orbitSpeed={orbitSpeed}       orbitOffset={0}    />
+          <Butterfly role="Critic"   color={C.agentCritic}   orbitRadius={1.4} orbitSpeed={orbitSpeed * 0.8} orbitOffset={2.09} />
+          <Butterfly role="Opponent" color={C.agentOpponent} orbitRadius={1.3} orbitSpeed={orbitSpeed * 1.2} orbitOffset={4.19} />
+        </>
+      )}
 
       {/* PR bushes */}
-      {prNodes.map((node, i) => (
-        <FlowerBush key={node.id} node={node} position={prPos[i]} onSelectNode={onSelectNode} />
-      ))}
+      {prNodes.map((node, i) => {
+        const pos = nodePositions[node.id] || prPos[i] || [0,0,0];
+        return (
+          <FlowerBush key={node.id} node={node} position={pos} onSelectNode={onSelectNode} showBees={filters.showBees} showDewdrops={filters.showDewdrops} />
+        );
+      })}
 
       {/* Issue weeds */}
-      {issueNodes.map((node, i) => (
-        <WeedNode key={node.id} node={node} position={issuePos[i]} onSelectNode={onSelectNode} />
-      ))}
+      {issueNodes.map((node, i) => {
+        const pos = nodePositions[node.id] || issuePos[i] || [0,0,0];
+        return (
+          <WeedNode
+            key={node.id}
+            node={node}
+            position={pos}
+            onSelectNode={onSelectNode}
+            showBees={filters.showBees}
+            showDewdrops={filters.showDewdrops}
+            showSubtasks={filters.showSubtasks}
+            showWebs={filters.showWebs}
+          />
+        );
+      })}
 
       {/* Camera: fixed overhead-ish garden view, no auto-rotate */}
       <OrbitControls
@@ -1018,6 +1611,9 @@ export function GameGardenScene({
   opponentLimit,
   eventCount = 0,
   onSelectNode,
+  sprintVelocity,
+  filters,
+  uiVisible = true,
 }: GameGardenSceneProps) {
   if (!active) return null;
 
@@ -1030,11 +1626,12 @@ export function GameGardenScene({
         camera={{ position: [0, 16, 13], fov: 38 }}
         gl={{ antialias: true }}
       >
-        <GardenScene crr={crr} graph={graph} opponentLimit={opponentLimit} eventCount={eventCount} onSelectNode={onSelectNode} />
+        <GardenScene crr={crr} graph={graph} opponentLimit={opponentLimit} eventCount={eventCount} onSelectNode={onSelectNode} sprintVelocity={sprintVelocity} filters={filters} />
       </Canvas>
 
       {/* HUD */}
-      <div className="garden-hud">
+      {uiVisible && (
+        <div className="garden-hud">
 
         {/* Collapsible Garden Map Legend */}
         <div className={`garden-legend-card ${legendExpanded ? 'expanded' : 'collapsed'}`}>
@@ -1101,6 +1698,50 @@ export function GameGardenScene({
               </div>
 
               <div className="legend-section">
+                <h4>JIRA Garden Elements</h4>
+                <div className="legend-detail">
+                  <span className="legend-symbol">🟫 Epic Beds</span>
+                  <p>Epics are raised wooden garden beds grouping related issues and PRs inside their boundaries.</p>
+                </div>
+                <div className="legend-detail">
+                  <span className="legend-symbol">🐝 Assignees</span>
+                  <p>Hovering striped bees orbit around plants representing assigned team members.</p>
+                </div>
+                <div className="legend-detail">
+                  <span className="legend-symbol">🍄 Sub-tasks</span>
+                  <p>Orange mushrooms grow at the base of issues; completed sub-tasks bloom into tiny white flowers 🌸.</p>
+                </div>
+                <div className="legend-detail">
+                  <span className="legend-symbol">📐 Story Points</span>
+                  <p>Stem thickness and leaf volume are scaled based on the issue/PR story points estimate.</p>
+                </div>
+                <div className="legend-detail">
+                  <span className="legend-symbol">🕸️ Blockers</span>
+                  <p>Silver spider web wireframes envelop weeds that are blocked or flagged.</p>
+                </div>
+                <div className="legend-detail">
+                  <span className="legend-symbol">💧 Dewdrops</span>
+                  <p>Shiny, reflective glass water drops on leaves indicate active comment threads.</p>
+                </div>
+                <div className="legend-detail">
+                  <span className="legend-symbol">🌿 Components</span>
+                  <p>Geometries vary by component: Ferns for Frontend, Cactus for Database, standard Weeds for Backend.</p>
+                </div>
+                <div className="legend-detail">
+                  <span className="legend-symbol">🍂 Due Dates</span>
+                  <p>Weeds droop downwards and transition to a decayed dry brown color as deadlines approach or pass.</p>
+                </div>
+                <div className="legend-detail">
+                  <span className="legend-symbol">🌧️ Sprint Weather</span>
+                  <p>Raining particles indicate high sprint velocity; dry hazy drought indicates stalled velocity.</p>
+                </div>
+                <div className="legend-detail">
+                  <span className="legend-symbol">🦎 Dependency Vines</span>
+                  <p>Crawling vines connect issues: Thorny purple vines represent blocks, green leafy vines are clear.</p>
+                </div>
+              </div>
+
+              <div className="legend-section">
                 <h4>Verification Agents</h4>
                 <div className="legend-detail">
                   <span className="legend-symbol" style={{ color: C.agentWorker }}>🦋 Worker</span>
@@ -1153,6 +1794,7 @@ export function GameGardenScene({
 
         <div className="garden-hint">Scroll to zoom · Drag to look around · Hover elements for details</div>
       </div>
+      )}
     </div>
   );
 }
