@@ -556,6 +556,48 @@ def create_app(
         
         return {"status": "ok", "message": f"Scenario {scenario_id} loaded"}
 
+    @app.post("/api/pipeline/trigger")
+    async def trigger_pipeline(mode: Optional[str] = None):
+        """
+        Trigger a live pipeline run asynchronously.
+        Uses the default mode from config if not specified.
+        """
+        from pwm.main import run_pipeline
+        
+        run_mode = mode
+        if not run_mode:
+            run_mode = "analyze" if config.validate_api_access() else "demo"
+            
+        async def run_in_background():
+            try:
+                await dashboard_state.event_logger.log(PWMEvent(
+                    event_type=EventType.PIPELINE_START,
+                    run_id="live-run",
+                    actor="human",
+                    summary=f"Live simulation run triggered in {run_mode} mode."
+                ))
+                
+                result_state = await run_pipeline(
+                    config=config,
+                    mode=run_mode,
+                    ingestion_mode="mock",
+                    event_logger=dashboard_state.event_logger,
+                )
+                
+                await dashboard_state.update_state(result_state)
+            except Exception as e:
+                import traceback
+                print(f"[❌ Trigger API] Error during pipeline run: {e}")
+                traceback.print_exc()
+                try:
+                    await dashboard_state.event_logger.log_error("live-run", f"Pipeline failed: {e}")
+                except Exception:
+                    pass
+                    
+        asyncio.create_task(run_in_background())
+        return {"status": "ok", "message": f"Pipeline simulation run started in {run_mode} mode."}
+
+
     # ── WebSocket ───────────────────────────────────────────────
 
     @app.websocket("/ws")

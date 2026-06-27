@@ -704,6 +704,25 @@ function App() {
   const [humanApprovedState, setHumanApprovedState] = useState<boolean | null>(null);
   const [humanNotesText, setHumanNotesText] = useState<string>('');
   const [decisionSubmitting, setDecisionSubmitting] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+
+  const handleTriggerSimulation = async () => {
+    setIsSimulating(true);
+    playHoverSound();
+    try {
+      const response = await fetch('/api/pipeline/trigger', {
+        method: 'POST',
+      });
+      if (response.ok) {
+        console.log("Pipeline simulation triggered successfully.");
+      }
+    } catch (err) {
+      console.error("Failed to trigger pipeline simulation:", err);
+    } finally {
+      // Keep loader visible for 3.5 seconds to showcase multi-stage verification
+      setTimeout(() => setIsSimulating(false), 3500);
+    }
+  };
   
   // Custom dynamically connected projects list
   const [customProjects, setCustomProjects] = useState<ProjectData[]>([]);
@@ -1309,6 +1328,18 @@ function App() {
             >
               <span className="material-symbols-outlined btn-add-icon">add_circle</span>
               Connect Workspace
+            </button>
+            {/* Run Simulation Button */}
+            <button 
+              className={`trigger-pipeline-btn ${isSimulating ? 'active' : ''}`}
+              onClick={handleTriggerSimulation}
+              disabled={isSimulating}
+              title="Run a live project observation, simulation, and multi-agent audit cycle."
+            >
+              <span className="material-symbols-outlined btn-icon-span">
+                {isSimulating ? 'sync' : 'play_circle'}
+              </span>
+              {isSimulating ? 'Simulating...' : 'Run Simulation'}
             </button>
 
             <button 
@@ -2970,6 +3001,24 @@ function App() {
                   </button>
                 </div>
 
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================================================
+             Simulation Loading Overlay
+             ========================================================================== */}
+          {isSimulating && (
+            <div className="modal-overlay simulation-loading-overlay">
+              <div className="glass-card modal-card animate-fade-in" style={{ maxWidth: '400px', textAlign: 'center', padding: '40px' }}>
+                <span className="material-symbols-outlined spin-animation" style={{ fontSize: '4rem', color: 'var(--primary)' }}>sync</span>
+                <h3 style={{ marginTop: '20px', color: 'var(--text-main)' }}>Running Agent Verification Engine</h3>
+                <p style={{ color: 'var(--text-sub)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                  Ingesting version control telemetry, executing counterfactual simulation, and running Worker-Critic validation enclaves...
+                </p>
+                <div className="progress-bar-wrap" style={{ marginTop: '20px' }}>
+                  <div className="progress-bar-fill simulating-progress" />
+                </div>
               </div>
             </div>
           )}
