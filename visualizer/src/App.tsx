@@ -1339,19 +1339,19 @@ function App() {
               <span className="material-symbols-outlined btn-icon-span">
                 {isSimulating ? 'sync' : 'play_circle'}
               </span>
-              {isSimulating ? 'Simulating...' : 'Run Simulation'}
+              {isSimulating ? 'Analyzing...' : 'Trigger Live Analysis'}
             </button>
 
             <button 
               className={`toggle-btn ${dtoSimActive ? 'active' : ''}`} 
               onClick={() => setDtoSimActive(!dtoSimActive)}
               disabled={!selectedProject}
-              title={!selectedProject ? "Select a project to enable simulation" : "Toggle DTO Simulation"}
+              title={!selectedProject ? "Select a project to enable digital twin view" : "Toggle 3D Digital Twin View"}
             >
               <span className="material-symbols-outlined btn-icon-span">
                 {dtoSimActive ? 'grid_view' : '3d_rotation'}
               </span>
-              {dtoSimActive ? 'Exit DTO Simulation' : 'Enter DTO Simulation'}
+              {dtoSimActive ? 'Exit 3D Digital Twin' : 'Enter 3D Digital Twin'}
             </button>
             
             <div className="user-profile">
