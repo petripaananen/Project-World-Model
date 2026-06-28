@@ -7893,8 +7893,8 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(30, 30, 42, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #f0ede8; /* Warm light gray */
+  border: 1px solid #e2dfda;
   border-radius: 20px;
   padding: 4px 8px 4px 14px;
   height: 38px;
@@ -7903,7 +7903,7 @@ body {
 
 .tracker-switcher-label {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.55);
+  color: #555560; /* Dark charcoal */
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -7912,7 +7912,7 @@ body {
 .tracker-switcher-pills {
   display: flex;
   gap: 4px;
-  background: rgba(10, 10, 15, 0.6);
+  background: #e2dfda; /* Inward light inset */
   border-radius: 16px;
   padding: 2px;
 }
@@ -7920,7 +7920,7 @@ body {
 .tracker-pill-btn {
   background: transparent !important;
   border: none !important;
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: #707080 !important; /* Clearly visible dark gray in light mode */
   font-size: 0.75rem;
   font-weight: 700;
   padding: 6px 16px;
@@ -7930,11 +7930,11 @@ body {
 }
 
 .tracker-pill-btn:hover {
-  color: #ffffff !important;
+  color: #101015 !important;
 }
 
 .tracker-pill-btn.active {
   background: #caa25d !important;
-  color: #101015 !important;
+  color: #ffffff !important; /* Clear white text inside the gold pill */
   box-shadow: 0 2px 8px rgba(202, 162, 93, 0.4);
 }
