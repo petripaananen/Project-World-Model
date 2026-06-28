@@ -7918,9 +7918,9 @@ body {
 }
 
 .tracker-pill-btn {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.65);
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.75) !important;
   font-size: 0.75rem;
   font-weight: 700;
   padding: 6px 16px;
@@ -7930,11 +7930,11 @@ body {
 }
 
 .tracker-pill-btn:hover {
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
 .tracker-pill-btn.active {
-  background: #caa25d;
-  color: #101015;
+  background: #caa25d !important;
+  color: #101015 !important;
   box-shadow: 0 2px 8px rgba(202, 162, 93, 0.4);
 }
