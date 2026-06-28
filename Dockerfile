@@ -1,5 +1,5 @@
 # Stage 1: Build the React frontend
-FROM node:20-slim AS frontend-builder
+FROM node:22-slim AS frontend-builder
 WORKDIR /app/visualizer
 COPY visualizer/package.json visualizer/package-lock.json* ./
 RUN npm install
