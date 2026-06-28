@@ -58,6 +58,18 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.config.gcp.gce_instance_name, "test-gpu-host")
         self.assertEqual(self.config.gcp.gce_zone, "us-east4-a")
 
+    def test_model_config_env_vars(self):
+        """Test that reasoning_model and fast_model can be configured from environment variables."""
+        import os
+        from unittest.mock import patch
+        with patch.dict("os.environ", {
+            "PWM_REASONING_MODEL": "gemini-3.1-pro",
+            "PWM_FAST_MODEL": "gemini-3.1-flash"
+        }):
+            config = PWMConfig.from_env()
+            self.assertEqual(config.models.reasoning_model, "gemini-3.1-pro")
+            self.assertEqual(config.models.fast_model, "gemini-3.1-flash")
+
         # Set endpoints custom values
         self.config.models.vjepa_endpoint_url = "http://10.0.0.1:8001"
         self.config.models.lewm_endpoint_url = "http://10.0.0.1:8002"

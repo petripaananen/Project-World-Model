@@ -341,6 +341,8 @@ class PWMConfig(BaseModel):
                 gce_zone=os.getenv("GCP_GCE_ZONE", "us-central1-a"),
             ),
             models=ModelConfig(
+                reasoning_model=os.getenv("PWM_REASONING_MODEL", "gemini-2.5-pro"),
+                fast_model=os.getenv("PWM_FAST_MODEL", "gemini-2.5-flash"),
                 vjepa_endpoint_url=os.getenv("PWM_VJEPA_ENDPOINT_URL", ""),
                 lewm_endpoint_url=os.getenv("PWM_LEWM_ENDPOINT_URL", ""),
                 lmms_engine_endpoint_url=os.getenv("PWM_LMMS_ENGINE_ENDPOINT_URL", ""),

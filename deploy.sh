@@ -61,7 +61,7 @@ gcloud run deploy "${SERVICE_NAME}" \
     --platform=managed \
     --allow-unauthenticated \
     --set-env-vars="GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_LOCATION=${GCP_REGION},PWM_ISSUE_TRACKER=jira,PWM_JIRA_PROJECT_KEY=PROJ,PWM_JIRA_CLOUD_ID=project-world-model.atlassian.net" \
-    --set-secrets="JIRA_USER_EMAIL=jira-user-email:latest,JIRA_API_TOKEN=jira-api-token:latest" \
+    --set-secrets="JIRA_USER_EMAIL=jira-user-email:latest,JIRA_API_TOKEN=jira-api-token:latest,GOOGLE_API_KEY=google-api-key:latest" \
     --description="Project World Model (PWM) Dashboard & Orchestrator"
 
 # Note on Service Accounts:
