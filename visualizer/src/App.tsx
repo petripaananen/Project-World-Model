@@ -746,6 +746,41 @@ function App() {
   const [apiToken, setApiToken] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectLogs, setConnectLogs] = useState<string[]>([]);
+  const [activeTracker, setActiveTracker] = useState<'jira' | 'linear'>('jira');
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.tracker) {
+            setActiveTracker(data.tracker);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch active tracker config:", err);
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  const handleSwitchTracker = async (tracker: 'jira' | 'linear') => {
+    playHoverSound();
+    try {
+      const res = await fetch(`/api/config/tracker?tracker=${tracker}`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.tracker) {
+          setActiveTracker(data.tracker);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to update active tracker:", err);
+    }
+  };
 
   // Scenarios dynamic state
   const [runs, setRuns] = useState<Record<string, SimulationRun[]>>({
@@ -832,7 +867,9 @@ function App() {
   }, [selectedProject]);
 
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8765/ws');
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.host;
+    const ws = new WebSocket(`${protocol}//${host}/ws`);
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
@@ -1316,6 +1353,27 @@ function App() {
                 <option key={proj.id} value={proj.id}>{proj.name}</option>
               ))}
             </select>
+
+            {/* Active Tracker Pill Switcher */}
+            <div className="tracker-switcher-container">
+              <span className="tracker-switcher-label">Active Source:</span>
+              <div className="tracker-switcher-pills">
+                <button 
+                  className={`tracker-pill-btn ${activeTracker === 'jira' ? 'active' : ''}`}
+                  onClick={() => handleSwitchTracker('jira')}
+                  title="Switch to Jira Project Tracking"
+                >
+                  Jira
+                </button>
+                <button 
+                  className={`tracker-pill-btn ${activeTracker === 'linear' ? 'active' : ''}`}
+                  onClick={() => handleSwitchTracker('linear')}
+                  title="Switch to Linear Project Tracking"
+                >
+                  Linear
+                </button>
+              </div>
+            </div>
 
             {/* Connect Workspace Button */}
             <button 

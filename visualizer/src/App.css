@@ -7887,3 +7887,54 @@ body {
   line-height: 1.35;
   color: rgba(255, 255, 255, 0.75);
 }
+
+/* Tracker Switcher Styling */
+.tracker-switcher-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(30, 30, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 4px 8px 4px 14px;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.tracker-switcher-label {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.tracker-switcher-pills {
+  display: flex;
+  gap: 4px;
+  background: rgba(10, 10, 15, 0.6);
+  border-radius: 16px;
+  padding: 2px;
+}
+
+.tracker-pill-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-sub);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tracker-pill-btn:hover {
+  color: #ffffff;
+}
+
+.tracker-pill-btn.active {
+  background: #caa25d;
+  color: #101015;
+  box-shadow: 0 2px 8px rgba(202, 162, 93, 0.4);
+}

@@ -223,6 +223,37 @@ def create_app(
             return dashboard_state._serialize_state(dashboard_state.current_state)
         return {"status": "waiting", "message": "No pipeline data yet"}
 
+    @app.get("/api/config")
+    async def get_config():
+        """Get current active tracker configuration."""
+        return {
+            "tracker": config.ingestion.issue_tracker,
+        }
+
+    @app.post("/api/config/tracker")
+    async def set_active_tracker(tracker: str):
+        """Update active issue tracker."""
+        tracker_clean = tracker.lower().strip()
+        if tracker_clean not in ["jira", "linear"]:
+            return {"status": "error", "message": f"Unsupported tracker: {tracker}"}
+        config.ingestion.issue_tracker = tracker_clean
+        
+        # Log to event logger
+        await dashboard_state.event_logger.log(PWMEvent(
+            event_type=EventType.CALIBRATION_UPDATED,
+            run_id="config-change",
+            actor="human",
+            summary=f"Changed active issue tracker to: {tracker_clean.upper()}"
+        ))
+        
+        # Update current state if present
+        if dashboard_state.current_state:
+            if dashboard_state.current_state.sprint_state:
+                dashboard_state.current_state.sprint_state.tracker_name = "Jira" if tracker_clean == "jira" else "Linear"
+            await dashboard_state.update_state(dashboard_state.current_state)
+            
+        return {"status": "ok", "tracker": config.ingestion.issue_tracker}
+
     @app.get("/api/events")
     async def get_events(
         run_id: Optional[str] = None,
