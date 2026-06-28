@@ -43,6 +43,7 @@ from pwm.config import PWMConfig
 from pwm.dashboard.cli_dashboard import CLIDashboard
 from pwm.ingestion.github_ingest import GitHubIngestor
 from pwm.ingestion.linear_ingest import LinearIngestor
+from pwm.ingestion.jira_ingest import JiraIngestor
 from pwm.ingestion.models import (
     ConflictType,
     CriticVerdict,
@@ -155,13 +156,17 @@ async def _execute_agent_pipeline(
 async def ingest_worker(queue: asyncio.Queue, config: PWMConfig, ingestion_mode: str, interval: int = 60):
     """Layer 1: Continuous background ingestion. Produces project state snapshots."""
     github = GitHubIngestor(config)
-    linear = LinearIngestor(config)
     
     while True:
         print(f"\n[📡 Ingest Worker] Waking up to poll MCP servers...")
         try:
             p_state = await github.ingest(mode=ingestion_mode)
-            s_state = await linear.ingest(mode=ingestion_mode)
+            if config.ingestion.issue_tracker == "jira":
+                jira = JiraIngestor(config)
+                s_state = await jira.ingest(mode=ingestion_mode)
+            else:
+                linear = LinearIngestor(config)
+                s_state = await linear.ingest(mode=ingestion_mode)
             
             # Since we don't have a real Slack MCP yet, we mock a Slack state
             from pwm.ingestion.models import SlackState, SlackMessage
@@ -379,12 +384,20 @@ async def run_pipeline(
         f"{len(state.project_state.recent_commits)} recent commits"
     )
 
-    linear = LinearIngestor(config)
-    state.sprint_state = await linear.ingest(mode=ingestion_mode)
-    print(
-        f"  ✓ Linear: {state.sprint_state.total_issues} issues in "
-        f"'{state.sprint_state.cycle_name}'"
-    )
+    if config.ingestion.issue_tracker == "jira":
+        jira = JiraIngestor(config)
+        state.sprint_state = await jira.ingest(mode=ingestion_mode)
+        print(
+            f"  ✓ Jira: {state.sprint_state.total_issues} issues in "
+            f"'{state.sprint_state.cycle_name}'"
+        )
+    else:
+        linear = LinearIngestor(config)
+        state.sprint_state = await linear.ingest(mode=ingestion_mode)
+        print(
+            f"  ✓ Linear: {state.sprint_state.total_issues} issues in "
+            f"'{state.sprint_state.cycle_name}'"
+        )
 
     # Mock slack state for the linear pipeline
     from pwm.ingestion.models import SlackState, SlackMessage

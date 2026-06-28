@@ -91,6 +91,9 @@ class IngestionConfig(BaseModel):
     github_owner: str = Field(default="", description="GitHub repo owner")
     github_repo: str = Field(default="", description="GitHub repo name")
     linear_team_id: str = Field(default="", description="Linear team ID")
+    issue_tracker: str = Field(default="linear", description="Active issue tracker: 'linear' or 'jira'")
+    jira_project_key: str = Field(default="", description="Jira project key")
+    jira_cloud_id: str = Field(default="", description="Jira Cloud ID (site URL or UUID)")
     # How far back to look for activity
     lookback_days: int = Field(
         default=14, description="Days of history to ingest"
@@ -347,6 +350,9 @@ class PWMConfig(BaseModel):
                 github_owner=os.getenv("PWM_GITHUB_OWNER", ""),
                 github_repo=os.getenv("PWM_GITHUB_REPO", ""),
                 linear_team_id=os.getenv("PWM_LINEAR_TEAM_ID", ""),
+                issue_tracker=os.getenv("PWM_ISSUE_TRACKER", "linear"),
+                jira_project_key=os.getenv("PWM_JIRA_PROJECT_KEY", ""),
+                jira_cloud_id=os.getenv("PWM_JIRA_CLOUD_ID", ""),
             ),
             **overrides,
         )

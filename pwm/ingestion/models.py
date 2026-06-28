@@ -166,6 +166,7 @@ class SprintState(BaseModel):
     """
     team_name: str = ""
     cycle_name: str = ""
+    tracker_name: str = "Linear"
     ingested_at: datetime = Field(default_factory=datetime.now)
 
     issues: list[IssueInfo] = Field(default_factory=list)

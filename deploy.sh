@@ -38,7 +38,8 @@ gcloud services enable \
     run.googleapis.com \
     artifactregistry.googleapis.com \
     aiplatform.googleapis.com \
-    firestore.googleapis.com
+    firestore.googleapis.com \
+    secretmanager.googleapis.com
 
 echo "=== 3. Creating Artifact Registry Repository ==="
 gcloud artifacts repositories create "${REPOSITORY_NAME}" \
@@ -53,12 +54,14 @@ echo "=== 4. Building container via Google Cloud Build ==="
 gcloud builds submit --tag "${IMAGE_TAG}" .
 
 echo "=== 5. Deploying to Google Cloud Run ==="
+# Map environment variables and mount Secret Manager credentials
 gcloud run deploy "${SERVICE_NAME}" \
     --image="${IMAGE_TAG}" \
     --region="${GCP_REGION}" \
     --platform=managed \
     --allow-unauthenticated \
-    --set-env-vars="GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_LOCATION=${GCP_REGION}" \
+    --set-env-vars="GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_LOCATION=${GCP_REGION},PWM_ISSUE_TRACKER=jira,PWM_JIRA_PROJECT_KEY=PROJ,PWM_JIRA_CLOUD_ID=project-world-model.atlassian.net" \
+    --set-secrets="JIRA_USER_EMAIL=jira-user-email:latest,JIRA_API_TOKEN=jira-api-token:latest" \
     --description="Project World Model (PWM) Dashboard & Orchestrator"
 
 # Note on Service Accounts:

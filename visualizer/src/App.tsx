@@ -98,6 +98,7 @@ interface PipelineState {
     timestamp: string;
     details?: any;
   }>;
+  sprint_state?: any;
 }
 
 interface ProjectData {
@@ -1596,7 +1597,9 @@ function App() {
                           </div>
                           <div className="metric-item-compact" style={{ background: 'var(--surface)', border: '1px solid var(--border)', padding: '10px', borderRadius: '10px' }}>
                             <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-sub)' }}>Workspace Connectors</div>
-                            <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--success)' }} title="Model Context Protocol (MCP) + AI visual analysis ingestion engines.">GitHub + Linear</div>
+                            <div style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--success)' }} title="Model Context Protocol (MCP) + AI visual analysis ingestion engines.">
+                              GitHub + {pipelineState?.sprint_state?.tracker_name || 'Linear'}
+                            </div>
                           </div>
                         </div>
 
