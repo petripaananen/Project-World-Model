@@ -88,6 +88,7 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
             async def process(self, data, **kwargs):
                 return data
 
+        self.config.google_api_key = ""
         agent = MockAgent(config=self.config)
         mock_genai_client.assert_called_once_with(
             vertexai=True,

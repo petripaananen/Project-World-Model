@@ -66,6 +66,7 @@ class EventType(str, Enum):
     SYSTEM_START = "system_start"
     TELEMETRY_INGESTED = "telemetry_ingested"
     GROUNDING_CALIBRATED = "grounding_calibrated"
+    CALIBRATION_UPDATED = "calibration_updated"
     ERROR = "error"
 
 
