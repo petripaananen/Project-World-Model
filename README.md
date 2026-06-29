@@ -11,7 +11,7 @@ The **Project World Model (PWM)** framework addresses the **"Paradox of Agility"
 
 PWM solves this by acting as a **Causal Digital Twin (CDT)**. It orchestrates an asynchronous **Agent Verification Engine** using specialized Worker and Critic agents to simulate, detect, and resolve integration debt before it hits production. 
 
-The framework is conceptually validated by Petri Paananen's Master's Thesis: *"Itseohjautuvat työnkulut videopeliteollisuudessa: tekoälyn maailmanmallit tuotannon johtamisen viitekehyksenä"* (JAMK, 2026), published at URN: [URN:NBN:fi:amk-2026052919003](https://urn.fi/URN:NBN:fi:amk-2026052919003).
+The framework is conceptually validated by Petri Paananen's Master's Thesis: *"Itseohjautuvat työnkulut videopeliteollisuudessa: tekoälyn maailmanmallit tuotannon johtamisen viitekehyksenä"* (English: *"Emergent Workflows in the Video Game Industry: Leveraging AI World Models as a Framework for Production Management"*) (JAMK, 2026), published at URN: [URN:NBN:fi:amk-2026052919003](https://urn.fi/URN:NBN:fi:amk-2026052919003).
 
 ---
 
