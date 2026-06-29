@@ -1315,7 +1315,6 @@ function App() {
       {/* Main Layout Container (Header + Content Workspace) */}
       <div className="main-layout">
         
-        {/* Sticky Top Navigation Bar */}
         <header className="top-nav">
           <div className="header-left">
             <div className="breadcrumbs">
@@ -1326,93 +1325,92 @@ function App() {
               </span>
             </div>
           </div>
-          
+
           <div className="nav-controls">
-            {!selectedProject && (
-              <div className="start-here-nav-hint">
-                <span>Start Here</span>
-                <span className="arrow">→</span>
-              </div>
+            {selectedProject && (
+              <>
+                <select 
+                  className="project-selector" 
+                  value={selectedProject} 
+                  onChange={(e) => {
+                    setSelectedProject(e.target.value);
+                    if (!e.target.value) setDtoSimActive(false);
+                  }}
+                >
+                  <option value="">-- Select Project Workspace --</option>
+                  <option value="proj-alpha">Project Alpha (Frontend)</option>
+                  <option value="proj-beta">Project Beta (Backend API)</option>
+                  <option value="proj-gamma">Project Gamma (Data Pipeline)</option>
+                  <option value="proj-live">Live Pipeline (FastAPI WebSocket)</option>
+                  
+                  {/* Dynamically display custom connected projects */}
+                  {customProjects.map(proj => (
+                    <option key={proj.id} value={proj.id}>{proj.name}</option>
+                  ))}
+                </select>
+
+                {/* Active Tracker Pill Switcher */}
+                <div className="tracker-switcher-container">
+                  <span className="tracker-switcher-label">Active Source:</span>
+                  <div className="tracker-switcher-pills">
+                    <button 
+                      className={`tracker-pill-btn ${activeTracker === 'jira' ? 'active' : ''}`}
+                      onClick={() => handleSwitchTracker('jira')}
+                      title="Switch to Jira Project Tracking"
+                    >
+                      Jira
+                    </button>
+                    <button 
+                      className={`tracker-pill-btn ${activeTracker === 'linear' ? 'active' : ''}`}
+                      onClick={() => handleSwitchTracker('linear')}
+                      title="Switch to Linear Project Tracking"
+                    >
+                      Linear
+                    </button>
+                  </div>
+                </div>
+
+                {/* Connect Workspace Button */}
+                <button 
+                  className="connect-workspace-btn"
+                  onClick={() => {
+                    setShowConnectModal(true);
+                    setConnectLogs([]);
+                    setIsConnecting(false);
+                  }}
+                  title="Add Excel file, Google Sheet, Jira or Linear repository"
+                >
+                  <span className="material-symbols-outlined btn-add-icon">add_circle</span>
+                  Connect Workspace
+                </button>
+
+                {/* Run Simulation Button */}
+                <button 
+                  className={`trigger-pipeline-btn ${isSimulating ? 'active' : ''}`}
+                  onClick={handleTriggerSimulation}
+                  disabled={isSimulating}
+                  title="Run a live project observation, simulation, and multi-agent audit cycle."
+                >
+                  <span className="material-symbols-outlined btn-icon-span">
+                    {isSimulating ? 'sync' : 'play_circle'}
+                  </span>
+                  {isSimulating ? 'Analyzing...' : 'Trigger Live Analysis'}
+                </button>
+
+                <button 
+                  className={`toggle-btn ${dtoSimActive ? 'active' : ''}`} 
+                  onClick={() => setDtoSimActive(!dtoSimActive)}
+                  disabled={!selectedProject}
+                  title={!selectedProject ? "Select a project to enable digital twin view" : "Toggle 3D Digital Twin View"}
+                >
+                  <span className="material-symbols-outlined btn-icon-span">
+                    {dtoSimActive ? 'grid_view' : '3d_rotation'}
+                  </span>
+                  {dtoSimActive ? 'Exit 3D Digital Twin' : 'Enter 3D Digital Twin'}
+                </button>
+              </>
             )}
-            <select 
-              className="project-selector" 
-              value={selectedProject} 
-              onChange={(e) => {
-                setSelectedProject(e.target.value);
-                if (!e.target.value) setDtoSimActive(false);
-              }}
-            >
-              <option value="">-- Select Project Workspace --</option>
-              <option value="proj-alpha">Project Alpha (Frontend)</option>
-              <option value="proj-beta">Project Beta (Backend API)</option>
-              <option value="proj-gamma">Project Gamma (Data Pipeline)</option>
-              <option value="proj-live">Live Pipeline (FastAPI WebSocket)</option>
-              
-              {/* Dynamically display custom connected projects */}
-              {customProjects.map(proj => (
-                <option key={proj.id} value={proj.id}>{proj.name}</option>
-              ))}
-            </select>
 
-            {/* Active Tracker Pill Switcher */}
-            <div className="tracker-switcher-container">
-              <span className="tracker-switcher-label">Active Source:</span>
-              <div className="tracker-switcher-pills">
-                <button 
-                  className={`tracker-pill-btn ${activeTracker === 'jira' ? 'active' : ''}`}
-                  onClick={() => handleSwitchTracker('jira')}
-                  title="Switch to Jira Project Tracking"
-                >
-                  Jira
-                </button>
-                <button 
-                  className={`tracker-pill-btn ${activeTracker === 'linear' ? 'active' : ''}`}
-                  onClick={() => handleSwitchTracker('linear')}
-                  title="Switch to Linear Project Tracking"
-                >
-                  Linear
-                </button>
-              </div>
-            </div>
-
-            {/* Connect Workspace Button */}
-            <button 
-              className="connect-workspace-btn"
-              onClick={() => {
-                setShowConnectModal(true);
-                setConnectLogs([]);
-                setIsConnecting(false);
-              }}
-              title="Add Excel file, Google Sheet, Jira or Linear repository"
-            >
-              <span className="material-symbols-outlined btn-add-icon">add_circle</span>
-              Connect Workspace
-            </button>
-            {/* Run Simulation Button */}
-            <button 
-              className={`trigger-pipeline-btn ${isSimulating ? 'active' : ''}`}
-              onClick={handleTriggerSimulation}
-              disabled={isSimulating}
-              title="Run a live project observation, simulation, and multi-agent audit cycle."
-            >
-              <span className="material-symbols-outlined btn-icon-span">
-                {isSimulating ? 'sync' : 'play_circle'}
-              </span>
-              {isSimulating ? 'Analyzing...' : 'Trigger Live Analysis'}
-            </button>
-
-            <button 
-              className={`toggle-btn ${dtoSimActive ? 'active' : ''}`} 
-              onClick={() => setDtoSimActive(!dtoSimActive)}
-              disabled={!selectedProject}
-              title={!selectedProject ? "Select a project to enable digital twin view" : "Toggle 3D Digital Twin View"}
-            >
-              <span className="material-symbols-outlined btn-icon-span">
-                {dtoSimActive ? 'grid_view' : '3d_rotation'}
-              </span>
-              {dtoSimActive ? 'Exit 3D Digital Twin' : 'Enter 3D Digital Twin'}
-            </button>
-            
             <div className="user-profile">
               <div className="avatar">SS</div>
               <div className="user-info">
@@ -1423,7 +1421,6 @@ function App() {
           </div>
         </header>
 
-        {/* Content Workspace */}
         <div className="content-wrapper">
           
           {/* 3D Background Canvas Layer */}
@@ -1460,108 +1457,128 @@ function App() {
           {/* Dynamic UI Overlay Layer */}
           <div className="ui-layer">
             {!activeProjectData ? (
-              // Premium Centered Onboarding View for First-time Users
               <div className="onboarding-container">
-                <div className="glass-card onboarding-card">
-                  <h2>Welcome to Project World Model</h2>
-                  <p className="onboarding-subtitle">Causal Digital Twin of the Project</p>
-                  
-                  <div className="onboarding-steps">
-                    <div className="onboarding-step">
-                      <span className="step-num">1</span>
-                      <div className="step-content">
-                        {currentTab === 'overview' && (
-                          <>
-                            <h4>Select or Connect a Project Workspace</h4>
-                            <p>Pick a repository from the selector above or click <strong>Connect Workspace</strong> to ingest your own spreadsheet files (Excel / Google Sheet) or link Jira/Linear APIs.</p>
-                          </>
-                        )}
-                        {currentTab === 'scenarios' && (
-                          <>
-                            <h4>Scenario Sandbox</h4>
-                            <p>Select a workspace first. Once initialized, you can simulate scenario changes (like team scaling or scope changes) and predict interdependency conflicts.</p>
-                          </>
-                        )}
-                        {currentTab === 'strategic' && (
-                          <>
-                            <h4>Strategic Balance Sheet</h4>
-                            <p>Choose a repository to view the balance sheet (Economics, Human, Technology). Audit compute costs and check for efficiency balance alerts (Jevons Paradox).</p>
-                          </>
-                        )}
-                        {currentTab === 'calibration' && (
-                          <>
-                            <h4>Simulation Alignment</h4>
-                            <p>Monitor AI forecast accuracy metrics as the model aligns simulated predictions with real observed history.</p>
-                          </>
-                        )}
-                        {currentTab === 'settings' && (
-                          <>
-                            <h4>Configure System Settings</h4>
-                            <p>Please select a repository workspace to unlock settings controls, Consensus threshold parameters, and alert notification destinations.</p>
-                          </>
-                        )}
-                        {currentTab === 'kanban' && (
-                          <>
-                            <h4>Task Board View</h4>
-                            <p>Please select a repository workspace to view the active work items, track open task capacity limits, and identify overdue items.</p>
-                          </>
-                        )}
-                        {currentTab === 'sprint' && (
-                          <>
-                            <h4>Sprint Dashboard View</h4>
-                            <p>Please select a repository workspace to view the current Sprint Goal, burn down/up charts, and check items against the Definition of Done (DoD).</p>
-                          </>
-                        )}
-                        {currentTab === 'stakeholders' && (
-                          <>
-                            <h4>Stakeholder Map View</h4>
-                            <p>Please select a repository workspace to explore communication link strength, assign RACI matrices, and monitor stakeholder inactivity risks.</p>
-                          </>
-                        )}
-                        {currentTab === 'flow' && (
-                          <>
-                            <h4>Flow Metrics View</h4>
-                            <p>Please select a repository workspace to view the Cumulative Flow Diagram (CFD), Cycle Time Scatterplot, and Throughput Histograms.</p>
-                          </>
-                        )}
-                        {currentTab === 'lifecycle' && (
-                          <>
-                            <h4>Project Lifecycle View</h4>
-                            <p>Please select a repository workspace to trace the phase timeline (Ideation to Support) and check the PMBOK Risk Register.</p>
-                          </>
-                        )}
-                      </div>
+                <div className="onboarding-hero-section">
+                  <div className="onboarding-brand-column">
+                    <div className="onboarding-brand-header">
+                      <span className="brand-badge">LUMINA DTO PLATFORM</span>
+                      <h1>Project World Model</h1>
+                      <p className="onboarding-tagline">Causal Digital Twin & Strategic Simulator</p>
                     </div>
                     
-                    <div className="onboarding-step">
-                      <span className="step-num">2</span>
-                      <div className="step-content">
-                        <h4>Audit Predicted Project Risks</h4>
-                        <p>Review predicted bottlenecks and delivery delays simulated by the AI models overnight.</p>
+                    <div className="onboarding-info-bullets">
+                      <div className="info-bullet">
+                        <span className="material-symbols-outlined bullet-icon">radar</span>
+                        <div>
+                          <h5>Causal Forecasting</h5>
+                          <p>Simulate team sizing, scope changes, and estimate project risk before merging code.</p>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="onboarding-step">
-                      <span className="step-num">3</span>
-                      <div className="step-content">
-                        <h4>Make Management Decisions</h4>
-                        <p>Decide whether to approve recommendations and prevent risky code changes from being merged.</p>
+                      
+                      <div className="info-bullet">
+                        <span className="material-symbols-outlined bullet-icon">safety_check</span>
+                        <div>
+                          <h5>Multi-Agent Verification</h5>
+                          <p>Overnight agent simulations analyze tech debt, pipeline status, and code safety policies.</p>
+                        </div>
+                      </div>
+
+                      <div className="info-bullet">
+                        <span className="material-symbols-outlined bullet-icon">account_tree</span>
+                        <div>
+                          <h5>Consensus & Alignment</h5>
+                          <p>Verify simulated predictions against historical facts via real-time telemetry pipelines.</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="onboarding-connect-action">
-                    <button 
-                      className="onboarding-action-btn"
-                      onClick={() => {
-                        setShowConnectModal(true);
-                        setConnectLogs([]);
-                        setIsConnecting(false);
-                      }}
-                    >
-                      <span className="material-symbols-outlined">add_circle</span>
-                      Connect Your Own Project Workspace
-                    </button>
+
+                  <div className="onboarding-selection-column">
+                    <h3>Select or Connect a Project Workspace</h3>
+                    <p className="selection-sub">Choose an environment below to unlock full causal diagnostic boards, scenario sandboxes, and simulated risk telemetry.</p>
+                    
+                    <div className="workspace-card-grid">
+                      {/* Pre-configured environments */}
+                      <div 
+                        className="glass-card workspace-select-card"
+                        onClick={() => setSelectedProject('proj-alpha')}
+                      >
+                        <div className="card-header-row">
+                          <span className="material-symbols-outlined workspace-icon">developer_board</span>
+                          <span className="workspace-badge frontend">Frontend</span>
+                        </div>
+                        <h4>Project Alpha</h4>
+                        <p>Jira / GitHub integration demo</p>
+                      </div>
+
+                      <div 
+                        className="glass-card workspace-select-card"
+                        onClick={() => setSelectedProject('proj-beta')}
+                      >
+                        <div className="card-header-row">
+                          <span className="material-symbols-outlined workspace-icon">api</span>
+                          <span className="workspace-badge backend">Backend API</span>
+                        </div>
+                        <h4>Project Beta</h4>
+                        <p>Linear / GitHub integration demo</p>
+                      </div>
+
+                      <div 
+                        className="glass-card workspace-select-card"
+                        onClick={() => setSelectedProject('proj-gamma')}
+                      >
+                        <div className="card-header-row">
+                          <span className="material-symbols-outlined workspace-icon">database</span>
+                          <span className="workspace-badge data">Data Pipeline</span>
+                        </div>
+                        <h4>Project Gamma</h4>
+                        <p>Ingestion & DBT orchestration</p>
+                      </div>
+
+                      <div 
+                        className="glass-card workspace-select-card"
+                        onClick={() => setSelectedProject('proj-live')}
+                      >
+                        <div className="card-header-row">
+                          <span className="material-symbols-outlined workspace-icon">sensors</span>
+                          <span className="workspace-badge live">FastAPI WS</span>
+                        </div>
+                        <h4>Live Pipeline</h4>
+                        <p>Real-time streaming agent pipeline</p>
+                      </div>
+
+                      {/* Custom connected projects */}
+                      {customProjects.map(proj => (
+                        <div 
+                          key={proj.id}
+                          className="glass-card workspace-select-card custom-workspace"
+                          onClick={() => setSelectedProject(proj.id)}
+                        >
+                          <div className="card-header-row">
+                            <span className="material-symbols-outlined workspace-icon">settings_input_component</span>
+                            <span className="workspace-badge custom">Custom</span>
+                          </div>
+                          <h4>{proj.name}</h4>
+                          <p>User connected workspace</p>
+                        </div>
+                      ))}
+
+                      {/* Connect New Workspace card */}
+                      <div 
+                        className="glass-card workspace-select-card connect-new-card"
+                        onClick={() => {
+                          setShowConnectModal(true);
+                          setConnectLogs([]);
+                          setIsConnecting(false);
+                        }}
+                      >
+                        <div className="connect-plus-wrapper">
+                          <span className="material-symbols-outlined plus-icon">add_circle</span>
+                        </div>
+                        <h4>Connect Workspace</h4>
+                        <p>Excel, Google Sheets, Jira, or Linear</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
