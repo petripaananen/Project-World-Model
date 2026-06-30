@@ -13,13 +13,26 @@ PWM solves this by acting as a **Causal Digital Twin (CDT)**. It orchestrates an
 
 The framework is conceptually validated by Petri Paananen's Master's Thesis: *"Itseohjautuvat työnkulut videopeliteollisuudessa: tekoälyn maailmanmallit tuotannon johtamisen viitekehyksenä"* (English: *"Emergent Workflows in the Video Game Industry: Leveraging AI World Models as a Framework for Production Management"*) (JAMK, 2026), published at URN: [URN:NBN:fi:amk-2026052919003](https://urn.fi/URN:NBN:fi:amk-2026052919003).
 
+### ✨ Key Features & Benefits
+*   **Predictive Simulation over Reactive Tracking**: Shifting management from reactive "firefighting" to proactive simulation, preventing cascading failures in a latent simulation core.
+*   **Level 3 Causal Payouts**: Capable of counterfactual reasoning (*"what-if"* scenarios) in latent space rather than simple association tracking.
+*   **Asynchronous Agentic Collaboration**: Implements the `AsyncThink` protocol for autonomous task delegation (`Fork-Delegate-Join`), running agent negotiations and conflict resolutions overnight.
+*   **Auditor Firewall**: Audits agent activity to detect *strategic dishonesty* (e.g. agents cutting corners or hiding parameters to meet schedules) using white-box interpretability.
+*   **Morale & Intellectual Property Protection**: Restricts AI to technical execution, leaving creative direction and absolute veto power in human hands. Supports local edge models (`LeWorldModel`/`LingBot-World`) to preserve IP privacy.
+
 ---
 
 ## 🚀 Gemini XPRIZE Hackathon Submission
 This project is entered in the **Build with Gemini XPRIZE Hackathon** under the **Small Business Services** and **Entrepreneurship & Job Creation** categories.
+
 *   **The Mission**: Empower software development teams by automating complex code integration, QA verification, and risk simulation.
+*   **AI-Native Operations**: Employs an autopilot 24-hour asynchronous cycle. Worker and Critic agents resolve code errors "in committee" overnight, generating a causal proof of verification with minimal human intervention.
+*   **Business Viability (CRR Economics)**: Guided by the **Compute-to-Rework Ratio (CRR)**:
+    $$\text{CRR} = \frac{\text{Simulation Inference Cost } (€)}{\text{Value of Avoided Rework } (€)}$$
+    This mathematically and economically justifies agent compute costs against developer hourly rates, preventing Jevons Paradox cost runaways.
+*   **Small Business Services**: Democratizes AAA-level QA and integration capabilities, allowing small teams and indie game studios to scale and compete without massive QA departments.
+*   **Entrepreneurship & Job Creation**: Enables micro-founders and freelancers to launch software without drowning in integration debt. Creates the new, high-skilled career category of the **Scenario Strategist**.
 *   **GCP & Gemini Stack**: Deployed on Google Cloud (Cloud Run, Firestore, Compute Engine) and powered by the **Gemini API (via Vertex AI)** for multi-agent reasoning, latent-space causal simulation, and secure critiques.
-*   **Economics**: Guided by the **Compute-to-Rework Ratio (CRR)** to mathematically justify cloud and token costs against developer hourly rates.
 
 ---
 
