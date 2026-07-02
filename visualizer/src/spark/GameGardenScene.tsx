@@ -30,10 +30,39 @@
  *   Corner oaks  → Stable infrastructure pillars
  */
 
-import { useRef, useMemo, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { useRef, useMemo, useState, useEffect } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
+import { SparkRenderer, SplatMesh } from '@sparkjsdev/spark';
+
+// ─── Spark 3DGS Background Renderer Component ───────────────────────────────
+function SparkBackground({ url }: { url: string }) {
+  const gl = useThree((state) => state.gl);
+  const scene = useThree((state) => state.scene);
+
+  useEffect(() => {
+    // 1. Initialize SparkRenderer
+    const spark = new SparkRenderer({ renderer: gl });
+    scene.add(spark);
+
+    // 2. Initialize SplatMesh
+    const splat = new SplatMesh({ url });
+    // Scale and position to match R3F polygonal boundaries
+    splat.position.set(0, -0.05, 0);
+    splat.scale.set(4.5, 4.5, 4.5);
+    scene.add(splat);
+
+    return () => {
+      scene.remove(spark);
+      scene.remove(splat);
+      spark.dispose();
+      splat.dispose();
+    };
+  }, [gl, scene, url]);
+
+  return null;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface FusedNode {
@@ -62,53 +91,56 @@ export interface GameGardenSceneProps {
     showVines: boolean;
     showWeather: boolean;
     showAgents: boolean;
+    showSparkGS: boolean;
   };
   uiVisible?: boolean;
 }
 
-// ─── Colors ───────────────────────────────────────────────────────────────────
+// ─── Colors (Hay Day-style vivid palette) ─────────────────────────────────────
 const C = {
-  grassHealthy:  '#4a8c3f',
-  grassDebt:     '#8b7d2a',
-  stone:         '#b8a898',
-  stoneDark:     '#8a7b6a',
-  stonePath:     '#c8baa8',
-  water:         '#5ba8d4',
+  grassHealthy:  '#6ecb4a',
+  grassDebt:     '#c8a840',
+  stone:         '#d4cbb8',
+  stoneDark:     '#b8a898',
+  stonePath:     '#b87840',  // Brown dirt path (Hay Day style)
+  stonePathLight:'#ca8c52',
+  water:         '#3ab8e8',
   waterDry:      '#9b8c6a',
-  hedgeGreen:    '#2d5a28',
-  oakTrunk:      '#7a5c3a',
-  oakLeaves:     '#2d6e28',
-  prApproved:    '#3aaa5e',
-  prPending:     '#d4a520',
-  prDraft:       '#8a9090',
-  issueCrit:     '#c44030',
-  issueWarn:     '#d47820',
-  issueBack:     '#6a7a7a',
-  agentWorker:   '#28a8c8',
-  agentCritic:   '#9855d4',
-  agentOpponent: '#d45530',
-  sky:           '#c8e8f5',
-  skyDebt:       '#e8d8b0',
+  fenceWhite:    '#f8f6f0',  // White picket fence
+  fenceShadow:   '#d8d0c0',
+  oakTrunk:      '#8b6030',
+  oakLeaves:     '#4dc840',  // Vivid green
+  prApproved:    '#44cc55',
+  prPending:     '#f5c018',
+  prDraft:       '#a8b8c8',
+  issueCrit:     '#ee4040',
+  issueWarn:     '#f5930e',
+  issueBack:     '#8090a0',
+  agentWorker:   '#20c8e8',
+  agentCritic:   '#b060e8',
+  agentOpponent: '#e86040',
+  sky:           '#7ec8f0',  // Bright Hay Day blue sky
+  skyDebt:       '#f5d080',
 };
 
 const SEASONS = {
   summer: {
-    grass: '#4a8c3f',
-    leaves: '#2d6e28',
-    sky: '#c8e8f5',
-    fogFar: 28,
+    grass: '#6ecb4a',
+    leaves: '#4dc840',
+    sky: '#7ec8f0',
+    fogFar: 120,  // No fog in summer — Hay Day style clear view
   },
   lateSummer: {
-    grass: '#7b8c3f',
-    leaves: '#5c7d2c',
-    sky: '#dcedf5',
-    fogFar: 25,
+    grass: '#90c840',
+    leaves: '#78b830',
+    sky: '#a0d8f0',
+    fogFar: 80,
   },
   autumn: {
-    grass: '#8b7d2a',
-    leaves: '#a86e2d',
-    sky: '#e8d8b0',
-    fogFar: 20,
+    grass: '#c8a840',
+    leaves: '#d4802a',
+    sky: '#f5d080',
+    fogFar: 40,
   }
 };
 
@@ -154,6 +186,30 @@ function EpicGardenBed({ x, z, name }: { x: number; z: number; name: string }) {
         <planeGeometry args={[2.0, 2.0]} />
         <meshStandardMaterial color="#3a2512" roughness={0.9} />
       </mesh>
+      
+      {/* Crops planted in rows in the soil */}
+      {[-0.6, 0, 0.6].map((rowX) => 
+        [-0.6, -0.2, 0.2, 0.6].map((colZ) => (
+          <group key={`${rowX}-${colZ}`} position={[rowX, 0.01, colZ]}>
+            {/* Stem */}
+            <mesh position={[0, 0.05, 0]}>
+              <cylinderGeometry args={[0.015, 0.015, 0.1, 4]} />
+              <meshStandardMaterial color="#4a7a1a" roughness={0.7} />
+            </mesh>
+            {/* Leaf 1 */}
+            <mesh position={[0.03, 0.09, 0]} rotation={[0, 0, Math.PI / 4]}>
+              <boxGeometry args={[0.06, 0.01, 0.03]} />
+              <meshStandardMaterial color="#6ecb4a" roughness={0.8} />
+            </mesh>
+            {/* Leaf 2 */}
+            <mesh position={[-0.03, 0.09, 0]} rotation={[0, 0, -Math.PI / 4]}>
+              <boxGeometry args={[0.06, 0.01, 0.03]} />
+              <meshStandardMaterial color="#6ecb4a" roughness={0.8} />
+            </mesh>
+          </group>
+        ))
+      )}
+
       {/* Wooden border - 4 sides */}
       <mesh position={[0, 0.06, 1.0]} castShadow>
         <boxGeometry args={[2.08, 0.12, 0.08]} />
@@ -285,7 +341,142 @@ function RainParticles({ count = 80 }: { count?: number }) {
   );
 }
 
-// ─── Ground: grass + stone cross-paths ────────────────────────────────────────
+// ─── Decorative Garden Ornaments (Hay Day style) ──────────────────────────────
+function GardenOrnaments() {
+  return (
+    <group>
+      {/* 1. Cozy Wooden Bench near central well path */}
+      <group position={[1.4, 0, 1.2]} rotation={[0, -Math.PI / 4, 0]}>
+        {/* Bench seat */}
+        <mesh position={[0, 0.18, 0]} castShadow>
+          <boxGeometry args={[0.9, 0.04, 0.32]} />
+          <meshStandardMaterial color="#8b5e3c" roughness={0.9} />
+        </mesh>
+        {/* Bench backrest */}
+        <mesh position={[0, 0.38, -0.15]} rotation={[Math.PI / 12, 0, 0]} castShadow>
+          <boxGeometry args={[0.9, 0.28, 0.04]} />
+          <meshStandardMaterial color="#8b5e3c" roughness={0.9} />
+        </mesh>
+        {/* Legs */}
+        {[-0.4, 0.4].map((lx) => (
+          <mesh key={lx} position={[lx, 0.09, 0]} castShadow>
+            <boxGeometry args={[0.06, 0.18, 0.28]} />
+            <meshStandardMaterial color="#5c3a21" roughness={0.95} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* 2. Cozy Japanese Stone Lantern */}
+      <group position={[-1.4, 0, 1.4]}>
+        {/* Base */}
+        <mesh position={[0, 0.12, 0]} castShadow>
+          <cylinderGeometry args={[0.09, 0.13, 0.24, 6]} />
+          <meshStandardMaterial color="#d4cbb8" roughness={0.9} />
+        </mesh>
+        {/* Pillar */}
+        <mesh position={[0, 0.32, 0]} castShadow>
+          <cylinderGeometry args={[0.06, 0.06, 0.24, 6]} />
+          <meshStandardMaterial color="#b8a898" roughness={0.9} />
+        </mesh>
+        {/* Lantern chamber */}
+        <mesh position={[0, 0.48, 0]} castShadow>
+          <cylinderGeometry args={[0.11, 0.11, 0.12, 6]} />
+          <meshStandardMaterial color="#fff0a0" emissive="#ffea70" emissiveIntensity={0.65} />
+        </mesh>
+        {/* Cap roof */}
+        <mesh position={[0, 0.58, 0]} castShadow>
+          <coneGeometry args={[0.17, 0.10, 6]} />
+          <meshStandardMaterial color="#d4cbb8" roughness={0.8} />
+        </mesh>
+      </group>
+
+      {/* 3. Small Lily Duck Pond */}
+      <group position={[2.2, 0.003, -2.2]}>
+        {/* Water circle */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <circleGeometry args={[0.65, 12]} />
+          <meshStandardMaterial color="#3eb5d4" roughness={0.1} metalness={0.8} transparent opacity={0.88} />
+        </mesh>
+        {/* Stone edge border */}
+        {Array.from({ length: 8 }).map((_, idx) => {
+          const angle = (idx / 8) * Math.PI * 2;
+          const px = Math.cos(angle) * 0.68;
+          const pz = Math.sin(angle) * 0.68;
+          return (
+            <mesh key={idx} position={[px, 0.03, pz]} rotation={[0, -angle, 0]} castShadow>
+              <boxGeometry args={[0.26, 0.08, 0.14]} />
+              <meshStandardMaterial color="#b8a898" roughness={0.85} />
+            </mesh>
+          );
+        })}
+        {/* Lily Pads */}
+        {[-0.2, 0.2].map((lx, li) => (
+          <mesh key={li} rotation={[-Math.PI / 2, 0, li * 1.5]} position={[lx, 0.012, li === 0 ? 0.2 : -0.2]}>
+            <circleGeometry args={[0.08, 8]} />
+            <meshStandardMaterial color="#2d7e3e" roughness={0.7} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* 4. Wooden Flower Cart wheelbarrow */}
+      <group position={[-2.3, 0, -2.3]} rotation={[0, Math.PI / 6, 0]}>
+        {/* Cart body */}
+        <mesh position={[0, 0.15, 0]} castShadow>
+          <boxGeometry args={[0.5, 0.15, 0.35]} />
+          <meshStandardMaterial color="#8b5e3c" roughness={0.9} />
+        </mesh>
+        {/* Cart Wheels */}
+        {[-0.2, 0.2].map((wx) => 
+          [-0.18, 0.18].map((wz) => (
+            <mesh key={`${wx}-${wz}`} position={[wx, 0.07, wz]} rotation={[0, 0, Math.PI / 2]} castShadow>
+              <cylinderGeometry args={[0.07, 0.07, 0.04, 8]} />
+              <meshStandardMaterial color="#402818" roughness={0.95} />
+            </mesh>
+          ))
+        )}
+        {/* Cart Flowers */}
+        <mesh position={[0, 0.24, 0]} castShadow>
+          <sphereGeometry args={[0.2, 8, 8]} />
+          <meshStandardMaterial color="#ee40a0" roughness={0.7} emissive="#a02060" emissiveIntensity={0.2} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+// ─── Tufts of Wild Grass ──────────────────────────────────────────────────────
+function WildGrass() {
+  const blades = useMemo(() => {
+    return Array.from({ length: 16 }, (_, i) => ({
+      x: (Math.sin(i * 352.1) * 4.0),
+      z: (Math.cos(i * 187.3) * 4.0),
+      scale: 0.75 + (Math.sin(i) * 0.25),
+    }));
+  }, []);
+
+  return (
+    <group>
+      {blades.map((b, i) => (
+        <group key={i} position={[b.x, 0, b.z]} scale={[b.scale, b.scale, b.scale]}>
+          <mesh position={[0, 0.06, 0]} rotation={[0.1, 0, 0]} castShadow>
+            <coneGeometry args={[0.02, 0.15, 3]} />
+            <meshStandardMaterial color="#6ecb4a" roughness={0.8} />
+          </mesh>
+          <mesh position={[0.04, 0.05, 0.02]} rotation={[0.2, 0.5, -0.1]} castShadow>
+            <coneGeometry args={[0.015, 0.12, 3]} />
+            <meshStandardMaterial color="#6ecb4a" roughness={0.8} />
+          </mesh>
+          <mesh position={[-0.04, 0.05, -0.02]} rotation={[-0.2, -0.5, 0.1]} castShadow>
+            <coneGeometry args={[0.015, 0.12, 3]} />
+            <meshStandardMaterial color="#6ecb4a" roughness={0.8} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+// ─── Ground: vivid grass + brown dirt cross-paths (Hay Day style) ────────────
 function GardenGround({ grassColor }: { grassColor: string }) {
   const [hovered, setHovered] = useState(false);
   const handleOver = (e: any) => { e.stopPropagation(); setHovered(true); };
@@ -300,52 +491,62 @@ function GardenGround({ grassColor }: { grassColor: string }) {
         onPointerOver={handleOver}
         onPointerOut={handleOut}
       >
-        <planeGeometry args={[10, 10]} />
-        <meshStandardMaterial color={grassColor} roughness={0.9} metalness={0.05} />
+        <planeGeometry args={[11, 11]} />
+        <meshStandardMaterial color={grassColor} roughness={0.85} metalness={0.02} />
       </mesh>
 
-      {/* Stone path — horizontal */}
+      {/* Brown dirt path — horizontal (Hay Day style) */}
       <mesh 
         rotation={[-Math.PI / 2, 0, 0]} 
-        position={[0, 0.005, 0]} 
+        position={[0, 0.006, 0]} 
         receiveShadow
         onPointerOver={handleOver}
         onPointerOut={handleOut}
       >
-        <planeGeometry args={[0.7, 10]} />
-        <meshStandardMaterial color={C.stonePath} roughness={0.8} metalness={0.1} />
+        <planeGeometry args={[0.9, 11]} />
+        <meshStandardMaterial color={C.stonePath} roughness={0.95} metalness={0.0} />
       </mesh>
 
-      {/* Stone path — vertical */}
+      {/* Brown dirt path — vertical (Hay Day style) */}
       <mesh 
         rotation={[-Math.PI / 2, 0, 0]} 
-        position={[0, 0.005, 0]} 
+        position={[0, 0.006, 0]} 
         receiveShadow
         onPointerOver={handleOver}
         onPointerOut={handleOut}
       >
-        <planeGeometry args={[10, 0.7]} />
-        <meshStandardMaterial color={C.stonePath} roughness={0.8} metalness={0.1} />
+        <planeGeometry args={[11, 0.9]} />
+        <meshStandardMaterial color={C.stonePath} roughness={0.95} metalness={0.0} />
       </mesh>
 
-      {/* Path stones (decorative rectangles) */}
+      {/* Lighter dirt path edge highlight */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.007, 0]} receiveShadow>
+        <planeGeometry args={[0.7, 11]} />
+        <meshStandardMaterial color={C.stonePathLight} roughness={0.95} metalness={0.0} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.007, 0]} receiveShadow>
+        <planeGeometry args={[11, 0.7]} />
+        <meshStandardMaterial color={C.stonePathLight} roughness={0.95} metalness={0.0} />
+      </mesh>
+
+      {/* Stone stepping tile decorations on path intersections */}
       {[-3.5, -2.5, -1.5, 1.5, 2.5, 3.5].map((x, i) => (
         <mesh 
           key={`hpath-${i}`} 
           rotation={[-Math.PI / 2, 0, 0]} 
-          position={[x, 0.007, 0]}
+          position={[x, 0.009, 0]}
           onPointerOver={handleOver}
           onPointerOut={handleOut}
         >
-          <planeGeometry args={[0.5, 0.55]} />
-          <meshStandardMaterial color={C.stone} roughness={0.85} metalness={0.15} />
+          <planeGeometry args={[0.52, 0.6]} />
+          <meshStandardMaterial color={C.stone} roughness={0.85} metalness={0.1} />
         </mesh>
       ))}
       {[-3.5, -2.5, -1.5, 1.5, 2.5, 3.5].map((z, i) => (
         <mesh 
           key={`vpath-${i}`} 
           rotation={[-Math.PI / 2, 0, 0]} 
-          position={[0, 0.007, z]}
+          position={[0, 0.009, z]}
           onPointerOver={handleOver}
           onPointerOut={handleOut}
         >
@@ -367,12 +568,12 @@ function GardenGround({ grassColor }: { grassColor: string }) {
   );
 }
 
-// ─── Central stone well (World Core) ──────────────────────────────────────────
+// ─── Central stone well (World Core) — larger, more iconic ───────────────────
 function GardenWell({ crr, eventCount = 0 }: { crr?: number; eventCount?: number }) {
   const waterRef = useRef<THREE.Mesh>(null);
   const waterMatRef = useRef<THREE.MeshStandardMaterial>(null);
   const [hovered, setHovered] = useState(false);
-  const isDebt = crr !== undefined && crr >= 1.0;
+  const isDebt = crr !== undefined && crr < 1.0;
   const waterColor = isDebt ? C.waterDry : C.water;
 
   // Track ripples from websocket/webhook events
@@ -416,28 +617,33 @@ function GardenWell({ crr, eventCount = 0 }: { crr?: number; eventCount?: number
       onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
       onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
     >
-      {/* Stone base */}
-      <mesh castShadow receiveShadow position={[0, 0.3, 0]}>
-        <cylinderGeometry args={[0.55, 0.62, 0.6, 12]} />
-        <meshStandardMaterial color={C.stone} roughness={0.85} metalness={0.15} />
+      {/* Stone base — wider, more impressive */}
+      <mesh castShadow receiveShadow position={[0, 0.35, 0]}>
+        <cylinderGeometry args={[0.70, 0.78, 0.70, 14]} />
+        <meshStandardMaterial color={C.stone} roughness={0.82} metalness={0.18} />
+      </mesh>
+      {/* Stone base lower ring */}
+      <mesh castShadow receiveShadow position={[0, 0.05, 0]}>
+        <cylinderGeometry args={[0.82, 0.88, 0.10, 14]} />
+        <meshStandardMaterial color={C.stoneDark} roughness={0.85} metalness={0.12} />
       </mesh>
 
       {/* Inner dark shaft */}
-      <mesh position={[0, 0.55, 0]}>
-        <cylinderGeometry args={[0.38, 0.38, 0.18, 12]} />
+      <mesh position={[0, 0.65, 0]}>
+        <cylinderGeometry args={[0.48, 0.48, 0.20, 14]} />
         <meshStandardMaterial color="#2a2018" roughness={0.9} metalness={0.1} />
       </mesh>
 
-      {/* Water surface */}
-      <mesh ref={waterRef} position={[0, 0.58, 0]}>
-        <circleGeometry args={[0.35, 12]} />
+      {/* Water surface — bright blue when healthy */}
+      <mesh ref={waterRef} position={[0, 0.68, 0]}>
+        <circleGeometry args={[0.44, 14]} />
         <meshStandardMaterial 
           ref={waterMatRef} 
           color={waterColor} 
-          roughness={0.1} 
-          metalness={0.8} 
+          roughness={0.05} 
+          metalness={0.9} 
           transparent 
-          opacity={0.85} 
+          opacity={0.90} 
         />
       </mesh>
 
@@ -505,55 +711,93 @@ function GardenWell({ crr, eventCount = 0 }: { crr?: number; eventCount?: number
   );
 }
 
-// ─── Corner oak tree ──────────────────────────────────────────────────────────
-function OakTree({ position, leavesColor }: { position: [number, number, number]; leavesColor: string }) {
+// ─── Corner oak tree (Hay Day style — large, vivid, iconic) ──────────────────
+function OakTree({ 
+  position, 
+  leavesColor, 
+  fruitType = "none" 
+}: { 
+  position: [number, number, number]; 
+  leavesColor: string; 
+  fruitType?: "apple" | "lemon" | "cherry" | "none"; 
+}) {
   const [hovered, setHovered] = useState(false);
+  const leavesColorDark = leavesColor === C.oakLeaves ? '#38a030' : leavesColor;
+
+  const fruits = useMemo(() => {
+    if (fruitType === "none" || leavesColor !== C.oakLeaves) return [];
+    const color = fruitType === "apple" ? "#ee2a2a" : fruitType === "lemon" ? "#ffd60a" : "#d90429";
+    const size = fruitType === "cherry" ? 0.052 : 0.075;
+    return [
+      { pos: [-0.38, 2.2, 0.3] as [number, number, number], color, size },
+      { pos: [0.3, 2.4, 0.2] as [number, number, number], color, size },
+      { pos: [-0.2, 2.6, -0.3] as [number, number, number], color, size },
+      { pos: [0.4, 2.1, -0.4] as [number, number, number], color, size },
+      { pos: [0.1, 2.7, 0.4] as [number, number, number], color, size },
+      { pos: [-0.5, 2.4, -0.2] as [number, number, number], color, size },
+      { pos: [0.2, 2.5, 0.5] as [number, number, number], color, size },
+    ];
+  }, [fruitType, leavesColor]);
+
   return (
     <group 
       position={position}
       onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
       onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
     >
-      {/* Trunk */}
-      <mesh castShadow position={[0, 0.65, 0]}>
-        <cylinderGeometry args={[0.12, 0.16, 1.3, 7]} />
-        <meshStandardMaterial color={C.oakTrunk} roughness={0.9} metalness={0.05} />
-      </mesh>
-
-      {/* Multi-lobe Canopy */}
-      {/* Main Center */}
-      <mesh castShadow position={[0, 1.9, 0]}>
-        <sphereGeometry args={[0.65, 12, 10]} />
-        <meshStandardMaterial color={leavesColor} roughness={0.9} metalness={0.1} />
-      </mesh>
-      {/* Lobe 1: Left Top */}
-      <mesh castShadow position={[-0.3, 2.1, 0.1]}>
-        <sphereGeometry args={[0.48, 8, 8]} />
-        <meshStandardMaterial color={leavesColor} roughness={0.9} metalness={0.1} />
-      </mesh>
-      {/* Lobe 2: Right Back */}
-      <mesh castShadow position={[0.35, 1.95, -0.2]}>
-        <sphereGeometry args={[0.52, 8, 8]} />
-        <meshStandardMaterial color={leavesColor} roughness={0.9} metalness={0.1} />
-      </mesh>
-      {/* Lobe 3: Front Lower */}
-      <mesh castShadow position={[0.1, 1.75, 0.35]}>
-        <sphereGeometry args={[0.45, 8, 8]} />
-        <meshStandardMaterial color={leavesColor} roughness={0.9} metalness={0.1} />
+      {/* Trunk — taller, more tapered */}
+      <mesh castShadow position={[0, 0.85, 0]}>
+        <cylinderGeometry args={[0.13, 0.19, 1.7, 7]} />
+        <meshStandardMaterial color={C.oakTrunk} roughness={0.92} metalness={0.05} />
       </mesh>
 
       {/* Lower supporting foliage */}
-      <mesh castShadow position={[0, 1.5, 0]}>
-        <sphereGeometry args={[0.55, 8, 6]} />
-        <meshStandardMaterial color={C.hedgeGreen} roughness={0.9} metalness={0.1} />
+      <mesh castShadow position={[0, 1.7, 0]}>
+        <sphereGeometry args={[0.68, 10, 8]} />
+        <meshStandardMaterial color={leavesColorDark} roughness={0.88} metalness={0.05} />
       </mesh>
 
+      {/* Main Canopy — larger, rounder */}
+      <mesh castShadow position={[0, 2.3, 0]}>
+        <sphereGeometry args={[0.82, 12, 10]} />
+        <meshStandardMaterial color={leavesColor} roughness={0.85} metalness={0.08} />
+      </mesh>
+      {/* Lobe 1 */}
+      <mesh castShadow position={[-0.38, 2.55, 0.12]}>
+        <sphereGeometry args={[0.60, 10, 8]} />
+        <meshStandardMaterial color={leavesColor} roughness={0.85} metalness={0.08} />
+      </mesh>
+      {/* Lobe 2 */}
+      <mesh castShadow position={[0.45, 2.42, -0.25]}>
+        <sphereGeometry args={[0.65, 10, 8]} />
+        <meshStandardMaterial color={leavesColor} roughness={0.85} metalness={0.08} />
+      </mesh>
+      {/* Lobe 3: Front */}
+      <mesh castShadow position={[0.12, 2.1, 0.45]}>
+        <sphereGeometry args={[0.55, 10, 8]} />
+        <meshStandardMaterial color={leavesColorDark} roughness={0.88} metalness={0.05} />
+      </mesh>
+      {/* Top crown */}
+      <mesh castShadow position={[0, 2.85, 0]}>
+        <sphereGeometry args={[0.45, 8, 8]} />
+        <meshStandardMaterial color={leavesColor} roughness={0.8} metalness={0.1} />
+      </mesh>
+
+      {/* Fruit items */}
+      {fruits.map((f, idx) => (
+        <mesh key={idx} position={f.pos} castShadow>
+          <sphereGeometry args={[f.size, 6, 6]} />
+          <meshStandardMaterial color={f.color} roughness={0.3} metalness={0.1} />
+        </mesh>
+      ))}
+
       {hovered && (
-        <Html position={[0, 2.8, 0]} center zIndexRange={[100, 0]}>
+        <Html position={[0, 3.4, 0]} center zIndexRange={[100, 0]}>
           <div className="garden-tooltip">
             <span className="garden-badge tree-badge">INFRA</span>
             <strong>Stable Infrastructure Pillar</strong>
             <p>Represents foundational packages and configuration files.</p>
+            {fruitType !== "none" && <p style={{ fontStyle: 'italic', marginTop: '4px', color: '#8b6030' }}>Type: {fruitType.toUpperCase()} TREE</p>}
           </div>
         </Html>
       )}
@@ -561,27 +805,58 @@ function OakTree({ position, leavesColor }: { position: [number, number, number]
   );
 }
 
-// ─── Hedge fence (border) ─────────────────────────────────────────────────────
-function HedgeFence() {
+// ─── White Picket Fence (Hay Day style boundary) ──────────────────────────────
+function WhitePicketFence() {
   const [hovered, setHovered] = useState(false);
-  const posts: [number, number, number][] = [];
-  for (let i = -4; i <= 4; i += 0.9) {
-    posts.push([i, 0, -5]);
-    posts.push([i, 0,  5]);
-    posts.push([-5, 0, i]);
-    posts.push([ 5, 0, i]);
+
+  // Generate picket positions along all 4 sides
+  const pickets: [number, number, number][] = [];
+  for (let i = -4.7; i <= 4.7; i += 0.55) {
+    pickets.push([i, 0, -5.1]);
+    pickets.push([i, 0,  5.1]);
+    pickets.push([-5.1, 0, i]);
+    pickets.push([ 5.1, 0, i]);
   }
+
+  // Horizontal rails - 4 sides
+  const rails: { pos: [number, number, number]; rot: [number, number, number]; len: number }[] = [
+    { pos: [0, 0.30, -5.1], rot: [0, 0, 0], len: 10.2 },
+    { pos: [0, 0.55, -5.1], rot: [0, 0, 0], len: 10.2 },
+    { pos: [0, 0.30,  5.1], rot: [0, 0, 0], len: 10.2 },
+    { pos: [0, 0.55,  5.1], rot: [0, 0, 0], len: 10.2 },
+    { pos: [-5.1, 0.30, 0], rot: [0, Math.PI/2, 0], len: 10.2 },
+    { pos: [-5.1, 0.55, 0], rot: [0, Math.PI/2, 0], len: 10.2 },
+    { pos: [ 5.1, 0.30, 0], rot: [0, Math.PI/2, 0], len: 10.2 },
+    { pos: [ 5.1, 0.55, 0], rot: [0, Math.PI/2, 0], len: 10.2 },
+  ];
 
   return (
     <group
       onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
       onPointerOut={(e) => { e.stopPropagation(); setHovered(false); }}
     >
-      {posts.map((p, i) => (
-        <mesh key={i} position={[p[0], 0.35, p[2]]} castShadow>
-          <capsuleGeometry args={[0.22, 0.35, 4, 8]} />
-          <meshStandardMaterial color={C.hedgeGreen} roughness={0.85} metalness={0.1} />
+      {/* Horizontal fence rails */}
+      {rails.map((r, i) => (
+        <mesh key={`rail-${i}`} position={r.pos} rotation={r.rot} castShadow receiveShadow>
+          <boxGeometry args={[r.len, 0.06, 0.06]} />
+          <meshStandardMaterial color={C.fenceWhite} roughness={0.6} metalness={0.05} />
         </mesh>
+      ))}
+
+      {/* Vertical picket slats */}
+      {pickets.map((p, i) => (
+        <group key={`picket-${i}`} position={[p[0], 0, p[2]]}>
+          {/* Slat body */}
+          <mesh position={[0, 0.32, 0]} castShadow>
+            <boxGeometry args={[0.10, 0.64, 0.06]} />
+            <meshStandardMaterial color={C.fenceWhite} roughness={0.6} metalness={0.05} />
+          </mesh>
+          {/* Pointed top */}
+          <mesh position={[0, 0.68, 0]} castShadow>
+            <coneGeometry args={[0.072, 0.14, 4]} />
+            <meshStandardMaterial color={C.fenceWhite} roughness={0.6} metalness={0.05} />
+          </mesh>
+        </group>
       ))}
 
       {hovered && (
@@ -589,7 +864,7 @@ function HedgeFence() {
           <div className="garden-tooltip">
             <span className="garden-badge fence-badge">LIMIT</span>
             <strong>Project Scope Boundary</strong>
-            <p>Defines the workspace packages context and boundary limits.</p>
+            <p>White picket fence defining the workspace boundary.</p>
           </div>
         </Html>
       )}
@@ -617,11 +892,11 @@ function FlowerBush({
   const shortName = node.name.split(':')[0].trim();
   const status = node.attributes.status?.toLowerCase() || '';
 
-  // Data-driven sizing: based on reviews count & story points
+  // Data-driven sizing: based on reviews count & story points — larger for Hay Day clarity
   const reviewsCount = node.attributes.reviews ?? 0;
   const storyPoints = node.attributes.storyPoints ?? 3;
-  const thicknessScale = 0.8 + (storyPoints / 8) * 0.55;
-  const sizeMult = (0.85 + reviewsCount * 0.15) * thicknessScale;
+  const thicknessScale = 1.0 + (storyPoints / 8) * 0.60;
+  const sizeMult = (1.1 + reviewsCount * 0.15) * thicknessScale;
   const comments = node.attributes.commentCount || 0;
 
   useFrame((state) => {
@@ -662,20 +937,25 @@ function FlowerBush({
         <meshStandardMaterial color={hovered ? '#ffffff' : color} roughness={0.8} metalness={0.1} />
       </mesh>
 
-      {/* Flowers on top with emissive glow */}
-      {[0, 1.2, 2.4, 3.6, 4.8].map((a, i) => {
-        const flowerColor = color === C.prApproved ? '#ffe066' : color === C.prDraft ? '#c0c8c8' : '#f5f0c8';
+      {/* Flowers on top with emissive glow — brighter, more Hay Day vibrant */}
+      {[0, 1.05, 2.1, 3.15, 4.2, 5.25].map((a, i) => {
+        const flowerColor = color === C.prApproved ? '#ffe040' :
+                            color === C.prDraft ? '#d0d8e8' : '#fff080';
+        const petalColor = color === C.prApproved ? '#ff8c00' :
+                           color === C.prDraft ? '#e8f0f8' : '#ff6090';
         return (
-          <mesh key={i} position={[Math.cos(a) * 0.22, status === 'draft' ? 0.45 : 0.75, Math.sin(a) * 0.22]}>
-            <sphereGeometry args={[0.08, 5, 4]} />
-            <meshStandardMaterial 
-              color={flowerColor} 
-              roughness={0.6} 
-              metalness={0.1} 
-              emissive={flowerColor} 
-              emissiveIntensity={0.6} 
-            />
-          </mesh>
+          <group key={i} position={[Math.cos(a) * 0.26, status === 'draft' ? 0.42 : 0.80, Math.sin(a) * 0.26]}>
+            {/* Center dot */}
+            <mesh>
+              <sphereGeometry args={[0.072, 6, 5]} />
+              <meshStandardMaterial color={flowerColor} roughness={0.5} emissive={flowerColor} emissiveIntensity={1.2} />
+            </mesh>
+            {/* Petal ring */}
+            <mesh rotation={[Math.PI/2, 0, 0]}>
+              <torusGeometry args={[0.11, 0.028, 4, 8]} />
+              <meshStandardMaterial color={petalColor} roughness={0.6} emissive={petalColor} emissiveIntensity={0.5} />
+            </mesh>
+          </group>
         );
       })}
 
@@ -1349,7 +1629,9 @@ function GardenScene({
     showVines: true,
     showWeather: true,
     showAgents: true,
+    showSparkGS: true,
   },
+  projectName,
 }: {
   crr?: number;
   graph?: { nodes: FusedNode[]; edges: any[] };
@@ -1366,12 +1648,60 @@ function GardenScene({
     showVines: boolean;
     showWeather: boolean;
     showAgents: boolean;
+    showSparkGS: boolean;
   };
+  projectName?: string;
 }) {
+  const [radUrl, setRadUrl] = useState<string | null>(null);
+  const [sparkStatus, setSparkStatus] = useState<string>("idle");
+
+  useEffect(() => {
+    if (!filters.showSparkGS || !projectName) {
+      setRadUrl(null);
+      setSparkStatus("idle");
+      return;
+    }
+
+    let active = true;
+    let timerId: any = null;
+
+    const checkGarden = () => {
+      fetch(`/api/garden/${encodeURIComponent(projectName)}`)
+        .then(r => r.json())
+        .then(data => {
+          if (!active) return;
+          if (data.rad_url) {
+            setRadUrl(data.rad_url);
+            setSparkStatus("ready");
+          } else if (data.status === "generating") {
+            setSparkStatus("generating");
+            timerId = setTimeout(checkGarden, 3000);
+          } else {
+            setSparkStatus(data.status || "error");
+          }
+        })
+        .catch(e => {
+          if (!active) return;
+          console.error("Error fetching garden:", e);
+          setSparkStatus("error");
+        });
+    };
+
+    checkGarden();
+
+    return () => {
+      active = false;
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [filters.showSparkGS, projectName]);
+
+  const shouldUseSpark = filters.showSparkGS && radUrl;
+
   const season = useMemo(() => {
+    // Healthy CRR ≥ 1.2 → lush Summer; ≥ 0.8 → Late Summer; < 0.8 → Autumn debt
     if (crr === undefined) return SEASONS.summer;
-    if (crr < 0.5) return SEASONS.summer;
-    if (crr < 1.0) return SEASONS.lateSummer;
+    if (crr >= 1.2) return SEASONS.summer;
+    if (crr >= 0.8) return SEASONS.lateSummer;
     return SEASONS.autumn;
   }, [crr]);
 
@@ -1443,34 +1773,35 @@ function GardenScene({
   ];
 
   // Adjust weather visual depending on velocity
-  const isDrought = sprintVelocity !== undefined && sprintVelocity < 50;
+  const isDrought = sprintVelocity !== undefined && sprintVelocity < 30;
   const isRaining = sprintVelocity !== undefined && sprintVelocity >= 70;
 
   const skyColor = isDrought ? SEASONS.autumn.sky : season.sky;
-  const fogFarDist = isDrought ? 15 : season.fogFar;
+  const fogFarDist = isDrought ? 30 : season.fogFar;
 
   return (
     <>
       <color attach="background" args={[skyColor]} />
-      <fog attach="fog" args={[skyColor, 18, fogFarDist]} />
+      {/* Only apply fog during drought/autumn — crystal clear in summer like Hay Day */}
+      {isDrought && <fog attach="fog" args={[skyColor, 20, fogFarDist]} />}
 
-      {/* Warm golden-hour lighting & Hemisphere Light */}
-      <ambientLight intensity={0.6} color="#fff5e0" />
-      <hemisphereLight color="#ffffff" groundColor="#4a8c3f" intensity={0.4} />
+      {/* Hay Day-style bright, warm, high-key lighting */}
+      <ambientLight intensity={1.3} color="#fff8e8" />
+      <hemisphereLight color="#e8f8ff" groundColor={season.grass} intensity={0.8} />
       <directionalLight
-        position={[8, 14, 6]}
-        intensity={1.3}
-        color="#fffadc"
+        position={[10, 18, 8]}
+        intensity={2.2}
+        color="#fffde0"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-near={0.5}
-        shadow-camera-far={40}
-        shadow-camera-left={-12}
-        shadow-camera-right={12}
-        shadow-camera-top={12}
-        shadow-camera-bottom={-12}
+        shadow-camera-far={45}
+        shadow-camera-left={-13}
+        shadow-camera-right={13}
+        shadow-camera-top={13}
+        shadow-camera-bottom={-13}
       />
-      <directionalLight position={[-6, 5, -4]} intensity={0.2} color="#c8e8ff" />
+      <directionalLight position={[-8, 6, -6]} intensity={0.5} color="#c8e8ff" />
 
       {/* Floating pollen particles */}
       {!isRaining && <FloatingPollen count={50} />}
@@ -1478,11 +1809,47 @@ function GardenScene({
       {/* Rain weather system */}
       {isRaining && <RainParticles count={100} />}
 
-      {/* Ground, paths, hedge, trees */}
-      <GardenGround grassColor={isDrought ? SEASONS.autumn.grass : season.grass} />
-      <HedgeFence />
-      {([[-4.3, -4.3], [4.3, -4.3], [-4.3, 4.3], [4.3, 4.3]] as [number, number][]).map(
-        ([x, z], i) => <OakTree key={i} position={[x, 0, z]} leavesColor={isDrought ? SEASONS.autumn.leaves : season.leaves} />
+      {/* Ground, paths, white fence, trees (hide if SparkGS background is rendering) */}
+      {!shouldUseSpark && (
+        <>
+          <GardenGround grassColor={isDrought ? SEASONS.autumn.grass : season.grass} />
+          <WhitePicketFence />
+          {([[-4.35, -4.35], [4.35, -4.35], [-4.35, 4.35], [4.35, 4.35]] as [number, number][]).map(
+            ([x, z], i) => (
+              <OakTree 
+                key={i} 
+                position={[x, 0, z]} 
+                leavesColor={isDrought ? SEASONS.autumn.leaves : season.leaves} 
+                fruitType={i === 0 ? "apple" : i === 1 ? "lemon" : i === 2 ? "cherry" : "none"}
+              />
+            )
+          )}
+          <GardenOrnaments />
+          <WildGrass />
+        </>
+      )}
+
+      {/* Spark 3DGS Background layer */}
+      {shouldUseSpark && <SparkBackground url={radUrl} />}
+
+      {/* Spark World Generation Status HUD inside 3D space */}
+      {filters.showSparkGS && sparkStatus !== "ready" && (
+        <Html position={[0, 2.2, 0]} center zIndexRange={[120, 0]}>
+          <div className="garden-tooltip" style={{ textAlign: 'center', minWidth: '220px', border: '2.5px solid #c8942a', background: 'linear-gradient(160deg, #fffdf0, #fff5d0)' }}>
+            <span className="garden-badge well-badge" style={{ background: '#dbf0f9', color: '#1e5a75', border: '1px solid #a2d6eb' }}>SPARK 2.0</span>
+            <strong style={{ color: '#5a3208', marginTop: '6px', display: 'block' }}>World Generation</strong>
+            <p style={{ margin: '6px 0 0 0', fontWeight: 'bold', color: '#7a5028' }}>
+              {sparkStatus === "loading" ? "Contacting World Labs..." :
+               sparkStatus === "generating" ? "Generating photorealistic splats..." :
+               "Fallback: polygonal mode active"}
+            </p>
+            {sparkStatus === "generating" && (
+              <div style={{ marginTop: '8px', fontSize: '0.62rem', color: '#8b6030' }}>
+                AI is generating your garden world.
+              </div>
+            )}
+          </div>
+        </Html>
       )}
 
       {/* Epic Garden Beds */}
@@ -1588,13 +1955,13 @@ function GardenScene({
         );
       })}
 
-      {/* Camera: fixed overhead-ish garden view, no auto-rotate */}
+      {/* Camera: isometric overhead view — Hay Day style clear top-down angle */}
       <OrbitControls
         makeDefault
-        minDistance={10}
-        maxDistance={22}
-        maxPolarAngle={Math.PI / 2.5}
-        minPolarAngle={Math.PI / 6}
+        minDistance={8}
+        maxDistance={18}
+        maxPolarAngle={Math.PI / 2.6}
+        minPolarAngle={Math.PI / 5}
         enablePan={false}
       />
     </>
@@ -1623,10 +1990,10 @@ export function GameGardenScene({
     <div className="game-garden-root">
       <Canvas
         shadows
-        camera={{ position: [0, 16, 13], fov: 38 }}
+        camera={{ position: [0, 14, 10], fov: 42 }}
         gl={{ antialias: true }}
       >
-        <GardenScene crr={crr} graph={graph} opponentLimit={opponentLimit} eventCount={eventCount} onSelectNode={onSelectNode} sprintVelocity={sprintVelocity} filters={filters} />
+        <GardenScene crr={crr} graph={graph} opponentLimit={opponentLimit} eventCount={eventCount} onSelectNode={onSelectNode} sprintVelocity={sprintVelocity} filters={filters} projectName={_projectName} />
       </Canvas>
 
       {/* HUD */}

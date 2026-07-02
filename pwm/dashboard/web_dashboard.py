@@ -223,6 +223,93 @@ def create_app(
             return dashboard_state._serialize_state(dashboard_state.current_state)
         return {"status": "waiting", "message": "No pipeline data yet"}
 
+    @app.get("/api/garden/{project_id}")
+    async def get_garden_world(project_id: str):
+        """Get or trigger generation of Marble 3D garden world."""
+        api_key = os.environ.get("WORLD_LABS_API_KEY")
+        if not api_key:
+            # Fallback to public butterfly.spz if no key provided
+            return {
+                "status": "ready",
+                "rad_url": "https://sparkjs.dev/assets/splats/butterfly.spz",
+                "fallback": True,
+                "message": "Using demo Splat (no WORLD_LABS_API_KEY configured)"
+            }
+        
+        import httpx
+        try:
+            if not hasattr(dashboard_state, "_garden_cache"):
+                dashboard_state._garden_cache = {}
+                
+            cache = dashboard_state._garden_cache.get(project_id)
+            if cache:
+                if cache["status"] == "ready":
+                    return cache
+                elif cache["status"] == "generating":
+                    op_id = cache["operation_id"]
+                    async with httpx.AsyncClient(timeout=10.0) as client:
+                        r = await client.get(
+                            f"https://api.worldlabs.ai/marble/v1/operations/{op_id}",
+                            headers={"WLT-Api-Key": api_key}
+                        )
+                        if r.status_code == 200:
+                            op_data = r.json()
+                            if op_data.get("done"):
+                                rad_url = op_data.get("result", {}).get("world", {}).get("assets", {}).get("world_rad_url")
+                                if not rad_url:
+                                    rad_url = op_data.get("result", {}).get("world", {}).get("assets", {}).get("world_spz_url")
+                                
+                                if rad_url:
+                                    dashboard_state._garden_cache[project_id] = {
+                                        "status": "ready",
+                                        "rad_url": rad_url,
+                                        "fallback": False
+                                    }
+                                    return dashboard_state._garden_cache[project_id]
+                                else:
+                                    return {"status": "error", "message": "No assets found in finished operation"}
+                            return cache
+            
+            prompt_text = "A serene, clean, beautiful classical English garden, warm daylight, Stardew Valley game style, isometric angle"
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                r = await client.post(
+                    "https://api.worldlabs.ai/marble/v1/worlds:generate",
+                    headers={"WLT-Api-Key": api_key, "Content-Type": "application/json"},
+                    json={
+                        "world_prompt": {
+                            "type": "text",
+                            "text_prompt": prompt_text
+                        },
+                        "display_name": f"Garden {project_id}",
+                        "model": "marble-1.1"
+                    }
+                )
+                if r.status_code == 200:
+                    res = r.json()
+                    op_id = res.get("operation_id")
+                    if op_id:
+                        dashboard_state._garden_cache[project_id] = {
+                            "status": "generating",
+                            "operation_id": op_id,
+                            "fallback": False
+                        }
+                        return dashboard_state._garden_cache[project_id]
+                
+                return {
+                    "status": "ready",
+                    "rad_url": "https://sparkjs.dev/assets/splats/butterfly.spz",
+                    "fallback": True,
+                    "message": f"API returned {r.status_code}, using demo Splat"
+                }
+                
+        except Exception as e:
+            return {
+                "status": "ready",
+                "rad_url": "https://sparkjs.dev/assets/splats/butterfly.spz",
+                "fallback": True,
+                "message": f"Error calling Marble API: {str(e)}"
+            }
+
     @app.get("/api/config")
     async def get_config():
         """Get current active tracker configuration."""

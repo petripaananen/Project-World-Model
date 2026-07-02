@@ -7159,39 +7159,23 @@ body {
 /* Detailed Collapsible Garden Legend */
 
 .garden-legend-card {
-
   position: absolute;
-
   bottom: 16px;
-
   left: 18px;
-
-  background: rgba(25, 20, 15, 0.9);
-
-  backdrop-filter: blur(15px);
-
-  border: 1px solid rgba(160, 140, 100, 0.3);
-
+  /* Hay Day warm parchment style panel */
+  background: linear-gradient(160deg, rgba(255, 244, 204, 0.97) 0%, rgba(238, 218, 158, 0.97) 100%);
+  backdrop-filter: blur(8px);
+  border: 2.5px solid #c8942a;
   border-radius: 16px;
-
   width: 310px;
-
   max-height: 380px;
-
   display: flex;
-
   flex-direction: column;
-
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-
+  box-shadow: 0 6px 24px rgba(120, 60, 0, 0.28), inset 0 1px 0 rgba(255, 255, 200, 0.6);
   pointer-events: auto;
-
   z-index: 25;
-
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  color: #f5f0e8;
-
+  color: #4a2e08;
 }
 
 
@@ -7223,35 +7207,25 @@ body {
 
 
 .legend-icon {
-
   font-size: 1.2rem;
-
-  color: #ffe066;
-
+  color: #c8820a;
 }
 
 
 
 .legend-title {
-
   font-size: 0.82rem;
-
   font-weight: 800;
-
   flex: 1;
-
+  color: #5a3208;
 }
 
 
 
 .toggle-arrow {
-
   font-size: 1.2rem;
-
-  color: rgba(255, 255, 255, 0.5);
-
+  color: rgba(100, 60, 10, 0.6);
   transition: transform 0.2s ease;
-
 }
 
 
@@ -7307,23 +7281,14 @@ body {
 
 
 .legend-section h4 {
-
   margin: 0;
-
   font-size: 0.72rem;
-
   text-transform: uppercase;
-
-  color: rgba(255, 255, 255, 0.4);
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
+  color: #8b5e1a;
+  border-bottom: 1.5px solid rgba(160, 100, 20, 0.25);
   padding-bottom: 3px;
-
   letter-spacing: 0.05em;
-
   font-weight: 800;
-
 }
 
 
@@ -7357,11 +7322,8 @@ body {
 
 
 .legend-detail p {
-
   margin: 0;
-
-  color: rgba(255, 255, 255, 0.7);
-
+  color: #7a5828;
 }
 
 
@@ -7369,27 +7331,20 @@ body {
 /* Controls hint  bottom right */
 
 .garden-hint {
-
   position: absolute;
-
   bottom: 16px;
-
   right: 18px;
-
   font-size: 0.68rem;
-
-  color: #7a6848;
-
-  font-weight: 600;
-
+  color: #5a3808;
+  font-weight: 700;
   pointer-events: none;
-
-  background: rgba(255, 252, 240, 0.75);
-
-  padding: 5px 10px;
-
-  border-radius: 8px;
-
+  /* Hay Day golden strip */
+  background: linear-gradient(135deg, rgba(255, 220, 80, 0.92), rgba(240, 190, 40, 0.92));
+  border: 1.5px solid #c8942a;
+  padding: 5px 14px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(120, 60, 0, 0.22);
+  letter-spacing: 0.02em;
 }
 
 
@@ -7397,55 +7352,38 @@ body {
 /* -- HTML labels inside Three.js scene (drei Html portal) ------------------ */
 
 .garden-well-label {
-
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
-
-  background: rgba(255, 252, 240, 0.9);
-
-  border: 1px solid rgba(160,140,100,0.4);
-
-  border-radius: 8px;
-
-  padding: 4px 10px;
-
+  /* Hay Day resource counter style — golden badge */
+  background: linear-gradient(160deg, #fff4b0, #f5d040);
+  border: 2.5px solid #c8942a;
+  border-radius: 10px;
+  padding: 5px 12px;
   pointer-events: none;
-
   white-space: nowrap;
-
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-
+  box-shadow: 0 3px 10px rgba(120, 60, 0, 0.30), inset 0 1px 0 rgba(255,255,200,0.7);
 }
 
 
 
 .garden-well-title {
-
   font-size: 0.6rem;
-
-  font-weight: 700;
-
-  color: #6a5030;
-
-  letter-spacing: 0.08em;
-
+  font-weight: 800;
+  color: #7a4e10;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-
+  text-shadow: 0 1px 0 rgba(255,255,200,0.8);
 }
 
 
 
 .garden-well-value {
-
-  font-size: 0.88rem;
-
+  font-size: 1.0rem;
   font-weight: 900;
-
   letter-spacing: -0.02em;
-
+  color: #3a2000;
+  text-shadow: 0 1px 0 rgba(255,255,180,0.9);
 }
 
 
@@ -7489,25 +7427,16 @@ body {
 
 
 .garden-tooltip {
-
-  background: rgba(255, 252, 240, 0.97);
-
-  border: 1px solid rgba(160, 140, 100, 0.5);
-
-  border-radius: 10px;
-
-  padding: 8px 12px;
-
+  /* Hay Day bright cream popup card */
+  background: linear-gradient(160deg, #fffdf0, #fff5d0);
+  border: 2px solid #d4a030;
+  border-radius: 12px;
+  padding: 9px 14px;
   font-size: 0.75rem;
-
   color: #3a2c18;
-
-  min-width: 140px;
-
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-
+  min-width: 150px;
+  box-shadow: 0 6px 20px rgba(100, 60, 0, 0.25), inset 0 1px 0 rgba(255,255,220,0.8);
   pointer-events: none;
-
 }
 
 
@@ -7811,11 +7740,12 @@ body {
   grid-row: 3;
   justify-self: center;
   align-self: end;
-  background: rgba(28, 28, 38, 0.88);
-  border: 2px solid #caa25d; /* Cozy strategy gold border */
-  border-radius: 12px;
+  /* Hay Day golden panel */
+  background: linear-gradient(160deg, rgba(255, 240, 160, 0.97), rgba(240, 200, 80, 0.97));
+  border: 2.5px solid #c8942a;
+  border-radius: 16px;
   padding: 10px 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 6px 24px rgba(120, 60, 0, 0.30), inset 0 1px 0 rgba(255,255,200,0.7);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -7899,13 +7829,14 @@ body {
 }
 
 .filter-slot-btn.active .filter-led {
-  background: #3aaa5e;
-  box-shadow: 0 0 6px #3aaa5e, 0 0 12px #3aaa5e;
+  background: #44cc55;
+  box-shadow: 0 0 6px #44cc55, 0 0 12px #44cc55;
 }
 
 .filter-slot-btn.inactive .filter-led {
-  background: #555560;
+  background: #c8a050;
   box-shadow: none;
+  opacity: 0.5;
 }
 
 .filter-slot-btn.inactive .material-symbols-outlined {
@@ -7919,11 +7850,12 @@ body {
   left: 50%;
   transform: translateX(-50%) translateY(10px);
   width: 200px;
-  background: rgba(20, 20, 26, 0.96);
-  border: 1px solid #caa25d;
-  border-radius: 8px;
+  /* Hay Day parchment popup */
+  background: linear-gradient(160deg, #fffdf0, #fff5d0);
+  border: 2px solid #d4a030;
+  border-radius: 10px;
   padding: 10px 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 20px rgba(100, 60, 0, 0.28), inset 0 1px 0 rgba(255,255,220,0.8);
   opacity: 0;
   pointer-events: none;
   transition: all 0.2s ease;
@@ -7943,21 +7875,21 @@ body {
   font-family: var(--mono-font);
   font-size: 0.62rem;
   font-weight: 700;
-  color: #caa25d;
+  color: #a86010;
   text-transform: uppercase;
 }
 
 .tooltip-title {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #3a2008;
 }
 
 .tooltip-desc {
   margin: 0;
   font-size: 0.7rem;
   line-height: 1.35;
-  color: rgba(255, 255, 255, 0.75);
+  color: #7a5028;
 }
 
 /* Tracker Switcher Styling */

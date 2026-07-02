@@ -698,6 +698,7 @@ function App() {
     showVines: true,
     showWeather: true,
     showAgents: true,
+    showSparkGS: true,
   });
   const [uiVisible, setUiVisible] = useState(true);
   const [selectedProject, setSelectedProject] = useState<string>('');
@@ -919,6 +920,9 @@ function App() {
       } else if (key === 'a') {
         playHoverSound();
         setFilters(prev => ({ ...prev, showAgents: !prev.showAgents }));
+      } else if (key === 'g') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showSparkGS: !prev.showSparkGS }));
       } else if (key === 'h' || key === '?') {
         playHoverSound();
         setUiVisible(prev => !prev);
@@ -2861,6 +2865,20 @@ function App() {
                           <div className="tooltip-shortcut">Hotkey [A]</div>
                           <div className="tooltip-title">Swarm Butterflies</div>
                           <p className="tooltip-desc">Shows flying butterflies representing Worker, Critic, and Opponent simulation threads.</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 9: Spark 3DGS */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showSparkGS ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showSparkGS: !prev.showSparkGS })); }}
+                      >
+                        <span className="material-symbols-outlined">center_focus_strong</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [G]</div>
+                          <div className="tooltip-title">Spark 3DGS</div>
+                          <p className="tooltip-desc">Toggle World Labs Marble generated photorealistic 3D Gaussian Splatting background.</p>
                         </div>
                       </button>
                     </div>
