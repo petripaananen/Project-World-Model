@@ -9,6 +9,7 @@ export interface TaskNode {
   complexity: number; // 1 to 4 (recursion depth limit)
   risk: number; // 0.0 to 1.0 (drives gnarled angles + sway amplitude)
   subtasks?: TaskNode[];
+  description?: string;
 }
 
 export interface HoveredData {
@@ -100,46 +101,70 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
           onPointerOut={handlePointerOut}
           onPointerMove={handlePointerMove}
         >
-          {/* Main Leaf Cluster */}
+          {/* Main Faceted Leaf Cluster */}
           <mesh castShadow>
-            <sphereGeometry args={[radius * 2.5 * (node.progress + 0.5), 10, 10]} />
+            <dodecahedronGeometry args={[radius * 2.6 * (node.progress + 0.5), 1]} />
             <meshStandardMaterial
               color={leafColor}
-              roughness={0.8}
+              roughness={0.9}
+              flatShading
               emissive={leafColor}
               emissiveIntensity={isHovered ? 0.35 : node.progress * 0.12}
             />
           </mesh>
           {/* Top Leaf Cluster */}
-          <mesh castShadow position={[0, radius * 1.2, 0]}>
-            <sphereGeometry args={[radius * 1.8 * (node.progress + 0.5), 8, 8]} />
+          <mesh castShadow position={[0, radius * 1.3, 0]}>
+            <dodecahedronGeometry args={[radius * 1.9 * (node.progress + 0.5), 1]} />
             <meshStandardMaterial
               color={leafColor}
-              roughness={0.8}
+              roughness={0.9}
+              flatShading
               emissive={leafColor}
               emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
             />
           </mesh>
           {/* Left Leaf Cluster */}
-          <mesh castShadow position={[-radius * 1.3, 0, 0]}>
-            <sphereGeometry args={[radius * 1.6 * (node.progress + 0.5), 8, 8]} />
+          <mesh castShadow position={[-radius * 1.4, 0, 0]}>
+            <dodecahedronGeometry args={[radius * 1.7 * (node.progress + 0.5), 1]} />
             <meshStandardMaterial
               color={leafColor}
-              roughness={0.8}
+              roughness={0.9}
+              flatShading
               emissive={leafColor}
               emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
             />
           </mesh>
           {/* Back Leaf Cluster */}
-          <mesh castShadow position={[0, -radius * 0.3, -radius * 1.1]}>
-            <sphereGeometry args={[radius * 1.5 * (node.progress + 0.5), 8, 8]} />
+          <mesh castShadow position={[0, -radius * 0.3, -radius * 1.2]}>
+            <dodecahedronGeometry args={[radius * 1.6 * (node.progress + 0.5), 1]} />
             <meshStandardMaterial
               color={leafColor}
-              roughness={0.8}
+              roughness={0.9}
+              flatShading
               emissive={leafColor}
               emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
             />
           </mesh>
+
+          {/* Stylized hanging fruits (Apples/Peaches) */}
+          {[[0.2, 0.1, 0.2], [-0.2, -0.1, 0.2], [0.3, -0.2, -0.2], [-0.3, 0.2, -0.3]].map((fPos, fIdx) => {
+            const isRedApple = !node.id.includes('issue'); // Apple tree on PRs, peach tree on Issues
+            const fruitColor = isRedApple ? '#e74c3c' : '#e67e22';
+            return (
+              <mesh
+                key={`fruit-${fIdx}`}
+                position={[
+                  fPos[0] * radius * 3.2 * (node.progress + 0.5),
+                  fPos[1] * radius * 3.2 * (node.progress + 0.5) - 0.2,
+                  fPos[2] * radius * 3.2 * (node.progress + 0.5),
+                ]}
+                castShadow
+              >
+                <sphereGeometry args={[radius * 0.45 * (node.progress + 0.5), 6, 6]} />
+                <meshStandardMaterial color={fruitColor} roughness={0.3} />
+              </mesh>
+            );
+          })}
         </group>
       ) : (
         // Sprout child branches

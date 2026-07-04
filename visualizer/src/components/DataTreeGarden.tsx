@@ -1,85 +1,143 @@
-import { useState, useMemo, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, ContactShadows } from '@react-three/drei';
+import { useRef, useState, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { ContactShadows, OrbitControls } from '@react-three/drei';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { DataTree } from './DataTree';
 import type { TaskNode, HoveredData } from './DataTree';
-import { Well, RoseBush, SpikyWeed, GardenGnome, Fence, GrassTuft, Lantern, Chicken, WoodenBarrel, CropCrate, Wildflower } from './ProceduralAssets';
+import {
+  Well,
+  RoseBush,
+  SpikyWeed,
+  GardenGnome,
+  Fence,
+  GrassTuft,
+  Lantern,
+  Chicken,
+  WoodenBarrel,
+  CropCrate,
+  Wildflower,
+  ChickenCoop,
+} from './ProceduralAssets';
 import { WeatherSystem } from './WeatherSystem';
 
-interface DTONode {
-  id: string;
-  type: string;
-  name: string;
-  attributes: {
-    status?: string;
-    riskProbability?: number;
-    priority?: string;
-    [key: string]: any;
-  };
-}
-
 interface DataTreeGardenProps {
-  active: boolean;
-  crr: number | undefined;
-  projectName: string | undefined;
-  graph: { nodes: any[]; edges: any[] } | undefined;
-  opponentLimit: number;
-  eventCount: number;
-  onSelectNode: (node: any) => void;
-  sprintVelocity: number | undefined;
-  uiVisible: boolean;
+  graph: any;
+  crr?: number;
+  projectName?: string;
+  uiVisible?: boolean;
+  [key: string]: any; // Allow other DTO props passed from App.tsx
 }
 
+// ─── OPTIMIZED INSTANCED GRASS COMPONENT ─────────────────────────────
+function InstancedGrass() {
+  const count = 1200;
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  // Compute static positions and sway frequencies for each grass blade
+  const [positions, rotations] = useMemo(() => {
+    const posList: [number, number, number][] = [];
+    const rotList: number[] = [];
+    for (let i = 0; i < count; i++) {
+      // Scatter grass blades over a 34x34 lawn
+      let x = (Math.random() - 0.5) * 34;
+      let z = (Math.random() - 0.5) * 34;
+
+      // Keep them outside the central dark soil bed (which is 13.5x11.5)
+      if (Math.abs(x) < 7.2 && Math.abs(z) < 6.2) {
+        if (Math.random() > 0.5) {
+          x += x > 0 ? 7.2 : -7.2;
+        } else {
+          z += z > 0 ? 6.2 : -6.2;
+        }
+      }
+      posList.push([x, 0.02, z]);
+      rotList.push((Math.random() - 0.5) * 0.35); // Random base tilt
+    }
+    return [posList, rotList];
+  }, [count]);
+
+  useFrame((state) => {
+    if (!meshRef.current) return;
+    const time = state.clock.getElapsedTime();
+
+    for (let i = 0; i < count; i++) {
+      const [x, y, z] = positions[i];
+      const baseRot = rotations[i];
+
+      // Soft wave sway based on time and coordinate position (wind ripple effect)
+      const sway = Math.sin(time * 1.8 + x * 0.4 + z * 0.2) * 0.09;
+
+      dummy.position.set(x, y, z);
+      dummy.rotation.set(baseRot + sway, baseRot * 0.5, baseRot);
+      
+      // Slightly scale grass blade height randomly for natural variance
+      const scaleY = 0.95 + Math.sin(i * 45) * 0.3;
+      dummy.scale.set(0.75, scaleY, 0.75);
+      
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  });
+
+  return (
+    <instancedMesh ref={meshRef} args={[null as any, null as any, count]} castShadow receiveShadow>
+      <coneGeometry args={[0.016, 0.26, 3]} />
+      <meshStandardMaterial roughness={0.9} color="#3d5c36" flatShading />
+    </instancedMesh>
+  );
+}
+
+// ─── MAIN DIGITAL TWIN GARDEN VIEWPORT ───────────────────────────────
 export function DataTreeGarden({
-  active,
+  graph,
   crr,
   projectName,
-  graph,
-  onSelectNode,
-  uiVisible,
+  uiVisible = true,
 }: DataTreeGardenProps) {
   const [hoveredInfo, setHoveredInfo] = useState<HoveredData | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const currentCrr = crr ?? 1.25;
-  const isRainy = currentCrr < 1.0; // Trigger rain during warnings or low CRR
+  const isRainy = currentCrr < 1.0; // Trigger rain during warning periods
 
-  // Base grass color shifts from lush green to dry autumn straw based on CRR health
+  // Base grass color shifts from lush deep green to dry straw based on CRR health
   const grassColor = useMemo(() => {
-    const lush = new THREE.Color('#4c7243');
-    const dry = new THREE.Color('#948560');
+    const lush = new THREE.Color('#223a1a'); // Deep muted green
+    const dry = new THREE.Color('#615233');
     const factor = Math.min(Math.max((currentCrr - 0.7) / 0.8, 0), 1);
     return dry.lerp(lush, factor).getStyle();
   }, [currentCrr]);
 
-  // Generate static coordinates for 150 grass tufts distributed in the garden
+  // Static tufts scatter (fewer than grass blades, for detailed clover/flower clumps)
   const grassTufts = useMemo(() => {
     const tufts: [number, number, number][] = [];
-    for (let i = 0; i < 120; i++) {
-      let x = (Math.random() - 0.5) * 15;
-      let z = (Math.random() - 0.5) * 13;
-      // Avoid well area
-      if (Math.abs(x) < 1.2 && Math.abs(z) < 1.2) {
-        x += 1.5;
-        z += 1.5;
+    for (let i = 0; i < 90; i++) {
+      let x = (Math.random() - 0.5) * 28;
+      let z = (Math.random() - 0.5) * 28;
+      // Avoid center raised bed
+      if (Math.abs(x) < 7.0 && Math.abs(z) < 6.0) {
+        x += x > 0 ? 7.0 : -7.0;
+        z += z > 0 ? 6.0 : -6.0;
       }
       tufts.push([x, 0.01, z]);
     }
     return tufts;
   }, []);
 
-  // Generate static coordinates for 40 wildflowers scattered in the garden
+  // Generate static coordinates for 40 wildflowers scattered in the grass
   const wildflowers = useMemo(() => {
     const flowers: { pos: [number, number, number]; color: string }[] = [];
-    const colors = ['#ffffff', '#e74c3c', '#f1c40f', '#e84393']; // White, red, yellow, pink
-    for (let i = 0; i < 45; i++) {
-      let x = (Math.random() - 0.5) * 14;
-      let z = (Math.random() - 0.5) * 12;
-      // Avoid well
-      if (Math.abs(x) < 1.2 && Math.abs(z) < 1.2) {
-        x += 1.3;
-        z += 1.3;
+    const colors = ['#ffffff', '#e74c3c', '#f1c40f', '#9b59b6']; // White, red, yellow, purple
+    for (let i = 0; i < 40; i++) {
+      let x = (Math.random() - 0.5) * 26;
+      let z = (Math.random() - 0.5) * 26;
+      // Avoid center soil bed
+      if (Math.abs(x) < 7.0 && Math.abs(z) < 6.0) {
+        x += x > 0 ? 7.0 : -7.0;
+        z += z > 0 ? 6.0 : -6.0;
       }
       flowers.push({
         pos: [x, 0.015, z],
@@ -96,88 +154,93 @@ export function DataTreeGarden({
     const prs: any[] = [];
     const issues: any[] = [];
 
-    let totalPrProgress = 0;
-    let totalPrRisk = 0;
-    let totalIssueProgress = 0;
-    let totalIssueRisk = 0;
-
-    // Distribute PR bushes to the left, Issue weeds to the right
-    graph.nodes.forEach((node: DTONode, index: number) => {
-      const status = (node.attributes?.status || '').toLowerCase();
-      const risk = node.attributes?.riskProbability ?? 0.3;
-
-      let progress = 0;
-      if (node.type === 'pr') {
-        if (status === 'approved' || status === 'completed') progress = 1.0;
-        else if (status === 'under review') progress = 0.5;
-        else progress = 0.15; // draft
-
-        totalPrProgress += progress;
-        totalPrRisk += risk;
-
-        // Position spread left-front
-        const angle = (index * 0.7) + 1.2;
-        const radius = 3.5 + (index % 3) * 0.75;
-        prs.push({
-          node: { id: node.id, title: node.name, progress, complexity: 1, risk },
-          position: [Math.sin(angle) * -radius, 0, Math.cos(angle) * radius] as [number, number, number],
-          status,
-        });
-      } else if (node.type === 'issue') {
-        if (status === 'completed' || status === 'done' || status === 'closed') progress = 1.0;
-        else if (status === 'active' || status === 'in progress') progress = 0.4;
-        else progress = 0.0; // backlog
-
-        totalIssueProgress += progress;
-        totalIssueRisk += risk;
-
-        // Position spread right-front
-        const angle = (index * 0.7) + 1.2;
-        const radius = 3.5 + (index % 3) * 0.75;
-        issues.push({
-          node: { id: node.id, title: node.name, progress, complexity: 1, risk },
-          position: [Math.sin(angle) * radius, 0, Math.cos(angle) * radius] as [number, number, number],
-          status,
-        });
-      }
-    });
-
-    const prCount = prs.length || 1;
-    const issueCount = issues.length || 1;
-
-    const avgPrProgress = totalPrProgress / prCount;
-    const avgPrRisk = totalPrRisk / prCount;
-    const avgIssueProgress = totalIssueProgress / issueCount;
-    const avgIssueRisk = totalIssueRisk / issueCount;
-
-    // Create Epics (represented by Data Trees)
-    const epicPRs: TaskNode = {
-      id: 'epic-prs',
-      title: 'Pull Requests Category Tree',
-      progress: avgPrProgress,
-      complexity: 3,
-      risk: avgPrRisk,
-      subtasks: prs.map(p => p.node),
+    // Helper to map flat nodes to coordinates (within central raised soil bed)
+    const getPlotPosition = (index: number, total: number, offsetSide: 'left' | 'right') => {
+      // Distribute in a small grid within the raised bed (size 14x12)
+      const count = total || 1;
+      const angle = (index / count) * Math.PI * 1.5;
+      const radius = 2.0 + Math.sin(index * 2) * 0.8;
+      
+      const xSign = offsetSide === 'left' ? -1 : 1;
+      const x = xSign * (radius * Math.cos(angle) + 2.5);
+      const z = radius * Math.sin(angle) * 0.9;
+      return [x, 0.01, z] as [number, number, number];
     };
 
-    const epicIssues: TaskNode = {
-      id: 'epic-issues',
-      title: 'Backlog Issues Category Tree',
-      progress: avgIssueProgress,
-      complexity: 3,
-      risk: avgIssueRisk,
-      subtasks: issues.map(i => i.node),
+    // Find Root/Epic tasks
+    const epicPRNode = graph.nodes.find((n: any) => n.type === 'PR' && n.category === 'epic');
+    const epicIssueNode = graph.nodes.find((n: any) => n.type === 'Issue' && n.category === 'epic');
+
+    // Filter child nodes
+    const prNodes = graph.nodes.filter((n: any) => n.type === 'PR' && n.category !== 'epic');
+    const issueNodes = graph.nodes.filter((n: any) => n.type === 'Issue' && n.category !== 'epic');
+
+    prNodes.forEach((node: any, idx: number) => {
+      prs.push({
+        position: getPlotPosition(idx, prNodes.length, 'left'),
+        status: node.status,
+        node: {
+          id: node.id,
+          title: node.label,
+          progress: node.metrics.completion,
+          complexity: node.metrics.complexity,
+          risk: node.metrics.risk
+        }
+      });
+    });
+
+    issueNodes.forEach((node: any, idx: number) => {
+      issues.push({
+        position: getPlotPosition(idx, issueNodes.length, 'right'),
+        status: node.status,
+        node: {
+          id: node.id,
+          title: node.label,
+          progress: node.metrics.completion,
+          complexity: node.metrics.complexity,
+          risk: node.metrics.risk
+        }
+      });
+    });
+
+    // Create default Virtual Epic if missing (ensures L-system Trees render)
+    const epicPRs: TaskNode = epicPRNode ? {
+      id: epicPRNode.id,
+      title: epicPRNode.label,
+      progress: epicPRNode.metrics.completion,
+      complexity: epicPRNode.metrics.complexity,
+      risk: epicPRNode.metrics.risk,
+      subtasks: prs.map(p => p.node)
+    } : {
+      id: 'epic-pr-virtual',
+      title: 'Pull Requests Root',
+      progress: 0.85,
+      complexity: 0.9,
+      risk: 0.1,
+      subtasks: prs.map(p => p.node)
+    };
+
+    const epicIssues: TaskNode = epicIssueNode ? {
+      id: epicIssueNode.id,
+      title: epicIssueNode.label,
+      progress: epicIssueNode.metrics.completion,
+      complexity: epicIssueNode.metrics.complexity,
+      risk: epicIssueNode.metrics.risk,
+      subtasks: issues.map(i => i.node)
+    } : {
+      id: 'epic-issue-virtual',
+      title: 'Active Issues Root',
+      progress: 0.35,
+      complexity: 0.7,
+      risk: 0.65,
+      subtasks: issues.map(i => i.node)
     };
 
     return { prs, issues, epicPRs, epicIssues };
   }, [graph]);
 
-  if (!active) return null;
-
   const handleCanvasClick = () => {
-    if (hoveredInfo) {
-      onSelectNode(hoveredInfo.node);
-    }
+    if (hoveredInfo) setHoveredInfo(null);
   };
 
   return (
@@ -187,44 +250,52 @@ export function DataTreeGarden({
         width: '100%',
         height: '100%',
         position: 'relative',
-        background: isRainy ? '#b0b5b2' : '#f5f2ee', // Greyish sky tone if rainy
+        background: isRainy
+          ? '#a8b0ad'
+          : 'linear-gradient(to top, #fff3d1, #a1c4fd)', // Warm morning sunset gradient
         overflow: 'hidden',
       }}
     >
       <Canvas
         camera={{ position: [0, 8, 12], fov: 45 }}
         shadows
+        gl={{
+          antialias: true,
+          toneMapping: THREE.ACESFilmicToneMapping, // ACESFilmic tone mapping
+          toneMappingExposure: 1.15,
+        }}
         onClick={handleCanvasClick}
       >
-        {/* Volumetric Scenic Fog */}
-        <fogExp2 attach="fog" args={[isRainy ? '#a8b0ad' : '#fdfbf7', isRainy ? 0.022 : 0.012]} />
+        {/* Atmospheric Volumetric Fog */}
+        <fogExp2 attach="fog" args={[isRainy ? '#a8b0ad' : '#fdfbf7', isRainy ? 0.022 : 0.01]} />
 
-        <ambientLight intensity={isRainy ? 0.4 : 0.65} />
-        
-        {/* Directional Sunlight / Moon light */}
+        {/* Lighting setup based on instruction.md */}
+        <hemisphereLight color="#a1c4fd" groundColor="#223a1a" intensity={0.95} />
+
         <directionalLight
-          position={[6, 12, 4]}
-          intensity={isRainy ? 0.7 : 1.6}
+          position={[15, 20, 10]}
+          intensity={2.8}
           castShadow
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
           shadow-bias={-0.0001}
-          color={isRainy ? '#cbd6db' : '#fffdf0'}
+          color="#fff3d1" // Warm golden hour yellow
         />
 
-        <pointLight position={[-8, 6, -8]} intensity={0.3} color="#ebd0b5" />
+        {/* Secondary soft point fill light */}
+        <pointLight position={[-8, 6, -8]} intensity={0.5} color="#fffdf0" />
 
         {/* 1. Central Core Well representing CRR */}
         <Well position={[0, 0, 0]} crr={currentCrr} projectName={projectName} onHover={setHoveredInfo} />
 
         {/* 2. Procedural Epic DataTrees (left and right) */}
         {gardenElements.epicPRs && (
-          <group position={[-3, 0, -2]}>
+          <group position={[-3.6, 0, -1.8]}>
             <DataTree data={gardenElements.epicPRs} onHover={setHoveredInfo} />
           </group>
         )}
         {gardenElements.epicIssues && (
-          <group position={[3, 0, -2]}>
+          <group position={[3.6, 0, -1.8]}>
             <DataTree data={gardenElements.epicIssues} onHover={setHoveredInfo} />
           </group>
         )}
@@ -274,7 +345,7 @@ export function DataTreeGarden({
           onHover={setHoveredInfo}
         />
 
-        {/* 6. Picket Fences Borders */}
+        {/* 6. Picket Fences Borders (crooked hand-built look) */}
         {/* Back Border */}
         <Fence position={[-4.5, 0, -6.5]} />
         <Fence position={[-3, 0, -6.5]} />
@@ -327,6 +398,9 @@ export function DataTreeGarden({
         <CropCrate position={[-1.2, 0, 0.8]} />
         <CropCrate position={[1.2, 0, 0.8]} />
 
+        {/* Chicken Coop Cozy Centerpiece */}
+        <ChickenCoop position={[4.0, 0, 3.0]} />
+
         {/* Animated Pecking Chickens */}
         <Chicken position={[-1.8, 0.01, 1.5]} speed={0.95} phase={0} />
         <Chicken position={[1.5, 0.01, 2.8]} speed={0.8} phase={2.5} />
@@ -342,127 +416,99 @@ export function DataTreeGarden({
           <GrassTuft key={`tuft-${idx}`} position={pos} />
         ))}
 
-        {/* Grass Terrain Base Plane */}
+        {/* Instanced Grass scatter for heavy foliage texture (1200 blades) */}
+        <InstancedGrass />
+
+        {/* Central Raised Soil Bed (Dark, organic earth brown #2c1d11) */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]} receiveShadow>
+          <planeGeometry args={[13.5, 11.5]} />
+          <meshStandardMaterial color="#2c1d11" roughness={1.0} />
+        </mesh>
+
+        {/* Surrounding Outer Grass Terrain Base Plane (Deep muted green #223a1a) */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-          <planeGeometry args={[40, 40]} />
-          <meshStandardMaterial
-            color={grassColor}
-            roughness={0.95}
-          />
+          <planeGeometry args={[45, 45]} />
+          <meshStandardMaterial color={grassColor} roughness={1.0} />
         </mesh>
 
         {/* Soft Shadow Layer */}
         <ContactShadows
           position={[0, 0, 0]}
-          opacity={0.3}
-          scale={15}
+          opacity={0.35}
+          scale={16}
           blur={1.6}
-          far={4.0}
+          far={4.5}
         />
 
+        {/* Post-Processing Composer (Dreamy Bloom Glow) */}
+        <EffectComposer>
+          <Bloom luminanceThreshold={0.28} intensity={0.95} />
+        </EffectComposer>
+
+        {/* Camera Interactive Controls */}
         <OrbitControls
-          makeDefault
-          maxPolarAngle={Math.PI / 2 - 0.08}
-          minDistance={3.5}
-          maxDistance={22}
+          enableDamping
+          dampingFactor={0.05}
+          maxPolarAngle={Math.PI / 2 - 0.05} // Prevent camera from going under ground
+          minDistance={3}
+          maxDistance={24}
         />
       </Canvas>
 
-      {/* Screen-space Raycast HUD Overlay Tooltip Card */}
-      {uiVisible && hoveredInfo && (
+      {/* Floating Hover Details Card Overlay */}
+      {hoveredInfo && uiVisible && (
         <div
+          className="glass-card item-hover-card"
           style={{
             position: 'absolute',
-            left: hoveredInfo.x + 20,
+            left: hoveredInfo.x + 15,
             top: hoveredInfo.y + 15,
+            zIndex: 1000,
             pointerEvents: 'none',
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid #e8e4df',
-            borderRadius: '12px',
-            padding: '14px',
-            color: '#1b1b22',
-            boxShadow: '0 8px 32px rgba(68, 80, 183, 0.08)',
-            zIndex: 100,
-            width: '240px',
-            fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-            transition: 'opacity 0.15s ease',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-            <span
-              style={{
-                fontSize: '9px',
-                fontWeight: 800,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                color: hoveredInfo.node.id === 'well-core' 
-                  ? '#8e44ad' 
-                  : hoveredInfo.node.id.startsWith('epic-') 
-                    ? 'var(--secondary)' 
-                    : hoveredInfo.node.id.includes('-pr') 
-                      ? 'var(--primary)' 
-                      : 'var(--error)',
-                background: hoveredInfo.node.id === 'well-core'
-                  ? 'rgba(142, 68, 173, 0.08)'
-                  : hoveredInfo.node.id.startsWith('epic-')
-                    ? 'rgba(132, 85, 255, 0.08)'
-                    : hoveredInfo.node.id.includes('-pr')
-                      ? 'rgba(68, 80, 183, 0.08)'
-                      : 'rgba(186, 26, 26, 0.08)',
-                padding: '3px 6px',
-                borderRadius: '6px',
-              }}
-            >
-              {hoveredInfo.node.id === 'well-core' 
-                ? 'World Health Core' 
-                : hoveredInfo.node.id.startsWith('epic-') 
-                  ? 'Epic Category' 
-                  : hoveredInfo.node.id.includes('-pr') 
-                    ? 'Pull Request' 
-                    : 'Backlog Issue'}
-            </span>
-            <span style={{ fontSize: '10px', color: '#888', fontFamily: 'var(--mono-font)' }}>
-              {hoveredInfo.node.id === 'well-core' ? '' : hoveredInfo.node.id}
-            </span>
+          <div className="hover-header">
+            <h4>{hoveredInfo.node.title}</h4>
+            {hoveredInfo.node.id !== 'well-core' &&
+              !hoveredInfo.node.id.startsWith('gnome-') && (
+                <span className="node-id-tag">{hoveredInfo.node.id}</span>
+              )}
           </div>
-
-          <div style={{ fontWeight: 800, fontSize: '13px', color: '#1b1b22', lineHeight: '1.4', marginBottom: '8px' }}>
-            {hoveredInfo.node.title}
-          </div>
-
-          {/* Progress Bar HUD */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#454652', marginBottom: '6px' }}>
-            <span style={{ width: '55px', fontWeight: 600 }}>
-              {hoveredInfo.node.id === 'well-core' ? 'CRR Index:' : 'Progress:'}
-            </span>
-            <div style={{ flexGrow: 1, background: '#e8e4df', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
-              <div
-                style={{
-                  width: `${hoveredInfo.node.progress * 100}%`,
-                  background: hoveredInfo.node.progress > 0.5 ? 'var(--success)' : 'var(--error)',
-                  height: '100%',
-                }}
-              />
-            </div>
-            <span style={{ fontWeight: 700 }}>
-              {hoveredInfo.node.id === 'well-core' 
-                ? `${(hoveredInfo.node.progress * 2).toFixed(2)}x`
-                : `${Math.round(hoveredInfo.node.progress * 100)}%`}
-            </span>
-          </div>
-
-          {/* Risk Level HUD */}
-          <div style={{ fontSize: '11px', display: 'flex', justifyContent: 'space-between', color: '#454652' }}>
-            <span style={{ fontWeight: 600 }}>Risk Factor:</span>
-            <span
-              style={{
-                color: hoveredInfo.node.risk > 0.6 ? 'var(--error)' : hoveredInfo.node.risk > 0.35 ? '#d35400' : 'var(--success)',
-                fontWeight: 800,
-              }}
-            >
-              {(hoveredInfo.node.risk * 10).toFixed(1)} / 10
-            </span>
+          <div className="hover-body">
+            {hoveredInfo.node.description ? (
+              <p className="hover-desc">{hoveredInfo.node.description}</p>
+            ) : (
+              <div className="hover-metrics">
+                <div className="metric-row">
+                  <span>Progress:</span>
+                  <div className="progress-bar-container">
+                    <div
+                      className="progress-bar-fill"
+                      style={{ width: `${hoveredInfo.node.progress * 100}%` }}
+                    ></div>
+                  </div>
+                  <span className="metric-pct">
+                    {Math.round(hoveredInfo.node.progress * 100)}%
+                  </span>
+                </div>
+                <div className="metric-row">
+                  <span>Complexity:</span>
+                  <span className="metric-badge complexity-badge">
+                    {hoveredInfo.node.complexity.toFixed(2)}
+                  </span>
+                </div>
+                <div className="metric-row">
+                  <span>Risk Factor:</span>
+                  <span
+                    className={`metric-badge risk-badge ${
+                      hoveredInfo.node.risk > 0.5 ? 'risk-high' : 'risk-low'
+                    }`}
+                  >
+                    {hoveredInfo.node.risk.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

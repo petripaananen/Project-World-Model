@@ -24,7 +24,6 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
     const healthy = new THREE.Color('#3498db'); // Lush cyan-blue
     const warning = new THREE.Color('#e74c3c'); // Warning red
     // crr < 1.0 is healthy (Optimal)
-    // crr >= 1.0 is warning
     const f = Math.min(Math.max((crr - 0.7) / 0.5, 0), 1);
     return healthy.clone().lerp(warning, f);
   }, [crr]);
@@ -113,7 +112,7 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
         <meshStandardMaterial color="#627072" roughness={0.9} />
       </mesh>
 
-      {/* Water Plane (Static: no pulsating updates) */}
+      {/* Water Plane */}
       <mesh position={[0, 0.32, 0]}>
         <cylinderGeometry args={[0.72, 0.72, 0.08, 12]} />
         <meshStandardMaterial
@@ -138,25 +137,25 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
       {/* Mossy Climbing Vines on Beams */}
       <group position={[-0.65, 0.85, 0]}>
         <mesh position={[0.06, -0.2, 0.02]} castShadow>
-          <sphereGeometry args={[0.06, 6, 6]} />
+          <dodecahedronGeometry args={[0.06, 0]} />
           <meshStandardMaterial color="#27ae60" roughness={0.95} />
         </mesh>
         <mesh position={[-0.04, 0.1, 0.05]} castShadow>
-          <sphereGeometry args={[0.07, 6, 6]} />
+          <dodecahedronGeometry args={[0.07, 0]} />
           <meshStandardMaterial color="#1e824c" roughness={0.95} />
         </mesh>
         <mesh position={[0.05, 0.35, -0.04]} castShadow>
-          <sphereGeometry args={[0.05, 6, 6]} />
+          <dodecahedronGeometry args={[0.05, 0]} />
           <meshStandardMaterial color="#2ecc71" roughness={0.95} />
         </mesh>
       </group>
       <group position={[0.65, 0.85, 0]}>
         <mesh position={[-0.06, -0.15, -0.03]} castShadow>
-          <sphereGeometry args={[0.065, 6, 6]} />
+          <dodecahedronGeometry args={[0.065, 0]} />
           <meshStandardMaterial color="#27ae60" roughness={0.95} />
         </mesh>
         <mesh position={[0.04, 0.15, 0.04]} castShadow>
-          <sphereGeometry args={[0.055, 6, 6]} />
+          <dodecahedronGeometry args={[0.055, 0]} />
           <meshStandardMaterial color="#1e824c" roughness={0.95} />
         </mesh>
       </group>
@@ -208,7 +207,7 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
   );
 }
 
-// ─── 2. Fluffy Rose Bush (Pull Request) ──────────────────────────────
+// ─── 2. Fluffy Faceted Rose Bush (Pull Request) ──────────────────────
 interface BushProps extends AssetProps {
   status: string; // 'approved', 'under review', 'draft'
 }
@@ -227,9 +226,9 @@ export function RoseBush({ position, status, node, onHover, onClick }: BushProps
 
   const baseColor = useMemo(() => {
     const s = status.toLowerCase();
-    if (s === 'approved' || s === 'completed') return new THREE.Color('#27ae60'); // Healthy green
-    if (s === 'under review' || s === 'pending') return new THREE.Color('#f39c12'); // Amber gold
-    return new THREE.Color('#7f8c8d'); // Draft grey
+    if (s === 'approved' || s === 'completed') return new THREE.Color('#2ecc71'); // Vibrant green
+    if (s === 'under review' || s === 'pending') return new THREE.Color('#f1c40f'); // Golden yellow
+    return new THREE.Color('#95a5a6'); // Light grey
   }, [status]);
 
   const handlePointerOver = (e: any) => {
@@ -260,26 +259,26 @@ export function RoseBush({ position, status, node, onHover, onClick }: BushProps
       onPointerOut={handlePointerOut}
       onPointerMove={handlePointerMove}
     >
-      {/* 5-Sphere Organic Fluffy Cloud Foliage */}
+      {/* 5-Dodecahedron Faceted Organic Foliage (Hay Day style) */}
       <mesh castShadow position={[0, 0.32, 0]}>
-        <sphereGeometry args={[0.36, 10, 10]} />
-        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
+        <dodecahedronGeometry args={[0.36, 1]} />
+        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} flatShading />
       </mesh>
       <mesh castShadow position={[0.12, 0.42, -0.08]}>
-        <sphereGeometry args={[0.26, 8, 8]} />
-        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
+        <dodecahedronGeometry args={[0.26, 1]} />
+        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} flatShading />
       </mesh>
       <mesh castShadow position={[-0.12, 0.4, 0.08]}>
-        <sphereGeometry args={[0.24, 8, 8]} />
-        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
+        <dodecahedronGeometry args={[0.24, 1]} />
+        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} flatShading />
       </mesh>
       <mesh castShadow position={[0.08, 0.28, 0.12]}>
-        <sphereGeometry args={[0.22, 8, 8]} />
-        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
+        <dodecahedronGeometry args={[0.22, 1]} />
+        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} flatShading />
       </mesh>
       <mesh castShadow position={[-0.1, 0.28, -0.1]}>
-        <sphereGeometry args={[0.2, 8, 8]} />
-        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
+        <dodecahedronGeometry args={[0.2, 1]} />
+        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} flatShading />
       </mesh>
 
       {/* Tiny colorful blooms */}
@@ -334,7 +333,7 @@ export function SpikyWeed({ position, status, node, onHover, onClick }: WeedProp
   const baseColor = useMemo(() => {
     const s = status.toLowerCase();
     if (s === 'backlog') return new THREE.Color('#9c9892'); // Dry grey weed
-    return new THREE.Color('#ba1a1a'); // Active red critical weed
+    return new THREE.Color('#e74c3c'); // Active red critical weed
   }, [status]);
 
   const handlePointerOver = (e: any) => {
@@ -392,11 +391,11 @@ export function SpikyWeed({ position, status, node, onHover, onClick }: WeedProp
   );
 }
 
-// ─── 4. Garden Gnome (Replaces rapidly moving Bee/Butterfly) ──────────
+// ─── 4. Garden Gnome (Interactive Static Agent) ──────────────────────
 interface GnomeProps {
   position: [number, number, number];
   color: string;
-  name: string; // e.g. "Worker Gnome", "Critic Gnome", "Opponent Gnome"
+  name: string;
   role: string;
   onHover?: (data: HoveredData | null) => void;
   onClick?: () => void;
@@ -548,6 +547,20 @@ export function Fence({ position, rotation = [0, 0, 0] }: FenceProps) {
           </group>
         );
       })}
+
+      {/* Climbing morning glory vine details at base (Fidelity upgrade) */}
+      {[-0.5, 0, 0.5].map((vx, vi) => (
+        <group key={`vine-${vi}`} position={[vx, 0.08, 0.02]}>
+          <mesh>
+            <sphereGeometry args={[0.04, 4, 4]} />
+            <meshStandardMaterial color="#27ae60" roughness={0.9} />
+          </mesh>
+          <mesh position={[0.03, 0.03, 0.02]} rotation={[Math.PI / 6, 0, 0]}>
+            <coneGeometry args={[0.035, 0.07, 5]} />
+            <meshStandardMaterial color="#9b59b6" roughness={0.7} />
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }
@@ -764,6 +777,55 @@ export function Wildflower({ position, color = '#ffffff' }: { position: [number,
           <meshStandardMaterial color={color} roughness={0.8} />
         </mesh>
       ))}
+    </group>
+  );
+}
+
+// ─── 12. Chicken Coop (Farming aesthetic centerpiece) ───────────────
+export function ChickenCoop({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* Main Red Barnwood House */}
+      <mesh position={[0, 0.38, 0]} castShadow>
+        <boxGeometry args={[0.85, 0.65, 0.65]} />
+        <meshStandardMaterial color="#b23b3b" roughness={0.85} />
+      </mesh>
+
+      {/* White Corner Trim */}
+      <mesh position={[0, 0.71, 0]} castShadow>
+        <boxGeometry args={[0.9, 0.03, 0.69]} />
+        <meshStandardMaterial color="#f5f6fa" roughness={0.8} />
+      </mesh>
+
+      {/* A-Frame Roof (Cozy shingled look) */}
+      <mesh position={[0, 0.82, 0]} rotation={[0, 0, Math.PI / 4]} castShadow>
+        <boxGeometry args={[0.62, 0.62, 0.7]} />
+        <meshStandardMaterial color="#d35400" roughness={0.9} flatShading />
+      </mesh>
+
+      {/* Ramp leading down */}
+      <mesh position={[-0.45, 0.15, 0.12]} rotation={[0, 0, 0.52]} castShadow>
+        <boxGeometry args={[0.42, 0.024, 0.18]} />
+        <meshStandardMaterial color="#7f8c8d" roughness={0.9} />
+      </mesh>
+
+      {/* Ramp steps */}
+      {[-0.1, 0, 0.1].map((rx, idx) => (
+        <mesh key={idx} position={[-0.45 + rx, 0.18 + rx * 0.5, 0.12]} castShadow>
+          <boxGeometry args={[0.015, 0.015, 0.16]} />
+          <meshStandardMaterial color="#2f3640" />
+        </mesh>
+      ))}
+
+      {/* Stilts Legs */}
+      {[-0.32, 0.32].map((x) =>
+        [-0.22, 0.22].map((z) => (
+          <mesh key={`${x}-${z}`} position={[x, 0.1, z]} castShadow>
+            <cylinderGeometry args={[0.03, 0.03, 0.2, 6]} />
+            <meshStandardMaterial color="#2f3640" roughness={0.9} />
+          </mesh>
+        ))
+      )}
     </group>
   );
 }
