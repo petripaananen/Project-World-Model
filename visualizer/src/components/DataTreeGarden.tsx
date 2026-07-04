@@ -4,7 +4,7 @@ import { OrbitControls, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { DataTree } from './DataTree';
 import type { TaskNode, HoveredData } from './DataTree';
-import { Well, RoseBush, SpikyWeed, Butterfly, Fence } from './ProceduralAssets';
+import { Well, RoseBush, SpikyWeed, Butterfly, Fence, GrassTuft, Lantern } from './ProceduralAssets';
 import { WeatherSystem } from './WeatherSystem';
 
 interface DTONode {
@@ -52,6 +52,22 @@ export function DataTreeGarden({
     const factor = Math.min(Math.max((currentCrr - 0.7) / 0.8, 0), 1);
     return dry.lerp(lush, factor).getStyle();
   }, [currentCrr]);
+
+  // Generate static coordinates for 150 grass tufts distributed in the garden
+  const grassTufts = useMemo(() => {
+    const tufts: [number, number, number][] = [];
+    for (let i = 0; i < 120; i++) {
+      let x = (Math.random() - 0.5) * 15;
+      let z = (Math.random() - 0.5) * 13;
+      // Avoid well area
+      if (Math.abs(x) < 1.2 && Math.abs(z) < 1.2) {
+        x += 1.5;
+        z += 1.5;
+      }
+      tufts.push([x, 0.01, z]);
+    }
+    return tufts;
+  }, []);
 
   // Extract PR and Issue nodes from flat graph
   const gardenElements = useMemo(() => {
@@ -160,6 +176,9 @@ export function DataTreeGarden({
         shadows
         onClick={handleCanvasClick}
       >
+        {/* Volumetric Scenic Fog */}
+        <fogExp2 attach="fog" args={[isRainy ? '#a8b0ad' : '#fdfbf7', isRainy ? 0.022 : 0.012]} />
+
         <ambientLight intensity={isRainy ? 0.4 : 0.65} />
         
         {/* Directional Sunlight / Moon light */}
@@ -235,6 +254,12 @@ export function DataTreeGarden({
         <Fence position={[3, 0, 6.5]} />
         <Fence position={[4.5, 0, 6.5]} />
 
+        {/* Fence Corner Glow Lanterns */}
+        <Lantern position={[-4.5, 0, -6.4]} />
+        <Lantern position={[4.5, 0, -6.4]} />
+        <Lantern position={[-4.5, 0, 6.4]} />
+        <Lantern position={[4.5, 0, 6.4]} />
+
         {/* 7. Flat Stepping Stones (Paths) */}
         {/* Path from Well to Left Tree */}
         <mesh position={[-1.0, 0.01, -0.65]} rotation={[-Math.PI / 2, 0, 0.4]}>
@@ -257,6 +282,11 @@ export function DataTreeGarden({
 
         {/* 8. Weather Effects System */}
         <WeatherSystem isRainy={isRainy} />
+
+        {/* Grass Blade Tufts scattered randomly */}
+        {grassTufts.map((pos, idx) => (
+          <GrassTuft key={`tuft-${idx}`} position={pos} />
+        ))}
 
         {/* Grass Terrain Base Plane */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>

@@ -94,21 +94,53 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
 
       {/* Sprout leaves at leaf node or max depth */}
       {depth === maxDepth || children.length === 0 ? (
-        <mesh
+        <group
           position={[0, length, 0]}
-          castShadow
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
           onPointerMove={handlePointerMove}
         >
-          <sphereGeometry args={[radius * 2.5 * (node.progress + 0.5), 8, 8]} />
-          <meshStandardMaterial
-            color={leafColor}
-            roughness={0.6}
-            emissive={leafColor}
-            emissiveIntensity={isHovered ? 0.4 : node.progress * 0.15}
-          />
-        </mesh>
+          {/* Main Leaf Cluster */}
+          <mesh castShadow>
+            <sphereGeometry args={[radius * 2.5 * (node.progress + 0.5), 10, 10]} />
+            <meshStandardMaterial
+              color={leafColor}
+              roughness={0.8}
+              emissive={leafColor}
+              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.12}
+            />
+          </mesh>
+          {/* Top Leaf Cluster */}
+          <mesh castShadow position={[0, radius * 1.2, 0]}>
+            <sphereGeometry args={[radius * 1.8 * (node.progress + 0.5), 8, 8]} />
+            <meshStandardMaterial
+              color={leafColor}
+              roughness={0.8}
+              emissive={leafColor}
+              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
+            />
+          </mesh>
+          {/* Left Leaf Cluster */}
+          <mesh castShadow position={[-radius * 1.3, 0, 0]}>
+            <sphereGeometry args={[radius * 1.6 * (node.progress + 0.5), 8, 8]} />
+            <meshStandardMaterial
+              color={leafColor}
+              roughness={0.8}
+              emissive={leafColor}
+              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
+            />
+          </mesh>
+          {/* Back Leaf Cluster */}
+          <mesh castShadow position={[0, -radius * 0.3, -radius * 1.1]}>
+            <sphereGeometry args={[radius * 1.5 * (node.progress + 0.5), 8, 8]} />
+            <meshStandardMaterial
+              color={leafColor}
+              roughness={0.8}
+              emissive={leafColor}
+              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
+            />
+          </mesh>
+        </group>
       ) : (
         // Sprout child branches
         <group position={[0, length, 0]}>
