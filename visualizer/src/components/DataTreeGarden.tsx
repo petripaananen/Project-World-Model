@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { ContactShadows, OrbitControls } from '@react-three/drei';
 import { EffectComposer, Bloom, SSAO } from '@react-three/postprocessing';
@@ -389,242 +389,244 @@ export function DataTreeGarden({
         }}
         onClick={handleCanvasClick}
       >
-        {/* Atmospheric Volumetric Fog */}
-        <fogExp2 attach="fog" args={[fogColor, fogDensity]} />
+        <Suspense fallback={null}>
+          {/* Atmospheric Volumetric Fog */}
+          <fogExp2 attach="fog" args={[fogColor, fogDensity]} />
 
-        {/* Lighting setup based on instruction.md */}
-        <hemisphereLight color="#a1c4fd" groundColor="#223a1a" intensity={0.95} />
+          {/* Lighting setup based on instruction.md */}
+          <hemisphereLight color="#a1c4fd" groundColor="#223a1a" intensity={0.95} />
 
-        {/* Step 3: Explicit shadow bounds & map size */}
-        <directionalLight
-          position={[15, 20, 10]}
-          intensity={2.8}
-          castShadow // Step 3: Enable directional light shadow mapping
-          shadow-mapSize={[2048, 2048]}
-          shadow-camera-far={50}
-          shadow-camera-left={-15}
-          shadow-camera-right={15}
-          shadow-camera-top={15}
-          shadow-camera-bottom={-15}
-          shadow-bias={-0.0001}
-          color={lightColor}
-        />
+          {/* Step 3: Explicit shadow bounds & map size */}
+          <directionalLight
+            position={[15, 20, 10]}
+            intensity={2.8}
+            castShadow // Step 3: Enable directional light shadow mapping
+            shadow-mapSize={[2048, 2048]}
+            shadow-camera-far={50}
+            shadow-camera-left={-15}
+            shadow-camera-right={15}
+            shadow-camera-top={15}
+            shadow-camera-bottom={-15}
+            shadow-bias={-0.0001}
+            color={lightColor}
+          />
 
-        {/* Secondary soft point fill light */}
-        <pointLight position={[-8, 6, -8]} intensity={0.5} color="#fffdf0" />
+          {/* Secondary soft point fill light */}
+          <pointLight position={[-8, 6, -8]} intensity={0.5} color="#fffdf0" />
 
-        {/* 1. Volumetric God Ray Sunbeams (Step 5) - Rendered for sunny weather only */}
-        {theme !== 'gamma' && <Sunbeams />}
+          {/* 1. Volumetric God Ray Sunbeams (Step 5) - Rendered for sunny weather only */}
+          {theme !== 'gamma' && <Sunbeams />}
 
-        {/* 2. Central Core Well representing CRR */}
-        <Well position={[0, 0, 0]} crr={currentCrr} projectName={projectName} onHover={setHoveredInfo} />
+          {/* 2. Central Core Well representing CRR */}
+          <Well position={[0, 0, 0]} crr={currentCrr} projectName={projectName} onHover={setHoveredInfo} />
 
-        {/* 3. Procedural Epic DataTrees (left and right) with theme styling */}
-        {gardenElements.epicPRs && (
-          <group position={[-3.6, 0, -1.8]}>
-            <DataTree data={gardenElements.epicPRs} onHover={setHoveredInfo} theme={theme} />
-          </group>
-        )}
-        {gardenElements.epicIssues && (
-          <group position={[3.6, 0, -1.8]}>
-            <DataTree data={gardenElements.epicIssues} onHover={setHoveredInfo} theme={theme} />
-          </group>
-        )}
+          {/* 3. Procedural Epic DataTrees (left and right) with theme styling */}
+          {gardenElements.epicPRs && (
+            <group position={[-3.6, 0, -1.8]}>
+              <DataTree data={gardenElements.epicPRs} onHover={setHoveredInfo} theme={theme} />
+            </group>
+          )}
+          {gardenElements.epicIssues && (
+            <group position={[3.6, 0, -1.8]}>
+              <DataTree data={gardenElements.epicIssues} onHover={setHoveredInfo} theme={theme} />
+            </group>
+          )}
 
-        {/* 4. Pull Request Bushes */}
-        {gardenElements.prs.map((p, idx) => (
-          <RoseBush
-            key={`pr-${idx}`}
-            position={p.position}
-            status={p.status}
-            node={p.node}
+          {/* 4. Pull Request Bushes */}
+          {gardenElements.prs.map((p, idx) => (
+            <RoseBush
+              key={`pr-${idx}`}
+              position={p.position}
+              status={p.status}
+              node={p.node}
+              onHover={setHoveredInfo}
+            />
+          ))}
+
+          {/* 5. Issue Weeds */}
+          {gardenElements.issues.map((i, idx) => (
+            <SpikyWeed
+              key={`issue-${idx}`}
+              position={i.position}
+              status={i.status}
+              node={i.node}
+              onHover={setHoveredInfo}
+            />
+          ))}
+
+          {/* 6. Cozy Garden Gnomes (AI Agents) */}
+          <GardenGnome
+            color="#2575fc"
+            position={[-1.4, 0.01, -1.8]}
+            name="Worker Agent Gnome"
+            role="Executes tasks, generates branches, refactors code, and runs system tests."
             onHover={setHoveredInfo}
           />
-        ))}
-
-        {/* 5. Issue Weeds */}
-        {gardenElements.issues.map((i, idx) => (
-          <SpikyWeed
-            key={`issue-${idx}`}
-            position={i.position}
-            status={i.status}
-            node={i.node}
+          <GardenGnome
+            color="#9b59b6"
+            position={[1.4, 0.01, -1.8]}
+            name="Critic Agent Gnome"
+            role="Reviews pull requests, checks styling, runs linters, and rates visual fidelity."
             onHover={setHoveredInfo}
           />
-        ))}
+          <GardenGnome
+            color="#ec008c"
+            position={[0.0, 0.01, 1.8]}
+            name="Opponent Agent Gnome"
+            role="Simulates system failures, breaks parameters, and tests resilience of the garden."
+            onHover={setHoveredInfo}
+          />
 
-        {/* 6. Cozy Garden Gnomes (AI Agents) */}
-        <GardenGnome
-          color="#2575fc"
-          position={[-1.4, 0.01, -1.8]}
-          name="Worker Agent Gnome"
-          role="Executes tasks, generates branches, refactors code, and runs system tests."
-          onHover={setHoveredInfo}
-        />
-        <GardenGnome
-          color="#9b59b6"
-          position={[1.4, 0.01, -1.8]}
-          name="Critic Agent Gnome"
-          role="Reviews pull requests, checks styling, runs linters, and rates visual fidelity."
-          onHover={setHoveredInfo}
-        />
-        <GardenGnome
-          color="#ec008c"
-          position={[0.0, 0.01, 1.8]}
-          name="Opponent Agent Gnome"
-          role="Simulates system failures, breaks parameters, and tests resilience of the garden."
-          onHover={setHoveredInfo}
-        />
+          {/* 7. Picket Fences Borders (crooked hand-built look) */}
+          <Fence position={[-4.5, 0, -6.5]} />
+          <Fence position={[-3, 0, -6.5]} />
+          <Fence position={[-1.5, 0, -6.5]} />
+          <Fence position={[0, 0, -6.5]} />
+          <Fence position={[1.5, 0, -6.5]} />
+          <Fence position={[3, 0, -6.5]} />
+          <Fence position={[4.5, 0, -6.5]} />
+          <Fence position={[-4.5, 0, 6.5]} />
+          <Fence position={[-3, 0, 6.5]} />
+          <Fence position={[-1.5, 0, 6.5]} />
+          <Fence position={[0, 0, 6.5]} />
+          <Fence position={[1.5, 0, 6.5]} />
+          <Fence position={[3, 0, 6.5]} />
+          <Fence position={[4.5, 0, 6.5]} />
 
-        {/* 7. Picket Fences Borders (crooked hand-built look) */}
-        <Fence position={[-4.5, 0, -6.5]} />
-        <Fence position={[-3, 0, -6.5]} />
-        <Fence position={[-1.5, 0, -6.5]} />
-        <Fence position={[0, 0, -6.5]} />
-        <Fence position={[1.5, 0, -6.5]} />
-        <Fence position={[3, 0, -6.5]} />
-        <Fence position={[4.5, 0, -6.5]} />
-        <Fence position={[-4.5, 0, 6.5]} />
-        <Fence position={[-3, 0, 6.5]} />
-        <Fence position={[-1.5, 0, 6.5]} />
-        <Fence position={[0, 0, 6.5]} />
-        <Fence position={[1.5, 0, 6.5]} />
-        <Fence position={[3, 0, 6.5]} />
-        <Fence position={[4.5, 0, 6.5]} />
+          {/* Fence Corner Glow Lanterns */}
+          <Lantern position={[-4.5, 0, -6.4]} />
+          <Lantern position={[4.5, 0, -6.4]} />
+          <Lantern position={[-4.5, 0, 6.4]} />
+          <Lantern position={[4.5, 0, 6.4]} />
 
-        {/* Fence Corner Glow Lanterns */}
-        <Lantern position={[-4.5, 0, -6.4]} />
-        <Lantern position={[4.5, 0, -6.4]} />
-        <Lantern position={[-4.5, 0, 6.4]} />
-        <Lantern position={[4.5, 0, 6.4]} />
+          {/* 8. Stylized Stepping Stones (Paths using Quaternius RockPath GLTF) */}
+          <SteppingStone position={[-1.0, 0.015, -0.65]} rotation={[0, 0.4, 0]} scale={[1.3, 0.3, 1.3]} />
+          <SteppingStone position={[-2.0, 0.015, -1.3]} rotation={[0, -0.8, 0]} scale={[1.4, 0.3, 1.4]} />
+          <SteppingStone position={[1.0, 0.015, -0.65]} rotation={[0, -0.4, 0]} scale={[1.3, 0.3, 1.3]} />
+          <SteppingStone position={[2.0, 0.015, -1.3]} rotation={[0, 0.8, 0]} scale={[1.4, 0.3, 1.4]} />
 
-        {/* 8. Stylized Stepping Stones (Paths using Quaternius RockPath GLTF) */}
-        <SteppingStone position={[-1.0, 0.015, -0.65]} rotation={[0, 0.4, 0]} scale={[1.3, 0.3, 1.3]} />
-        <SteppingStone position={[-2.0, 0.015, -1.3]} rotation={[0, -0.8, 0]} scale={[1.4, 0.3, 1.4]} />
-        <SteppingStone position={[1.0, 0.015, -0.65]} rotation={[0, -0.4, 0]} scale={[1.3, 0.3, 1.3]} />
-        <SteppingStone position={[2.0, 0.015, -1.3]} rotation={[0, 0.8, 0]} scale={[1.4, 0.3, 1.4]} />
+          {/* 9. Weather Effects System */}
+          <WeatherSystem isRainy={isRainy} />
 
-        {/* 9. Weather Effects System */}
-        <WeatherSystem isRainy={isRainy} />
+          {/* Hay Day Clutter & Accessories */}
+          <WoodenBarrel position={[-1.1, 0, -1.0]} />
+          <WoodenBarrel position={[1.1, 0, -1.0]} />
+          <CropCrate position={[-1.2, 0, 0.8]} />
+          <CropCrate position={[1.2, 0, 0.8]} />
 
-        {/* Hay Day Clutter & Accessories */}
-        <WoodenBarrel position={[-1.1, 0, -1.0]} />
-        <WoodenBarrel position={[1.1, 0, -1.0]} />
-        <CropCrate position={[-1.2, 0, 0.8]} />
-        <CropCrate position={[1.2, 0, 0.8]} />
+          {/* Chicken Coop Cozy Centerpiece */}
+          <ChickenCoop position={[4.0, 0, 3.0]} />
 
-        {/* Chicken Coop Cozy Centerpiece */}
-        <ChickenCoop position={[4.0, 0, 3.0]} />
+          {/* Animated Pecking Chickens */}
+          <Chicken position={[-1.8, 0.01, 1.5]} speed={0.95} phase={0} />
+          <Chicken position={[1.5, 0.01, 2.8]} speed={0.8} phase={2.5} />
+          <Chicken position={[-2.4, 0.01, -3.2]} speed={1.1} phase={4.8} />
 
-        {/* Animated Pecking Chickens */}
-        <Chicken position={[-1.8, 0.01, 1.5]} speed={0.95} phase={0} />
-        <Chicken position={[1.5, 0.01, 2.8]} speed={0.8} phase={2.5} />
-        <Chicken position={[-2.4, 0.01, -3.2]} speed={1.1} phase={4.8} />
+          {/* 10. Scattered Project Crops (Step 4 & 5) */}
+          {theme === 'alpha' && (
+            <>
+              {/* Project Alpha: Tall Corn Rows and Pumpkin Crates */}
+              <TallCornCrop position={[-3.2, 0.01, 3.2]} />
+              <TallCornCrop position={[-2.2, 0.01, 3.2]} />
+              <TallCornCrop position={[-1.2, 0.01, 3.2]} />
+              <TallCornCrop position={[-3.2, 0.01, 4.4]} />
+              <TallCornCrop position={[-2.2, 0.01, 4.4]} />
+              <TallCornCrop position={[-1.2, 0.01, 4.4]} />
+              <CropCrate position={[2.5, 0.01, 2.5]} />
+              <CropCrate position={[1.0, 0.01, 3.5]} />
+            </>
+          )}
 
-        {/* 10. Scattered Project Crops (Step 4 & 5) */}
-        {theme === 'alpha' && (
-          <>
-            {/* Project Alpha: Tall Corn Rows and Pumpkin Crates */}
-            <TallCornCrop position={[-3.2, 0.01, 3.2]} />
-            <TallCornCrop position={[-2.2, 0.01, 3.2]} />
-            <TallCornCrop position={[-1.2, 0.01, 3.2]} />
-            <TallCornCrop position={[-3.2, 0.01, 4.4]} />
-            <TallCornCrop position={[-2.2, 0.01, 4.4]} />
-            <TallCornCrop position={[-1.2, 0.01, 4.4]} />
-            <CropCrate position={[2.5, 0.01, 2.5]} />
-            <CropCrate position={[1.0, 0.01, 3.5]} />
-          </>
-        )}
+          {theme === 'beta' && (
+            <>
+              {/* Project Beta: Orange Carrot Rows */}
+              <CarrotCrop position={[-3.5, 0.01, 2.8]} />
+              <CarrotCrop position={[-2.5, 0.01, 2.8]} />
+              <CarrotCrop position={[-1.5, 0.01, 2.8]} />
+              <CarrotCrop position={[-3.5, 0.01, 3.8]} />
+              <CarrotCrop position={[-2.5, 0.01, 3.8]} />
+              <CarrotCrop position={[-1.5, 0.01, 3.8]} />
+              <CarrotCrop position={[-3.5, 0.01, 4.8]} />
+              <CarrotCrop position={[-2.5, 0.01, 4.8]} />
+              <CarrotCrop position={[-1.5, 0.01, 4.8]} />
+            </>
+          )}
 
-        {theme === 'beta' && (
-          <>
-            {/* Project Beta: Orange Carrot Rows */}
-            <CarrotCrop position={[-3.5, 0.01, 2.8]} />
-            <CarrotCrop position={[-2.5, 0.01, 2.8]} />
-            <CarrotCrop position={[-1.5, 0.01, 2.8]} />
-            <CarrotCrop position={[-3.5, 0.01, 3.8]} />
-            <CarrotCrop position={[-2.5, 0.01, 3.8]} />
-            <CarrotCrop position={[-1.5, 0.01, 3.8]} />
-            <CarrotCrop position={[-3.5, 0.01, 4.8]} />
-            <CarrotCrop position={[-2.5, 0.01, 4.8]} />
-            <CarrotCrop position={[-1.5, 0.01, 4.8]} />
-          </>
-        )}
+          {theme === 'gamma' && (
+            <>
+              {/* Project Gamma: Leafy Cabbages and Wild Spiky weeds (bug representation) */}
+              <CabbageCrop position={[-3.5, 0.01, 3.2]} />
+              <CabbageCrop position={[-2.0, 0.01, 3.2]} />
+              <CabbageCrop position={[-0.5, 0.01, 3.2]} />
+              <CabbageCrop position={[-3.5, 0.01, 4.4]} />
+              <CabbageCrop position={[-2.0, 0.01, 4.4]} />
+              <CabbageCrop position={[-0.5, 0.01, 4.4]} />
+              <SpikyWeed position={[2.5, 0.01, 2.5]} status="active" />
+              <SpikyWeed position={[1.0, 0.01, 3.5]} status="active" />
+            </>
+          )}
 
-        {theme === 'gamma' && (
-          <>
-            {/* Project Gamma: Leafy Cabbages and Wild Spiky weeds (bug representation) */}
-            <CabbageCrop position={[-3.5, 0.01, 3.2]} />
-            <CabbageCrop position={[-2.0, 0.01, 3.2]} />
-            <CabbageCrop position={[-0.5, 0.01, 3.2]} />
-            <CabbageCrop position={[-3.5, 0.01, 4.4]} />
-            <CabbageCrop position={[-2.0, 0.01, 4.4]} />
-            <CabbageCrop position={[-0.5, 0.01, 4.4]} />
-            <SpikyWeed position={[2.5, 0.01, 2.5]} status="active" />
-            <SpikyWeed position={[1.0, 0.01, 3.5]} status="active" />
-          </>
-        )}
+          {theme === 'default' && (
+            <>
+              {/* Default/Live: Mixed Crop Patch */}
+              <CarrotCrop position={[-3.5, 0.01, 3.0]} />
+              <CarrotCrop position={[-2.5, 0.01, 3.0]} />
+              <CabbageCrop position={[-3.5, 0.01, 4.2]} />
+              <CabbageCrop position={[-2.0, 0.01, 4.2]} />
+              <TallCornCrop position={[1.8, 0.01, 3.0]} />
+              <CropCrate position={[2.2, 0.01, 4.2]} />
+            </>
+          )}
 
-        {theme === 'default' && (
-          <>
-            {/* Default/Live: Mixed Crop Patch */}
-            <CarrotCrop position={[-3.5, 0.01, 3.0]} />
-            <CarrotCrop position={[-2.5, 0.01, 3.0]} />
-            <CabbageCrop position={[-3.5, 0.01, 4.2]} />
-            <CabbageCrop position={[-2.0, 0.01, 4.2]} />
-            <TallCornCrop position={[1.8, 0.01, 3.0]} />
-            <CropCrate position={[2.2, 0.01, 4.2]} />
-          </>
-        )}
+          {/* Scattered Colorful Wildflowers */}
+          {wildflowers.map((w, idx) => (
+            <Wildflower key={`flower-${idx}`} position={w.pos} />
+          ))}
 
-        {/* Scattered Colorful Wildflowers */}
-        {wildflowers.map((w, idx) => (
-          <Wildflower key={`flower-${idx}`} position={w.pos} color={w.color} />
-        ))}
+          {/* Grass Blade Tufts scattered randomly */}
+          {grassTufts.map((pos, idx) => (
+            <GrassTuft key={`tuft-${idx}`} position={pos} />
+          ))}
 
-        {/* Grass Blade Tufts scattered randomly */}
-        {grassTufts.map((pos, idx) => (
-          <GrassTuft key={`tuft-${idx}`} position={pos} />
-        ))}
+          {/* Instanced Grass scatter (2,000 blades) (Step 2) */}
+          <InstancedGrass toonRamp={toonRampTexture} />
 
-        {/* Instanced Grass scatter (2,000 blades) (Step 2) */}
-        <InstancedGrass toonRamp={toonRampTexture} />
+          {/* Central Raised Soil Bed (Dark, organic earth brown with soil texture) */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]} receiveShadow>
+            <planeGeometry args={[13.5, 11.5]} />
+            <meshStandardMaterial map={soilTiledTexture} roughness={1.0} />
+          </mesh>
 
-        {/* Central Raised Soil Bed (Dark, organic earth brown with soil texture) */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]} receiveShadow>
-          <planeGeometry args={[13.5, 11.5]} />
-          <meshStandardMaterial map={soilTiledTexture} roughness={1.0} />
-        </mesh>
+          {/* Surrounding Outer Grass Terrain Base Plane (Deep muted green with tiled grass texture) */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+            <planeGeometry args={[45, 45]} />
+            <meshStandardMaterial map={grassTiledTexture} color={grassColor} roughness={1.0} />
+          </mesh>
 
-        {/* Surrounding Outer Grass Terrain Base Plane (Deep muted green with tiled grass texture) */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-          <planeGeometry args={[45, 45]} />
-          <meshStandardMaterial map={grassTiledTexture} color={grassColor} roughness={1.0} />
-        </mesh>
+          {/* Soft Shadow Layer */}
+          <ContactShadows
+            position={[0, 0, 0]}
+            opacity={0.35}
+            scale={16}
+            blur={1.6}
+            far={4.5}
+          />
 
-        {/* Soft Shadow Layer */}
-        <ContactShadows
-          position={[0, 0, 0]}
-          opacity={0.35}
-          scale={16}
-          blur={1.6}
-          far={4.5}
-        />
+          {/* Post-Processing Composer (bloom + Screen Space Ambient Occlusion shadows) */}
+          <EffectComposer>
+            <SSAO samples={11} radius={0.35} intensity={14} luminanceInfluence={0.5} />
+            <Bloom luminanceThreshold={0.28} intensity={0.95} />
+          </EffectComposer>
 
-        {/* Post-Processing Composer (bloom + Screen Space Ambient Occlusion shadows) */}
-        <EffectComposer>
-          <SSAO samples={11} radius={0.35} intensity={14} luminanceInfluence={0.5} />
-          <Bloom luminanceThreshold={0.28} intensity={0.95} />
-        </EffectComposer>
-
-        {/* Camera Interactive Controls */}
-        <OrbitControls
-          enableDamping
-          dampingFactor={0.05}
-          maxPolarAngle={Math.PI / 2 - 0.05}
-          minDistance={3}
-          maxDistance={24}
-        />
+          {/* Camera Interactive Controls */}
+          <OrbitControls
+            enableDamping
+            dampingFactor={0.05}
+            maxPolarAngle={Math.PI / 2 - 0.05}
+            minDistance={3}
+            maxDistance={24}
+          />
+        </Suspense>
       </Canvas>
 
       {/* Floating Hover Details Card Overlay */}
