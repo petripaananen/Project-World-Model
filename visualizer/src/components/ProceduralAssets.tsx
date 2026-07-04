@@ -148,11 +148,53 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
         <meshStandardMaterial color="#5c4033" roughness={0.9} />
       </mesh>
 
+      {/* Mossy Climbing Vines on Beams */}
+      <group position={[-0.65, 0.85, 0]}>
+        <mesh position={[0.06, -0.2, 0.02]} castShadow>
+          <sphereGeometry args={[0.06, 6, 6]} />
+          <meshStandardMaterial color="#27ae60" roughness={0.95} />
+        </mesh>
+        <mesh position={[-0.04, 0.1, 0.05]} castShadow>
+          <sphereGeometry args={[0.07, 6, 6]} />
+          <meshStandardMaterial color="#1e824c" roughness={0.95} />
+        </mesh>
+        <mesh position={[0.05, 0.35, -0.04]} castShadow>
+          <sphereGeometry args={[0.05, 6, 6]} />
+          <meshStandardMaterial color="#2ecc71" roughness={0.95} />
+        </mesh>
+      </group>
+      <group position={[0.65, 0.85, 0]}>
+        <mesh position={[-0.06, -0.15, -0.03]} castShadow>
+          <sphereGeometry args={[0.065, 6, 6]} />
+          <meshStandardMaterial color="#27ae60" roughness={0.95} />
+        </mesh>
+        <mesh position={[0.04, 0.15, 0.04]} castShadow>
+          <sphereGeometry args={[0.055, 6, 6]} />
+          <meshStandardMaterial color="#1e824c" roughness={0.95} />
+        </mesh>
+      </group>
+
       {/* Crossbar Log */}
       <mesh position={[0, 1.4, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
         <cylinderGeometry args={[0.045, 0.045, 1.25, 8]} />
         <meshStandardMaterial color="#5c4033" roughness={0.9} />
       </mesh>
+
+      {/* Crank Wheel (Hay Day style toy detailing) */}
+      <group position={[0.7, 1.4, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <mesh castShadow>
+          <cylinderGeometry args={[0.04, 0.04, 0.08, 8]} />
+          <meshStandardMaterial color="#4a3b32" roughness={0.9} />
+        </mesh>
+        <mesh position={[0, 0, 0.03]} castShadow>
+          <torusGeometry args={[0.18, 0.02, 6, 16]} />
+          <meshStandardMaterial color="#5c4033" roughness={0.9} />
+        </mesh>
+        <mesh position={[0, 0.14, 0.06]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.015, 0.015, 0.08, 6]} />
+          <meshStandardMaterial color="#8e4a23" roughness={0.9} />
+        </mesh>
+      </group>
 
       {/* Rope */}
       <mesh position={[0, 1.15, 0]}>
@@ -423,7 +465,7 @@ export function Butterfly({ color, orbitRadius, speed, heightOffset, phase = 0 }
   );
 }
 
-// ─── 5. Picket Fence Segment ────────────────────────────────────────
+// ─── 5. Irregular Picket Fence Segment (Chunky Hand-crafted) ────────
 interface FenceProps {
   position: [number, number, number];
   rotation?: [number, number, number];
@@ -442,21 +484,25 @@ export function Fence({ position, rotation = [0, 0, 0] }: FenceProps) {
         <meshStandardMaterial color="#dfcbba" roughness={0.9} />
       </mesh>
 
-      {/* Pickets */}
-      {[-0.6, -0.3, 0, 0.3, 0.6].map((x, i) => (
-        <mesh key={i} position={[x, 0.32, 0]} castShadow>
-          <boxGeometry args={[0.07, 0.64, 0.025]} />
-          <meshStandardMaterial color="#f7f5ef" roughness={0.9} />
-        </mesh>
-      ))}
-
-      {/* Pointed Slat tips */}
-      {[-0.6, -0.3, 0, 0.3, 0.6].map((x, i) => (
-        <mesh key={`t-${i}`} position={[x, 0.66, 0]} rotation={[0, 0, Math.PI / 4]}>
-          <boxGeometry args={[0.05, 0.05, 0.025]} />
-          <meshStandardMaterial color="#f7f5ef" roughness={0.9} />
-        </mesh>
-      ))}
+      {/* Chunky Irregular Pickets */}
+      {[-0.6, -0.3, 0, 0.3, 0.6].map((x, i) => {
+        // Deterministic offset based on x coordinate to look hand-crafted
+        const rotationZ = Math.sin(x * 10) * 0.035;
+        const heightScale = 1.0 + Math.cos(x * 20) * 0.05;
+        return (
+          <group key={i} position={[x, 0.32 * heightScale, 0]} rotation={[0, 0, rotationZ]}>
+            <mesh castShadow>
+              <boxGeometry args={[0.07, 0.64 * heightScale, 0.025]} />
+              <meshStandardMaterial color="#f7f5ef" roughness={0.9} />
+            </mesh>
+            {/* Pointed Slat tips */}
+            <mesh position={[0, 0.34 * heightScale, 0]} rotation={[0, 0, Math.PI / 4]}>
+              <boxGeometry args={[0.05, 0.05, 0.025]} />
+              <meshStandardMaterial color="#f7f5ef" roughness={0.9} />
+            </mesh>
+          </group>
+        );
+      })}
     </group>
   );
 }
@@ -516,7 +562,163 @@ export function Lantern({ position }: { position: [number, number, number] }) {
       </mesh>
 
       {/* Glow Point Light */}
-      <pointLight position={[0.16, 0.72, 0]} color="#f39c12" intensity={0.9} distance={5} decay={2} castShadow />
+      <pointLight position={[0.16, 0.72, 0]} color="#f39c12" intensity={1.2} distance={6} decay={2} castShadow />
+    </group>
+  );
+}
+
+// ─── 8. Animated Cartoon Chicken (Pecking Grass) ────────────────────
+export function Chicken({ position, speed = 1.0, phase = 0 }: { position: [number, number, number]; speed?: number; phase?: number }) {
+  const chickenRef = useRef<THREE.Group>(null);
+  const neckRef = useRef<THREE.Group>(null);
+
+  useFrame((state) => {
+    if (!neckRef.current || !chickenRef.current) return;
+    const t = state.clock.getElapsedTime() * speed * 1.8 + phase;
+    
+    // Periodic pecking dip
+    const rawSin = Math.sin(t);
+    const peckAngle = rawSin > 0.45 ? (rawSin - 0.45) * 0.9 : 0;
+    neckRef.current.rotation.x = peckAngle;
+
+    // Small hopping / pecking steps
+    const hopTime = state.clock.getElapsedTime() * 0.4 + phase;
+    if (Math.sin(hopTime * 3) > 0.94) {
+      chickenRef.current.position.y = position[1] + 0.06;
+      chickenRef.current.rotation.y = (Math.sin(hopTime) * Math.PI) / 4 + phase;
+    } else {
+      chickenRef.current.position.y = position[1];
+    }
+  });
+
+  return (
+    <group ref={chickenRef} position={position}>
+      {/* Round chunky body */}
+      <mesh position={[0, 0.14, 0]} castShadow>
+        <sphereGeometry args={[0.14, 8, 8]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+      </mesh>
+
+      {/* Neck / Head Group */}
+      <group ref={neckRef} position={[0.08, 0.16, 0]}>
+        {/* Head */}
+        <mesh position={[0.07, 0.08, 0]} castShadow>
+          <sphereGeometry args={[0.08, 8, 8]} />
+          <meshStandardMaterial color="#ffffff" roughness={0.9} />
+        </mesh>
+        {/* Beak */}
+        <mesh position={[0.14, 0.07, 0]} rotation={[0, 0, -Math.PI / 2]}>
+          <coneGeometry args={[0.022, 0.05, 4]} />
+          <meshStandardMaterial color="#f39c12" roughness={0.25} />
+        </mesh>
+        {/* Black eyes */}
+        <mesh position={[0.11, 0.1, 0.038]}>
+          <sphereGeometry args={[0.01, 4, 4]} />
+          <meshBasicMaterial color="#1a1a24" />
+        </mesh>
+        <mesh position={[0.11, 0.1, -0.038]}>
+          <sphereGeometry args={[0.01, 4, 4]} />
+          <meshBasicMaterial color="#1a1a24" />
+        </mesh>
+        {/* Comb (Crest) */}
+        <mesh position={[0.05, 0.16, 0]}>
+          <boxGeometry args={[0.045, 0.035, 0.018]} />
+          <meshStandardMaterial color="#e74c3c" />
+        </mesh>
+      </group>
+
+      {/* Tail feather tuft */}
+      <mesh position={[-0.12, 0.18, 0]} rotation={[0, 0, 0.4]} castShadow>
+        <boxGeometry args={[0.07, 0.07, 0.035]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.9} />
+      </mesh>
+
+      {/* Little yellow legs */}
+      <mesh position={[-0.03, 0.04, 0.03]} castShadow>
+        <cylinderGeometry args={[0.008, 0.008, 0.08, 4]} />
+        <meshStandardMaterial color="#f1c40f" />
+      </mesh>
+      <mesh position={[0.03, 0.04, -0.03]} castShadow>
+        <cylinderGeometry args={[0.008, 0.008, 0.08, 4]} />
+        <meshStandardMaterial color="#f1c40f" />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── 9. Wooden Barrel Detail Clutter ────────────────────────────────
+export function WoodenBarrel({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* Wood slats cylinder */}
+      <mesh position={[0, 0.25, 0]} castShadow>
+        <cylinderGeometry args={[0.18, 0.21, 0.5, 9]} />
+        <meshStandardMaterial color="#7a5230" roughness={0.95} flatShading />
+      </mesh>
+
+      {/* Iron Hoop Rings */}
+      <mesh position={[0, 0.4, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.19, 0.01, 4, 16]} />
+        <meshStandardMaterial color="#4a4d4f" metalness={0.85} roughness={0.2} />
+      </mesh>
+      <mesh position={[0, 0.1, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.19, 0.01, 4, 16]} />
+        <meshStandardMaterial color="#4a4d4f" metalness={0.85} roughness={0.2} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── 10. Crop Backlog Crate ─────────────────────────────────────────
+export function CropCrate({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* Crate Box */}
+      <mesh position={[0, 0.1, 0]} castShadow>
+        <boxGeometry args={[0.5, 0.2, 0.4]} />
+        <meshStandardMaterial color="#a07246" roughness={0.95} />
+      </mesh>
+
+      {/* Slat panels */}
+      <mesh position={[0, 0.1, 0.202]} castShadow>
+        <boxGeometry args={[0.52, 0.17, 0.008]} />
+        <meshStandardMaterial color="#8a5e37" />
+      </mesh>
+      <mesh position={[0, 0.1, -0.202]} castShadow>
+        <boxGeometry args={[0.52, 0.17, 0.008]} />
+        <meshStandardMaterial color="#8a5e37" />
+      </mesh>
+
+      {/* Apples (PR Nodes) filling the crate */}
+      {[-0.15, 0, 0.15].map((x, idx) =>
+        [-0.1, 0.1].map((z, jdx) => (
+          <mesh key={`${idx}-${jdx}`} position={[x, 0.19, z]} castShadow>
+            <sphereGeometry args={[0.065, 8, 8]} />
+            <meshStandardMaterial color="#d35400" roughness={0.25} />
+          </mesh>
+        ))
+      )}
+    </group>
+  );
+}
+
+// ─── 11. Colorful Wildflower ────────────────────────────────────────
+export function Wildflower({ position, color = '#ffffff' }: { position: [number, number, number]; color?: string }) {
+  return (
+    <group position={position}>
+      {/* Center Pollen */}
+      <mesh position={[0, 0.04, 0]}>
+        <sphereGeometry args={[0.02, 6, 6]} />
+        <meshStandardMaterial color="#f1c40f" roughness={0.3} />
+      </mesh>
+
+      {/* Petals */}
+      {[[0.03, 0], [-0.03, 0], [0, 0.03], [0, -0.03]].map(([x, z], i) => (
+        <mesh key={i} position={[x, 0.035, z]} rotation={[0, (i * Math.PI) / 4, 0]}>
+          <sphereGeometry args={[0.02, 6, 6]} scale={[1.3, 0.5, 0.7]} />
+          <meshStandardMaterial color={color} roughness={0.8} />
+        </mesh>
+      ))}
     </group>
   );
 }

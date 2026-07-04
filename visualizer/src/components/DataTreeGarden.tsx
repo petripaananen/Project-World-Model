@@ -4,7 +4,7 @@ import { OrbitControls, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { DataTree } from './DataTree';
 import type { TaskNode, HoveredData } from './DataTree';
-import { Well, RoseBush, SpikyWeed, Butterfly, Fence, GrassTuft, Lantern } from './ProceduralAssets';
+import { Well, RoseBush, SpikyWeed, Butterfly, Fence, GrassTuft, Lantern, Chicken, WoodenBarrel, CropCrate, Wildflower } from './ProceduralAssets';
 import { WeatherSystem } from './WeatherSystem';
 
 interface DTONode {
@@ -67,6 +67,26 @@ export function DataTreeGarden({
       tufts.push([x, 0.01, z]);
     }
     return tufts;
+  }, []);
+
+  // Generate static coordinates for 40 wildflowers scattered in the garden
+  const wildflowers = useMemo(() => {
+    const flowers: { pos: [number, number, number]; color: string }[] = [];
+    const colors = ['#ffffff', '#e74c3c', '#f1c40f', '#e84393']; // White, red, yellow, pink
+    for (let i = 0; i < 45; i++) {
+      let x = (Math.random() - 0.5) * 14;
+      let z = (Math.random() - 0.5) * 12;
+      // Avoid well
+      if (Math.abs(x) < 1.2 && Math.abs(z) < 1.2) {
+        x += 1.3;
+        z += 1.3;
+      }
+      flowers.push({
+        pos: [x, 0.015, z],
+        color: colors[i % colors.length],
+      });
+    }
+    return flowers;
   }, []);
 
   // Extract PR and Issue nodes from flat graph
@@ -282,6 +302,22 @@ export function DataTreeGarden({
 
         {/* 8. Weather Effects System */}
         <WeatherSystem isRainy={isRainy} />
+
+        {/* Hay Day Clutter & Accessories */}
+        <WoodenBarrel position={[-1.1, 0, -1.0]} />
+        <WoodenBarrel position={[1.1, 0, -1.0]} />
+        <CropCrate position={[-1.2, 0, 0.8]} />
+        <CropCrate position={[1.2, 0, 0.8]} />
+
+        {/* Animated Pecking Chickens */}
+        <Chicken position={[-1.8, 0.01, 1.5]} speed={0.95} phase={0} />
+        <Chicken position={[1.5, 0.01, 2.8]} speed={0.8} phase={2.5} />
+        <Chicken position={[-2.4, 0.01, -3.2]} speed={1.1} phase={4.8} />
+
+        {/* Scattered Colorful Wildflowers */}
+        {wildflowers.map((w, idx) => (
+          <Wildflower key={`flower-${idx}`} position={w.pos} color={w.color} />
+        ))}
 
         {/* Grass Blade Tufts scattered randomly */}
         {grassTufts.map((pos, idx) => (
