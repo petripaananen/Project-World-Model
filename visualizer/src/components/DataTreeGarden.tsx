@@ -22,6 +22,7 @@ import {
   CabbageCrop,
   CarrotCrop,
   Sunbeams,
+  SteppingStone,
 } from './ProceduralAssets';
 import { WeatherSystem } from './WeatherSystem';
 
@@ -497,23 +498,11 @@ export function DataTreeGarden({
         <Lantern position={[-4.5, 0, 6.4]} />
         <Lantern position={[4.5, 0, 6.4]} />
 
-        {/* 8. Flat Stepping Stones (Paths) */}
-        <mesh position={[-1.0, 0.01, -0.65]} rotation={[-Math.PI / 2, 0, 0.4]}>
-          <cylinderGeometry args={[0.22, 0.22, 0.02, 8]} />
-          <meshStandardMaterial color="#948c82" roughness={0.9} />
-        </mesh>
-        <mesh position={[-2.0, 0.01, -1.3]} rotation={[-Math.PI / 2, 0, 0.4]}>
-          <cylinderGeometry args={[0.24, 0.24, 0.02, 8]} />
-          <meshStandardMaterial color="#948c82" roughness={0.9} />
-        </mesh>
-        <mesh position={[1.0, 0.01, -0.65]} rotation={[-Math.PI / 2, 0, -0.4]}>
-          <cylinderGeometry args={[0.22, 0.22, 0.02, 8]} />
-          <meshStandardMaterial color="#948c82" roughness={0.9} />
-        </mesh>
-        <mesh position={[2.0, 0.01, -1.3]} rotation={[-Math.PI / 2, 0, -0.4]}>
-          <cylinderGeometry args={[0.24, 0.24, 0.02, 8]} />
-          <meshStandardMaterial color="#948c82" roughness={0.9} />
-        </mesh>
+        {/* 8. Stylized Stepping Stones (Paths using Quaternius RockPath GLTF) */}
+        <SteppingStone position={[-1.0, 0.015, -0.65]} rotation={[0, 0.4, 0]} scale={[1.3, 0.3, 1.3]} />
+        <SteppingStone position={[-2.0, 0.015, -1.3]} rotation={[0, -0.8, 0]} scale={[1.4, 0.3, 1.4]} />
+        <SteppingStone position={[1.0, 0.015, -0.65]} rotation={[0, -0.4, 0]} scale={[1.3, 0.3, 1.3]} />
+        <SteppingStone position={[2.0, 0.015, -1.3]} rotation={[0, 0.8, 0]} scale={[1.4, 0.3, 1.4]} />
 
         {/* 9. Weather Effects System */}
         <WeatherSystem isRainy={isRainy} />

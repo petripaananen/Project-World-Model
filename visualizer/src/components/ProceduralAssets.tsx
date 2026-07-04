@@ -1,6 +1,7 @@
 import { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useGLTF } from '@react-three/drei';
 import type { TaskNode, HoveredData } from './DataTree';
 
 interface AssetProps {
@@ -565,22 +566,14 @@ export function Fence({ position, rotation = [0, 0, 0] }: FenceProps) {
   );
 }
 
-// ─── 6. 3D Grass Tuft Component ─────────────────────────────────────
+// ─── 6. 3D Grass Tuft Component (Clover GLTF) ────────────────────────
 export function GrassTuft({ position }: { position: [number, number, number] }) {
+  const { scene } = useGLTF('/models/Stylized Nature MegaKit[Standard]/glTF/Clover_1.gltf');
+  const clonedScene = useMemo(() => scene.clone(), [scene]);
+
   return (
-    <group position={position}>
-      <mesh rotation={[0.18, 0.05, 0.1]} castShadow>
-        <coneGeometry args={[0.02, 0.2, 3]} />
-        <meshStandardMaterial color="#3d5c36" roughness={0.95} />
-      </mesh>
-      <mesh rotation={[-0.12, -0.15, -0.12]} position={[0.05, 0, 0.03]} castShadow>
-        <coneGeometry args={[0.016, 0.16, 3]} />
-        <meshStandardMaterial color="#496d41" roughness={0.95} />
-      </mesh>
-      <mesh rotation={[0.08, -0.08, 0.22]} position={[-0.04, 0, -0.04]} castShadow>
-        <coneGeometry args={[0.014, 0.14, 3]} />
-        <meshStandardMaterial color="#557d4c" roughness={0.95} />
-      </mesh>
+    <group position={position} scale={[1.1, 1.1, 1.1]}>
+      <primitive object={clonedScene} />
     </group>
   );
 }
@@ -760,23 +753,14 @@ export function CropCrate({ position }: { position: [number, number, number] }) 
   );
 }
 
-// ─── 11. Colorful Wildflower ────────────────────────────────────────
-export function Wildflower({ position, color = '#ffffff' }: { position: [number, number, number]; color?: string }) {
-  return (
-    <group position={position}>
-      {/* Center Pollen */}
-      <mesh position={[0, 0.04, 0]}>
-        <sphereGeometry args={[0.02, 6, 6]} />
-        <meshStandardMaterial color="#f1c40f" roughness={0.3} />
-      </mesh>
+// ─── 11. Colorful Wildflower (Flower GLTF) ──────────────────────────
+export function Wildflower({ position }: { position: [number, number, number]; color?: string }) {
+  const { scene } = useGLTF('/models/Stylized Nature MegaKit[Standard]/glTF/Flower_3_Single.gltf');
+  const clonedScene = useMemo(() => scene.clone(), [scene]);
 
-      {/* Petals */}
-      {[[0.03, 0], [-0.03, 0], [0, 0.03], [0, -0.03]].map(([x, z], i) => (
-        <mesh key={i} position={[x, 0.035, z]} rotation={[0, (i * Math.PI) / 4, 0]}>
-          <sphereGeometry args={[0.02, 6, 6]} scale={[1.3, 0.5, 0.7]} />
-          <meshStandardMaterial color={color} roughness={0.8} />
-        </mesh>
-      ))}
+  return (
+    <group position={position} scale={[1.4, 1.4, 1.4]}>
+      <primitive object={clonedScene} />
     </group>
   );
 }
@@ -908,4 +892,21 @@ export function Sunbeams() {
     </group>
   );
 }
+
+// ─── STEPPING STONE (RockPath GLTF) ──────────────────────────────────
+export function SteppingStone({ position, rotation = [0, 0, 0], scale = [1.2, 0.25, 1.2] }: { position: [number, number, number]; rotation?: [number, number, number]; scale?: [number, number, number] }) {
+  const { scene } = useGLTF('/models/Stylized Nature MegaKit[Standard]/glTF/RockPath_Round_Small_1.gltf');
+  const clonedScene = useMemo(() => scene.clone(), [scene]);
+
+  return (
+    <group position={position} rotation={rotation} scale={scale} castShadow receiveShadow>
+      <primitive object={clonedScene} />
+    </group>
+  );
+}
+
+// Preload common kit assets
+useGLTF.preload('/models/Stylized Nature MegaKit[Standard]/glTF/Clover_1.gltf');
+useGLTF.preload('/models/Stylized Nature MegaKit[Standard]/glTF/Flower_3_Single.gltf');
+useGLTF.preload('/models/Stylized Nature MegaKit[Standard]/glTF/RockPath_Round_Small_1.gltf');
 
