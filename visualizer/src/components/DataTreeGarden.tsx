@@ -1,7 +1,7 @@
 import { useRef, useState, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { ContactShadows, OrbitControls } from '@react-three/drei';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
+import { EffectComposer, Bloom, SSAO } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { DataTree } from './DataTree';
 import type { TaskNode, HoveredData } from './DataTree';
@@ -26,12 +26,12 @@ interface DataTreeGardenProps {
   crr?: number;
   projectName?: string;
   uiVisible?: boolean;
-  [key: string]: any; // Allow other DTO props passed from App.tsx
+  [key: string]: any;
 }
 
-// ─── OPTIMIZED INSTANCED GRASS COMPONENT ─────────────────────────────
-function InstancedGrass() {
-  const count = 1200;
+// ─── OPTIMIZED TOON SHADED INSTANCED GRASS COMPONENT ─────────────────
+function InstancedGrass({ toonRamp }: { toonRamp: THREE.Texture }) {
+  const count = 1300;
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -66,13 +66,12 @@ function InstancedGrass() {
       const [x, y, z] = positions[i];
       const baseRot = rotations[i];
 
-      // Soft wave sway based on time and coordinate position (wind ripple effect)
+      // Wind sway wave ripple
       const sway = Math.sin(time * 1.8 + x * 0.4 + z * 0.2) * 0.09;
 
       dummy.position.set(x, y, z);
       dummy.rotation.set(baseRot + sway, baseRot * 0.5, baseRot);
       
-      // Slightly scale grass blade height randomly for natural variance
       const scaleY = 0.95 + Math.sin(i * 45) * 0.3;
       dummy.scale.set(0.75, scaleY, 0.75);
       
@@ -85,7 +84,8 @@ function InstancedGrass() {
   return (
     <instancedMesh ref={meshRef} args={[null as any, null as any, count]} castShadow receiveShadow>
       <coneGeometry args={[0.016, 0.26, 3]} />
-      <meshStandardMaterial roughness={0.9} color="#3d5c36" flatShading />
+      {/* MeshToonMaterial for Cartoony stepped shading */}
+      <meshToonMaterial color="#3d5c36" gradientMap={toonRamp} />
     </instancedMesh>
   );
 }
@@ -111,7 +111,98 @@ export function DataTreeGarden({
     return dry.lerp(lush, factor).getStyle();
   }, [currentCrr]);
 
-  // Static tufts scatter (fewer than grass blades, for detailed clover/flower clumps)
+  // 1. Procedural Cel-Shading Toon Ramp Texture (Stepped gradients)
+  const toonRampTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 4;
+    canvas.height = 1;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#555555'; ctx.fillRect(0, 0, 1, 1);
+    ctx.fillStyle = '#888888'; ctx.fillRect(1, 0, 1, 1);
+    ctx.fillStyle = '#bbbbbb'; ctx.fillRect(2, 0, 1, 1);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(3, 0, 1, 1);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.NearestFilter;
+    texture.magFilter = THREE.NearestFilter;
+    return texture;
+  }, []);
+
+  // 2. Procedural Hand-Painted Tiled Grass Texture
+  const grassTiledTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d')!;
+
+    // Green grass base fill
+    ctx.fillStyle = '#223a1a';
+    ctx.fillRect(0, 0, 256, 256);
+
+    // Light green speckles
+    for (let i = 0; i < 250; i++) {
+      const x = Math.random() * 256;
+      const y = Math.random() * 256;
+      ctx.fillStyle = Math.random() > 0.5 ? '#2c4a22' : '#1a2e14';
+      ctx.fillRect(x, y, 2 + Math.random() * 2, 2 + Math.random() * 2);
+    }
+
+    // Hand-painted clovers
+    ctx.fillStyle = '#2c4f24';
+    for (let i = 0; i < 30; i++) {
+      const cx = Math.random() * 256;
+      const cy = Math.random() * 256;
+      ctx.beginPath();
+      ctx.arc(cx - 2, cy, 3, 0, Math.PI * 2);
+      ctx.arc(cx + 2, cy, 3, 0, Math.PI * 2);
+      ctx.arc(cx, cy - 3, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(10, 10);
+    return texture;
+  }, []);
+
+  // 3. Procedural Hand-Painted Soil Texture
+  const soilTiledTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d')!;
+
+    // Dark brown soil base fill
+    ctx.fillStyle = '#2c1d11';
+    ctx.fillRect(0, 0, 128, 128);
+
+    // Dark dirt speckles
+    for (let i = 0; i < 150; i++) {
+      const x = Math.random() * 128;
+      const y = Math.random() * 128;
+      ctx.fillStyle = '#1b120a';
+      ctx.fillRect(x, y, 2, 2);
+    }
+
+    // Small pebbles
+    for (let i = 0; i < 10; i++) {
+      const x = Math.random() * 128;
+      const y = Math.random() * 128;
+      ctx.fillStyle = '#6e7a8a';
+      ctx.beginPath();
+      ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(5, 5);
+    return texture;
+  }, []);
+
+  // Static tufts scatter
   const grassTufts = useMemo(() => {
     const tufts: [number, number, number][] = [];
     for (let i = 0; i < 90; i++) {
@@ -156,7 +247,6 @@ export function DataTreeGarden({
 
     // Helper to map flat nodes to coordinates (within central raised soil bed)
     const getPlotPosition = (index: number, total: number, offsetSide: 'left' | 'right') => {
-      // Distribute in a small grid within the raised bed (size 14x12)
       const count = total || 1;
       const angle = (index / count) * Math.PI * 1.5;
       const radius = 2.0 + Math.sin(index * 2) * 0.8;
@@ -261,7 +351,7 @@ export function DataTreeGarden({
         shadows
         gl={{
           antialias: true,
-          toneMapping: THREE.ACESFilmicToneMapping, // ACESFilmic tone mapping
+          toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.15,
         }}
         onClick={handleCanvasClick}
@@ -279,7 +369,7 @@ export function DataTreeGarden({
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
           shadow-bias={-0.0001}
-          color="#fff3d1" // Warm golden hour yellow
+          color="#fff3d1"
         />
 
         {/* Secondary soft point fill light */}
@@ -416,19 +506,19 @@ export function DataTreeGarden({
           <GrassTuft key={`tuft-${idx}`} position={pos} />
         ))}
 
-        {/* Instanced Grass scatter for heavy foliage texture (1200 blades) */}
-        <InstancedGrass />
+        {/* Instanced Grass scatter for heavy foliage texture (1300 blades) */}
+        <InstancedGrass toonRamp={toonRampTexture} />
 
-        {/* Central Raised Soil Bed (Dark, organic earth brown #2c1d11) */}
+        {/* Central Raised Soil Bed (Dark, organic earth brown with soil texture) */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]} receiveShadow>
           <planeGeometry args={[13.5, 11.5]} />
-          <meshStandardMaterial color="#2c1d11" roughness={1.0} />
+          <meshStandardMaterial map={soilTiledTexture} roughness={1.0} />
         </mesh>
 
-        {/* Surrounding Outer Grass Terrain Base Plane (Deep muted green #223a1a) */}
+        {/* Surrounding Outer Grass Terrain Base Plane (Deep muted green with tiled grass texture) */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
           <planeGeometry args={[45, 45]} />
-          <meshStandardMaterial color={grassColor} roughness={1.0} />
+          <meshStandardMaterial map={grassTiledTexture} color={grassColor} roughness={1.0} />
         </mesh>
 
         {/* Soft Shadow Layer */}
@@ -440,8 +530,9 @@ export function DataTreeGarden({
           far={4.5}
         />
 
-        {/* Post-Processing Composer (Dreamy Bloom Glow) */}
+        {/* Post-Processing Composer (dreamy glow + Screen Space Ambient Occlusion) */}
         <EffectComposer>
+          <SSAO samples={11} radius={0.35} intensity={14} luminanceInfluence={0.5} />
           <Bloom luminanceThreshold={0.28} intensity={0.95} />
         </EffectComposer>
 
@@ -449,7 +540,7 @@ export function DataTreeGarden({
         <OrbitControls
           enableDamping
           dampingFactor={0.05}
-          maxPolarAngle={Math.PI / 2 - 0.05} // Prevent camera from going under ground
+          maxPolarAngle={Math.PI / 2 - 0.05}
           minDistance={3}
           maxDistance={24}
         />

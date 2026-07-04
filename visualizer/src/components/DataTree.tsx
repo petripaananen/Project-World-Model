@@ -83,6 +83,7 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
       {/* Branch cylinder */}
       <mesh
         position={[0, length / 2, 0]}
+        rotation={[Math.sin(length * 12) * 0.05, 0, Math.cos(radius * 24) * 0.05]} // Whimsical organic bend
         castShadow
         receiveShadow
         onPointerOver={handlePointerOver}
@@ -90,7 +91,7 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
         onPointerMove={handlePointerMove}
       >
         <cylinderGeometry args={[radius * 0.7, radius, length, 8]} />
-        <meshStandardMaterial color={branchColor} roughness={0.9} />
+        <meshStandardMaterial color={branchColor} roughness={0.95} flatShading />
       </mesh>
 
       {/* Sprout leaves at leaf node or max depth */}
