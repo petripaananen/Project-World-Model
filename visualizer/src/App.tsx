@@ -17,7 +17,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html, Sparkles, Environment, ContactShadows, Float } from '@react-three/drei';
 import * as THREE from 'three';
 import './App.css';
-import { GameGardenScene } from './spark/GameGardenScene';
+import { DataTreeGarden } from './components/DataTreeGarden';
 import { KanbanBoard } from './components/KanbanBoard';
 import { SprintDashboard } from './components/SprintDashboard';
 import { StakeholderMap } from './components/StakeholderMap';
@@ -698,7 +698,6 @@ function App() {
     showVines: true,
     showWeather: true,
     showAgents: true,
-    showSparkGS: true,
   });
   const [uiVisible, setUiVisible] = useState(true);
   const [selectedProject, setSelectedProject] = useState<string>('');
@@ -920,9 +919,6 @@ function App() {
       } else if (key === 'a') {
         playHoverSound();
         setFilters(prev => ({ ...prev, showAgents: !prev.showAgents }));
-      } else if (key === 'g') {
-        playHoverSound();
-        setFilters(prev => ({ ...prev, showSparkGS: !prev.showSparkGS }));
       } else if (key === 'h' || key === '?') {
         playHoverSound();
         setUiVisible(prev => !prev);
@@ -1239,14 +1235,16 @@ function App() {
           <button 
             onClick={() => setCurrentTab('overview')} 
             className={`menu-item-btn ${currentTab === 'overview' ? 'active' : ''}`}
-            title="Command Console — Your central command dashboard mapping real-time observation, predictive risk simulations, and project control gates."
+            title="Workspace Console — Your central project dashboard mapping real-time observation, predictive risk simulations, and project control gates."
           >
             <span className="material-symbols-outlined">dashboard</span>
-            <span className="menu-text">Command Console</span>
+            <span className="menu-text">Workspace Console</span>
           </button>
           <button 
             onClick={() => setCurrentTab('kanban')} 
             className={`menu-item-btn ${currentTab === 'kanban' ? 'active' : ''}`}
+            disabled={!selectedProject}
+            title={!selectedProject ? "Please select a project workspace to access Board" : ""}
           >
             <span className="material-symbols-outlined">view_kanban</span>
             <span className="menu-text">Board</span>
@@ -1254,6 +1252,8 @@ function App() {
           <button 
             onClick={() => setCurrentTab('sprint')} 
             className={`menu-item-btn ${currentTab === 'sprint' ? 'active' : ''}`}
+            disabled={!selectedProject}
+            title={!selectedProject ? "Please select a project workspace to access Sprint Panel" : ""}
           >
             <span className="material-symbols-outlined">alarm</span>
             <span className="menu-text">Sprint Panel</span>
@@ -1261,6 +1261,8 @@ function App() {
           <button 
             onClick={() => setCurrentTab('stakeholders')} 
             className={`menu-item-btn ${currentTab === 'stakeholders' ? 'active' : ''}`}
+            disabled={!selectedProject}
+            title={!selectedProject ? "Please select a project workspace to access Stakeholder Map" : ""}
           >
             <span className="material-symbols-outlined">groups</span>
             <span className="menu-text">Stakeholder Map</span>
@@ -1268,6 +1270,8 @@ function App() {
           <button 
             onClick={() => setCurrentTab('flow')} 
             className={`menu-item-btn ${currentTab === 'flow' ? 'active' : ''}`}
+            disabled={!selectedProject}
+            title={!selectedProject ? "Please select a project workspace to access Flow Metrics" : ""}
           >
             <span className="material-symbols-outlined">insights</span>
             <span className="menu-text">Flow Metrics</span>
@@ -1275,6 +1279,8 @@ function App() {
           <button 
             onClick={() => setCurrentTab('lifecycle')} 
             className={`menu-item-btn ${currentTab === 'lifecycle' ? 'active' : ''}`}
+            disabled={!selectedProject}
+            title={!selectedProject ? "Please select a project workspace to access Project Lifecycle" : ""}
           >
             <span className="material-symbols-outlined">route</span>
             <span className="menu-text">Project Lifecycle</span>
@@ -1282,7 +1288,8 @@ function App() {
           <button 
             onClick={() => setCurrentTab('scenarios')} 
             className={`menu-item-btn ${currentTab === 'scenarios' ? 'active' : ''}`}
-            title="Scenario Sandbox — Simulate project changes (like adding developers or scope) to preview the impact on delivery timelines and costs."
+            disabled={!selectedProject}
+            title={!selectedProject ? "Please select a project workspace to access Scenario Sandbox" : "Scenario Sandbox — Simulate project changes (like adding developers or scope) to preview the impact on delivery timelines and costs."}
           >
             <span className="material-symbols-outlined">schema</span>
             <span className="menu-text">Scenario Sandbox</span>
@@ -1290,7 +1297,8 @@ function App() {
           <button 
             onClick={() => setCurrentTab('strategic')} 
             className={`menu-item-btn ${currentTab === 'strategic' ? 'active' : ''}`}
-            title="Strategic Balance Sheet — Monitors system compute costs, development activity, and efficiency balance alerts (Jevons Paradox)."
+            disabled={!selectedProject}
+            title={!selectedProject ? "Please select a project workspace to access Strategic Balance Sheet" : "Strategic Balance Sheet — Monitors system compute costs, development activity, and efficiency balance alerts (Jevons Paradox)."}
           >
             <span className="material-symbols-outlined">analytics</span>
             <span className="menu-text">Strategic Balance Sheet</span>
@@ -1298,7 +1306,8 @@ function App() {
           <button 
             onClick={() => setCurrentTab('calibration')} 
             className={`menu-item-btn ${currentTab === 'calibration' ? 'active' : ''}`}
-            title="Simulation Alignment — Auto-corrects AI forecast models against actual repository history to maintain simulation accuracy."
+            disabled={!selectedProject}
+            title={!selectedProject ? "Please select a project workspace to access Simulation Alignment" : "Simulation Alignment — Auto-corrects AI forecast models against actual repository history to maintain simulation accuracy."}
           >
             <span className="material-symbols-outlined">query_stats</span>
             <span className="menu-text">Simulation Alignment</span>
@@ -1306,6 +1315,8 @@ function App() {
           <button 
             onClick={() => setCurrentTab('settings')} 
             className={`menu-item-btn ${currentTab === 'settings' ? 'active' : ''}`}
+            disabled={!selectedProject}
+            title={!selectedProject ? "Please select a project workspace to access Settings" : ""}
           >
             <span className="material-symbols-outlined">settings</span>
             <span className="menu-text">Settings</span>
@@ -1442,18 +1453,16 @@ function App() {
               </Canvas>
             )}
 
-            {/* DTO Simulation: Classical Garden Simulation */}
-            <GameGardenScene
+            {/* DTO Simulation: R3F L-System Data Tree Garden */}
+            <DataTreeGarden
               active={dtoSimActive}
               crr={activeProjectData?.telemetry?.crr}
               projectName={activeProjectData?.name}
               graph={enrichedGraph}
-              qaLimit={qaLimit}
               opponentLimit={opponentLimit}
               eventCount={selectedProject ? (ingestionEvents[selectedProject]?.length || 0) : 0}
               onSelectNode={setSelectedGardenNode}
               sprintVelocity={activeProjectData?.telemetry?.sprintVelocity}
-              filters={filters}
               uiVisible={uiVisible}
             />
           </div>
@@ -1465,122 +1474,147 @@ function App() {
                 <div className="onboarding-hero-section">
                   <div className="onboarding-brand-column">
                     <div className="onboarding-brand-header">
-                      <span className="brand-badge">LUMINA DTO PLATFORM</span>
                       <h1>Project World Model</h1>
                       <p className="onboarding-tagline">Causal Digital Twin & Strategic Simulator</p>
                     </div>
-                    
-                    <div className="onboarding-info-bullets">
-                      <div className="info-bullet">
-                        <span className="material-symbols-outlined bullet-icon">radar</span>
-                        <div>
-                          <h5>Causal Forecasting</h5>
-                          <p>Simulate team sizing, scope changes, and estimate project risk before merging code.</p>
+
+                    <h4 className="how-it-works-title">How It Works</h4>
+                    <div className="onboarding-stepper">
+                      <div className="step-item">
+                        <div className="step-badge-col">
+                          <span className="step-number">01</span>
+                          <span className="step-line"></span>
                         </div>
-                      </div>
-                      
-                      <div className="info-bullet">
-                        <span className="material-symbols-outlined bullet-icon">safety_check</span>
-                        <div>
-                          <h5>Multi-Agent Verification</h5>
-                          <p>Overnight agent simulations analyze tech debt, pipeline status, and code safety policies.</p>
+                        <div className="step-content">
+                          <span className="step-label">OBSERVE</span>
+                          <h5>Continuous Ingestion</h5>
+                          <p>Connects to GitHub, Jira, Linear, and Slack. Parses pull requests, issues, and commits into an immutable event stream for analysis.</p>
                         </div>
                       </div>
 
-                      <div className="info-bullet">
-                        <span className="material-symbols-outlined bullet-icon">account_tree</span>
-                        <div>
-                          <h5>Consensus & Alignment</h5>
-                          <p>Verify simulated predictions against historical facts via real-time telemetry pipelines.</p>
+                      <div className="step-item">
+                        <div className="step-badge-col">
+                          <span className="step-number">02</span>
+                          <span className="step-line"></span>
+                        </div>
+                        <div className="step-content">
+                          <span className="step-label">PREDICT</span>
+                          <h5>Causal Simulation Core</h5>
+                          <p>Runs counterfactual &ldquo;what-if&rdquo; scenarios in latent space — forecasting merge conflicts, scope risks, and integration debt before they reach production.</p>
+                        </div>
+                      </div>
+
+                      <div className="step-item">
+                        <div className="step-badge-col">
+                          <span className="step-number">03</span>
+                        </div>
+                        <div className="step-content">
+                          <span className="step-label">ACT</span>
+                          <h5>Multi-Agent Verification</h5>
+                          <p>Specialized Worker and Critic agents collaborate asynchronously overnight in sandboxed environments to verify code safety, resolve conflicts, and generate actionable proposals.</p>
                         </div>
                       </div>
                     </div>
+
+                    <p className="academic-citation">
+                      Based on research by Petri Paananen — <em>&ldquo;Emergent Workflows in the Video Game Industry: Leveraging AI World Models as a Framework for Production Management&rdquo;</em> (JAMK, 2026).
+                    </p>
                   </div>
 
                   <div className="onboarding-selection-column">
-                    <h3>Select or Connect a Project Workspace</h3>
-                    <p className="selection-sub">Choose an environment below to unlock full causal diagnostic boards, scenario sandboxes, and simulated risk telemetry.</p>
+                    <div className="workspace-selector-panel">
+                      <div className="selector-panel-header">
+                        <div className="get-started-indicator">
+                          <span className="pulse-ring"></span>
+                          <span className="material-symbols-outlined get-started-icon">rocket_launch</span>
+                        </div>
+                        <div>
+                          <h3>Select example project or connect your project workspace</h3>
+                          <p className="selection-sub">Choose an environment below to unlock full causal diagnostic boards, scenario sandboxes, and simulated risk telemetry.</p>
+                        </div>
+                      </div>
                     
-                    <div className="workspace-card-grid">
-                      {/* Pre-configured environments */}
-                      <div 
-                        className="glass-card workspace-select-card"
-                        onClick={() => setSelectedProject('proj-alpha')}
-                      >
-                        <div className="card-header-row">
-                          <span className="material-symbols-outlined workspace-icon">developer_board</span>
-                          <span className="workspace-badge frontend">Frontend</span>
-                        </div>
-                        <h4>Project Alpha</h4>
-                        <p>Jira / GitHub integration demo</p>
-                      </div>
-
-                      <div 
-                        className="glass-card workspace-select-card"
-                        onClick={() => setSelectedProject('proj-beta')}
-                      >
-                        <div className="card-header-row">
-                          <span className="material-symbols-outlined workspace-icon">api</span>
-                          <span className="workspace-badge backend">Backend API</span>
-                        </div>
-                        <h4>Project Beta</h4>
-                        <p>Linear / GitHub integration demo</p>
-                      </div>
-
-                      <div 
-                        className="glass-card workspace-select-card"
-                        onClick={() => setSelectedProject('proj-gamma')}
-                      >
-                        <div className="card-header-row">
-                          <span className="material-symbols-outlined workspace-icon">database</span>
-                          <span className="workspace-badge data">Data Pipeline</span>
-                        </div>
-                        <h4>Project Gamma</h4>
-                        <p>Ingestion & DBT orchestration</p>
-                      </div>
-
-                      <div 
-                        className="glass-card workspace-select-card"
-                        onClick={() => setSelectedProject('proj-live')}
-                      >
-                        <div className="card-header-row">
-                          <span className="material-symbols-outlined workspace-icon">sensors</span>
-                          <span className="workspace-badge live">FastAPI WS</span>
-                        </div>
-                        <h4>Live Pipeline</h4>
-                        <p>Real-time streaming agent pipeline</p>
-                      </div>
-
-                      {/* Custom connected projects */}
-                      {customProjects.map(proj => (
+                      <div className="workspace-card-grid">
+                        {/* Pre-configured environments */}
                         <div 
-                          key={proj.id}
-                          className="glass-card workspace-select-card custom-workspace"
-                          onClick={() => setSelectedProject(proj.id)}
+                          className="glass-card workspace-select-card"
+                          onClick={() => setSelectedProject('proj-alpha')}
                         >
                           <div className="card-header-row">
-                            <span className="material-symbols-outlined workspace-icon">settings_input_component</span>
-                            <span className="workspace-badge custom">Custom</span>
+                            <span className="material-symbols-outlined workspace-icon">developer_board</span>
+                            <span className="workspace-badge frontend">Frontend</span>
                           </div>
-                          <h4>{proj.name}</h4>
-                          <p>User connected workspace</p>
+                          <h4>Project Alpha</h4>
+                          <p>Jira / GitHub integration demo</p>
                         </div>
-                      ))}
 
-                      {/* Connect New Workspace card */}
-                      <div 
-                        className="glass-card workspace-select-card connect-new-card"
-                        onClick={() => {
-                          setShowConnectModal(true);
-                          setConnectLogs([]);
-                          setIsConnecting(false);
-                        }}
-                      >
-                        <div className="connect-plus-wrapper">
-                          <span className="material-symbols-outlined plus-icon">add_circle</span>
+                        <div 
+                          className="glass-card workspace-select-card"
+                          onClick={() => setSelectedProject('proj-beta')}
+                        >
+                          <div className="card-header-row">
+                            <span className="material-symbols-outlined workspace-icon">api</span>
+                            <span className="workspace-badge backend">Backend API</span>
+                          </div>
+                          <h4>Project Beta</h4>
+                          <p>Linear / GitHub integration demo</p>
                         </div>
-                        <h4>Connect Workspace</h4>
-                        <p>Excel, Google Sheets, Jira, or Linear</p>
+
+                        <div 
+                          className="glass-card workspace-select-card"
+                          onClick={() => setSelectedProject('proj-gamma')}
+                        >
+                          <div className="card-header-row">
+                            <span className="material-symbols-outlined workspace-icon">database</span>
+                            <span className="workspace-badge data">Data Pipeline</span>
+                          </div>
+                          <h4>Project Gamma</h4>
+                          <p>Ingestion & DBT orchestration</p>
+                        </div>
+
+                        <div 
+                          className="glass-card workspace-select-card"
+                          onClick={() => setSelectedProject('proj-live')}
+                        >
+                          <div className="card-header-row">
+                            <span className="material-symbols-outlined workspace-icon">sensors</span>
+                            <span className="workspace-badge live">FastAPI WS</span>
+                          </div>
+                          <h4>Live Pipeline</h4>
+                          <p>Real-time streaming agent pipeline</p>
+                        </div>
+
+                        {/* Custom connected projects */}
+                        {customProjects.map(proj => (
+                          <div 
+                            key={proj.id}
+                            className="glass-card workspace-select-card custom-workspace"
+                            onClick={() => setSelectedProject(proj.id)}
+                          >
+                            <div className="card-header-row">
+                              <span className="material-symbols-outlined workspace-icon">settings_input_component</span>
+                              <span className="workspace-badge custom">Custom</span>
+                            </div>
+                            <h4>{proj.name}</h4>
+                            <p>User connected workspace</p>
+                          </div>
+                        ))}
+
+                        {/* Connect New Workspace card */}
+                        <div 
+                          className="glass-card workspace-select-card connect-new-card"
+                          onClick={() => {
+                            setShowConnectModal(true);
+                            setConnectLogs([]);
+                            setIsConnecting(false);
+                          }}
+                        >
+                          <div className="connect-plus-wrapper">
+                            <span className="material-symbols-outlined plus-icon">add_circle</span>
+                          </div>
+                          <h4>Connect Workspace</h4>
+                          <p>Excel, Google Sheets, Jira, or Linear</p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2854,7 +2888,7 @@ function App() {
                         </div>
                       </button>
 
-                      {/* Slot 8: Butterflies */}
+                      {/* Slot 8: Bees (agents) */}
                       <button 
                         className={`filter-slot-btn ${filters.showAgents ? 'active' : 'inactive'}`}
                         onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showAgents: !prev.showAgents })); }}
@@ -2863,22 +2897,8 @@ function App() {
                         <div className="filter-led"></div>
                         <div className="filter-tooltip-card">
                           <div className="tooltip-shortcut">Hotkey [A]</div>
-                          <div className="tooltip-title">Swarm Butterflies</div>
-                          <p className="tooltip-desc">Shows flying butterflies representing Worker, Critic, and Opponent simulation threads.</p>
-                        </div>
-                      </button>
-
-                      {/* Slot 9: Spark 3DGS */}
-                      <button 
-                        className={`filter-slot-btn ${filters.showSparkGS ? 'active' : 'inactive'}`}
-                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showSparkGS: !prev.showSparkGS })); }}
-                      >
-                        <span className="material-symbols-outlined">center_focus_strong</span>
-                        <div className="filter-led"></div>
-                        <div className="filter-tooltip-card">
-                          <div className="tooltip-shortcut">Hotkey [G]</div>
-                          <div className="tooltip-title">Spark 3DGS</div>
-                          <p className="tooltip-desc">Toggle World Labs Marble generated photorealistic 3D Gaussian Splatting background.</p>
+                          <div className="tooltip-title">Bee Agents</div>
+                          <p className="tooltip-desc">Animated bees representing Worker, Critic and Opponent agents orbiting the garden well.</p>
                         </div>
                       </button>
                     </div>
