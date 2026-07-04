@@ -18,29 +18,16 @@ interface WellProps extends AssetProps {
 
 export function Well({ position, crr, projectName, onHover, onClick }: WellProps) {
   const [hovered, setHovered] = useState(false);
-  const waterRef = useRef<THREE.Mesh>(null);
   
-  // Water color shifts from lush cyan-blue (CRR >= 1.2) to warning orange-red (CRR < 0.8)
+  // Water color shifts from healthy blue (when CRR < 1.0, optimal) to warning red (when CRR >= 1.0, warning)
   const waterColor = useMemo(() => {
-    const healthy = new THREE.Color('#3498db');
-    const warning = new THREE.Color('#e74c3c');
-    const factor = Math.min(Math.max((crr - 0.7) / 0.8, 0), 1);
-    return warning.lerp(healthy, factor);
+    const healthy = new THREE.Color('#3498db'); // Lush cyan-blue
+    const warning = new THREE.Color('#e74c3c'); // Warning red
+    // crr < 1.0 is healthy (Optimal)
+    // crr >= 1.0 is warning
+    const f = Math.min(Math.max((crr - 0.7) / 0.5, 0), 1);
+    return healthy.clone().lerp(warning, f);
   }, [crr]);
-
-  // Sparkle water ripples
-  useFrame((state) => {
-    if (!waterRef.current) return;
-    const t = state.clock.getElapsedTime();
-    const scale = 1.0 + Math.sin(t * 2) * 0.015;
-    waterRef.current.scale.set(scale, 1.0, scale);
-    if (Array.isArray(waterRef.current.material)) {
-      // noop
-    } else if (waterRef.current.material) {
-      const mat = waterRef.current.material as THREE.MeshStandardMaterial;
-      mat.emissiveIntensity = 0.15 + Math.sin(t * 3.5) * 0.08;
-    }
-  });
 
   const handlePointerOver = (e: any) => {
     e.stopPropagation();
@@ -53,7 +40,7 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
           title: projectName ? `${projectName} Well Core` : `CRR Core Well (Health: ${crr.toFixed(2)}x)`,
           progress: Math.min(Math.max(crr / 2, 0), 1),
           complexity: 1,
-          risk: crr < 1.0 ? 0.7 : 0.1,
+          risk: crr > 1.0 ? 0.7 : 0.1,
         },
         x: e.clientX,
         y: e.clientY
@@ -77,7 +64,7 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
           title: projectName ? `${projectName} Well Core` : `CRR Core Well (Health: ${crr.toFixed(2)}x)`,
           progress: Math.min(Math.max(crr / 2, 0), 1),
           complexity: 1,
-          risk: crr < 1.0 ? 0.7 : 0.1,
+          risk: crr > 1.0 ? 0.7 : 0.1,
         },
         x: e.clientX,
         y: e.clientY
@@ -126,13 +113,13 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
         <meshStandardMaterial color="#627072" roughness={0.9} />
       </mesh>
 
-      {/* Water Plane */}
-      <mesh ref={waterRef} position={[0, 0.32, 0]}>
+      {/* Water Plane (Static: no pulsating updates) */}
+      <mesh position={[0, 0.32, 0]}>
         <cylinderGeometry args={[0.72, 0.72, 0.08, 12]} />
         <meshStandardMaterial
           color={waterColor}
-          roughness={0.1}
-          metalness={0.8}
+          roughness={0.15}
+          metalness={0.7}
           emissive={waterColor}
           emissiveIntensity={0.2}
         />
@@ -180,7 +167,7 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
         <meshStandardMaterial color="#5c4033" roughness={0.9} />
       </mesh>
 
-      {/* Crank Wheel (Hay Day style toy detailing) */}
+      {/* Crank Wheel */}
       <group position={[0.7, 1.4, 0]} rotation={[0, Math.PI / 2, 0]}>
         <mesh castShadow>
           <cylinderGeometry args={[0.04, 0.04, 0.08, 8]} />
@@ -215,7 +202,7 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
       {/* Well Roof */}
       <mesh position={[0, 1.7, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
         <coneGeometry args={[1.1, 0.55, 4]} />
-        <meshStandardMaterial color="#8e44ad" roughness={0.85} flatShading />
+        <meshStandardMaterial color="#8e4a23" roughness={0.85} flatShading />
       </mesh>
     </group>
   );
@@ -405,62 +392,120 @@ export function SpikyWeed({ position, status, node, onHover, onClick }: WeedProp
   );
 }
 
-// ─── 4. Animated Fluttering Butterfly (Agent) ──────────────────────
-interface ButterflyProps {
+// ─── 4. Garden Gnome (Replaces rapidly moving Bee/Butterfly) ──────────
+interface GnomeProps {
+  position: [number, number, number];
   color: string;
-  orbitRadius: number;
-  speed: number;
-  heightOffset: number;
-  phase?: number;
+  name: string; // e.g. "Worker Gnome", "Critic Gnome", "Opponent Gnome"
+  role: string;
+  onHover?: (data: HoveredData | null) => void;
+  onClick?: () => void;
 }
 
-export function Butterfly({ color, orbitRadius, speed, heightOffset, phase = 0 }: ButterflyProps) {
-  const meshRef = useRef<THREE.Group>(null);
-  const leftWingRef = useRef<THREE.Group>(null);
-  const rightWingRef = useRef<THREE.Group>(null);
+export function GardenGnome({ position, color, name, role, onHover, onClick }: GnomeProps) {
+  const [hovered, setHovered] = useState(false);
+  const gnomeRef = useRef<THREE.Group>(null);
 
+  // Soft breathing scaling wiggles
   useFrame((state) => {
-    if (!meshRef.current) return;
-    const t = state.clock.getElapsedTime() * speed + phase;
-    
-    // Orbit around well
-    const x = Math.sin(t) * orbitRadius;
-    const z = Math.cos(t) * orbitRadius;
-    const y = heightOffset + Math.sin(t * 2.5) * 0.22;
-
-    meshRef.current.position.set(x, y, z);
-    meshRef.current.rotation.y = t + Math.PI / 2;
-
-    // Wing flapping flap-loop
-    const flapSpeed = 20;
-    const angle = Math.sin(state.clock.getElapsedTime() * flapSpeed) * 0.55;
-    if (leftWingRef.current) leftWingRef.current.rotation.z = -angle - 0.2;
-    if (rightWingRef.current) rightWingRef.current.rotation.z = angle + 0.2;
+    if (!gnomeRef.current) return;
+    const t = state.clock.getElapsedTime();
+    gnomeRef.current.position.y = position[1] + Math.sin(t * 1.5) * 0.012;
   });
 
+  const handlePointerOver = (e: any) => {
+    e.stopPropagation();
+    document.body.style.cursor = 'pointer';
+    setHovered(true);
+    if (onHover) {
+      onHover({
+        node: {
+          id: `gnome-${name.toLowerCase().replace(/\s+/g, '-')}`,
+          title: name,
+          progress: 1.0,
+          complexity: 0.5,
+          risk: 0.1,
+          description: role,
+        } as any,
+        x: e.clientX,
+        y: e.clientY
+      });
+    }
+  };
+
+  const handlePointerOut = (e: any) => {
+    e.stopPropagation();
+    document.body.style.cursor = 'default';
+    setHovered(false);
+    if (onHover) onHover(null);
+  };
+
+  const handlePointerMove = (e: any) => {
+    e.stopPropagation();
+    if (onHover) {
+      onHover({
+        node: {
+          id: `gnome-${name.toLowerCase().replace(/\s+/g, '-')}`,
+          title: name,
+          progress: 1.0,
+          complexity: 0.5,
+          risk: 0.1,
+          description: role,
+        } as any,
+        x: e.clientX,
+        y: e.clientY
+      });
+    }
+  };
+
   return (
-    <group ref={meshRef}>
-      {/* Body */}
-      <mesh>
-        <sphereGeometry args={[0.045, 6, 6]} />
-        <meshBasicMaterial color="#1a1a24" />
+    <group
+      ref={gnomeRef}
+      position={position}
+      onClick={onClick}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
+      onPointerMove={handlePointerMove}
+    >
+      {/* Gnome Body (Coat) */}
+      <mesh position={[0, 0.16, 0]} castShadow>
+        <cylinderGeometry args={[0.07, 0.1, 0.2, 8]} />
+        <meshStandardMaterial color={color} roughness={0.8} />
+      </mesh>
+      
+      {/* Fluffy Beard */}
+      <mesh position={[0, 0.22, 0.045]} castShadow>
+        <sphereGeometry args={[0.052, 8, 8]} scale={[1, 1.4, 0.75]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.9} />
       </mesh>
 
-      {/* Left Wing (hinged) */}
-      <group position={[-0.02, 0, 0]} ref={leftWingRef}>
-        <mesh position={[-0.08, 0, 0]}>
-          <boxGeometry args={[0.13, 0.008, 0.1]} />
-          <meshBasicMaterial color={color} transparent opacity={0.7} />
-        </mesh>
-      </group>
+      {/* Peach Face */}
+      <mesh position={[0, 0.27, 0.015]} castShadow>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshStandardMaterial color="#ffdbac" roughness={0.8} />
+      </mesh>
 
-      {/* Right Wing (hinged) */}
-      <group position={[0.02, 0, 0]} ref={rightWingRef}>
-        <mesh position={[0.08, 0, 0]}>
-          <boxGeometry args={[0.13, 0.008, 0.1]} />
-          <meshBasicMaterial color={color} transparent opacity={0.7} />
-        </mesh>
-      </group>
+      {/* Small Pinkish Nose */}
+      <mesh position={[0, 0.26, 0.062]}>
+        <sphereGeometry args={[0.014, 6, 6]} />
+        <meshStandardMaterial color="#ffb07c" />
+      </mesh>
+
+      {/* Tall Red Pointed Gnome Hat */}
+      <mesh position={[0, 0.4, -0.01]} rotation={[-0.1, 0, 0]} castShadow>
+        <coneGeometry args={[0.065, 0.25, 8]} />
+        <meshStandardMaterial color={hovered ? '#e74c3c' : '#c0392b'} roughness={0.8} />
+      </mesh>
+
+      {/* Black Boots */}
+      <mesh position={[-0.035, 0.035, 0.01]} castShadow>
+        <boxGeometry args={[0.035, 0.07, 0.06]} />
+        <meshStandardMaterial color="#2c3e50" />
+      </mesh>
+      <mesh position={[0.035, 0.035, 0.01]} castShadow>
+        <boxGeometry args={[0.035, 0.07, 0.06]} />
+        <meshStandardMaterial color="#2c3e50" />
+      </mesh>
     </group>
   );
 }

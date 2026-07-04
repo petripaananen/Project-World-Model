@@ -4,7 +4,7 @@ import { OrbitControls, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import { DataTree } from './DataTree';
 import type { TaskNode, HoveredData } from './DataTree';
-import { Well, RoseBush, SpikyWeed, Butterfly, Fence, GrassTuft, Lantern, Chicken, WoodenBarrel, CropCrate, Wildflower } from './ProceduralAssets';
+import { Well, RoseBush, SpikyWeed, GardenGnome, Fence, GrassTuft, Lantern, Chicken, WoodenBarrel, CropCrate, Wildflower } from './ProceduralAssets';
 import { WeatherSystem } from './WeatherSystem';
 
 interface DTONode {
@@ -251,10 +251,28 @@ export function DataTreeGarden({
           />
         ))}
 
-        {/* 5. Animated Agent Butterflies */}
-        <Butterfly color="#2575fc" orbitRadius={2.4} speed={0.9} heightOffset={1.1} phase={0} />   {/* Worker */}
-        <Butterfly color="#6f86d6" orbitRadius={2.8} speed={0.7} heightOffset={1.4} phase={2.2} /> {/* Critic */}
-        <Butterfly color="#ec008c" orbitRadius={2.0} speed={1.1} heightOffset={0.9} phase={4.4} /> {/* Opponent */}
+        {/* 5. Cozy Garden Gnomes (AI Agents) */}
+        <GardenGnome
+          color="#2575fc"
+          position={[-1.4, 0.01, -1.8]}
+          name="Worker Agent Gnome"
+          role="Executes tasks, generates branches, refactors code, and runs system tests."
+          onHover={setHoveredInfo}
+        />
+        <GardenGnome
+          color="#9b59b6"
+          position={[1.4, 0.01, -1.8]}
+          name="Critic Agent Gnome"
+          role="Reviews pull requests, checks styling, runs linters, and rates visual fidelity."
+          onHover={setHoveredInfo}
+        />
+        <GardenGnome
+          color="#ec008c"
+          position={[0.0, 0.01, 1.8]}
+          name="Opponent Agent Gnome"
+          role="Simulates system failures, breaks parameters, and tests resilience of the garden."
+          onHover={setHoveredInfo}
+        />
 
         {/* 6. Picket Fences Borders */}
         {/* Back Border */}

@@ -2773,7 +2773,7 @@ function App() {
                     <span className="material-symbols-outlined">speed</span>
                     <h3>Causal Efficiency</h3>
                   </div>
-                  <div className="metric-value">{activeProjectData.telemetry.crr.toFixed(2)}x</div>
+                  <div className="metric-value" style={{ color: '#ffffff', textShadow: '0 0 10px rgba(255, 255, 255, 0.35)' }}>{activeProjectData.telemetry.crr.toFixed(2)}x</div>
                   <div className="metric-sub">
                     Sim Status: <strong className={activeProjectData.telemetry.crr < 1.0 ? 'status-green' : 'status-red'}>
                       {activeProjectData.telemetry.crr < 1.0 ? 'Optimal' : 'Debt Warning'}
