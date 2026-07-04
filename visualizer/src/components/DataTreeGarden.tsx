@@ -18,6 +18,10 @@ import {
   CropCrate,
   Wildflower,
   ChickenCoop,
+  TallCornCrop,
+  CabbageCrop,
+  CarrotCrop,
+  Sunbeams,
 } from './ProceduralAssets';
 import { WeatherSystem } from './WeatherSystem';
 
@@ -29,9 +33,9 @@ interface DataTreeGardenProps {
   [key: string]: any;
 }
 
-// ─── OPTIMIZED TOON SHADED INSTANCED GRASS COMPONENT ─────────────────
+// ─── HIGH-DENSITY TOON-SHADED INSTANCED GRASS (2,000 BLADES) ─────────
 function InstancedGrass({ toonRamp }: { toonRamp: THREE.Texture }) {
-  const count = 1300;
+  const count = 2000; // Step 2: 2,000 blades of grass
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -40,11 +44,11 @@ function InstancedGrass({ toonRamp }: { toonRamp: THREE.Texture }) {
     const posList: [number, number, number][] = [];
     const rotList: number[] = [];
     for (let i = 0; i < count; i++) {
-      // Scatter grass blades over a 34x34 lawn
-      let x = (Math.random() - 0.5) * 34;
-      let z = (Math.random() - 0.5) * 34;
+      // Scatter grass blades over a 36x36 lawn
+      let x = (Math.random() - 0.5) * 36;
+      let z = (Math.random() - 0.5) * 36;
 
-      // Keep them outside the central dark soil bed (which is 13.5x11.5)
+      // Keep them outside the central soil bed (which is 13.5x11.5)
       if (Math.abs(x) < 7.2 && Math.abs(z) < 6.2) {
         if (Math.random() > 0.5) {
           x += x > 0 ? 7.2 : -7.2;
@@ -53,7 +57,7 @@ function InstancedGrass({ toonRamp }: { toonRamp: THREE.Texture }) {
         }
       }
       posList.push([x, 0.02, z]);
-      rotList.push((Math.random() - 0.5) * 0.35); // Random base tilt
+      rotList.push((Math.random() - 0.5) * 0.4); // Random base tilt
     }
     return [posList, rotList];
   }, [count]);
@@ -67,13 +71,14 @@ function InstancedGrass({ toonRamp }: { toonRamp: THREE.Texture }) {
       const baseRot = rotations[i];
 
       // Wind sway wave ripple
-      const sway = Math.sin(time * 1.8 + x * 0.4 + z * 0.2) * 0.09;
+      const sway = Math.sin(time * 1.9 + x * 0.45 + z * 0.25) * 0.095;
 
       dummy.position.set(x, y, z);
-      dummy.rotation.set(baseRot + sway, baseRot * 0.5, baseRot);
+      dummy.rotation.set(baseRot + sway, baseRot * 0.4, baseRot);
       
-      const scaleY = 0.95 + Math.sin(i * 45) * 0.3;
-      dummy.scale.set(0.75, scaleY, 0.75);
+      // Dynamic height variance for lush organic presence (Step 2)
+      const scaleY = 1.05 + Math.sin(i * 45) * 0.35;
+      dummy.scale.set(0.9, scaleY, 0.9);
       
       dummy.updateMatrix();
       meshRef.current.setMatrixAt(i, dummy.matrix);
@@ -83,9 +88,8 @@ function InstancedGrass({ toonRamp }: { toonRamp: THREE.Texture }) {
 
   return (
     <instancedMesh ref={meshRef} args={[null as any, null as any, count]} castShadow receiveShadow>
-      <coneGeometry args={[0.016, 0.26, 3]} />
-      {/* MeshToonMaterial for Cartoony stepped shading */}
-      <meshToonMaterial color="#3d5c36" gradientMap={toonRamp} />
+      <coneGeometry args={[0.02, 0.38, 3]} /> {/* Thin cone blade pointing upward (Step 2) */}
+      <meshToonMaterial color="#7cd936" gradientMap={toonRamp} /> {/* Step 2: Vibrant lime green #7cd936 */}
     </instancedMesh>
   );
 }
@@ -101,7 +105,42 @@ export function DataTreeGarden({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const currentCrr = crr ?? 1.25;
-  const isRainy = currentCrr < 1.0; // Trigger rain during warning periods
+
+  // 1. Determine Project Theme Profile (Step 4)
+  const theme = useMemo(() => {
+    const name = (projectName || '').toLowerCase();
+    if (name.includes('alpha')) return 'alpha';
+    if (name.includes('beta')) return 'beta';
+    if (name.includes('gamma')) return 'gamma';
+    return 'default';
+  }, [projectName]);
+
+  // Weather is rainy if CRR is warning (< 1.0) OR if we are in stormy Project Gamma!
+  const isRainy = currentCrr < 1.0 || theme === 'gamma';
+
+  // Theme-aware Environment Profiles (Step 4)
+  const skyBackground = useMemo(() => {
+    if (theme === 'alpha') return 'linear-gradient(to top, #e74c3c, #feb47b)'; // Deep sunset
+    if (theme === 'beta') return 'linear-gradient(to top, #fbc2eb, #a1c4fd)'; // Pink sunrise
+    if (theme === 'gamma') return 'linear-gradient(to top, #5c6b73, #2f4f4f)'; // Overcast stormy grey
+    return 'linear-gradient(to top, #fff3d1, #a1c4fd)'; // Soft spring daylight
+  }, [theme]);
+
+  const lightColor = useMemo(() => {
+    if (theme === 'alpha') return '#ffd8b8'; // Sunset gold
+    if (theme === 'beta') return '#ffe5e5'; // Rosy pink
+    if (theme === 'gamma') return '#a0b0b8'; // Cold slate grey
+    return '#fff3d1'; // Warm golden daylight
+  }, [theme]);
+
+  const fogColor = useMemo(() => {
+    if (theme === 'alpha') return '#e06c55';
+    if (theme === 'beta') return '#ebd8e6';
+    if (theme === 'gamma') return '#4a5759';
+    return '#fdfbf7';
+  }, [theme]);
+
+  const fogDensity = isRainy ? 0.024 : 0.012;
 
   // Base grass color shifts from lush deep green to dry straw based on CRR health
   const grassColor = useMemo(() => {
@@ -111,7 +150,7 @@ export function DataTreeGarden({
     return dry.lerp(lush, factor).getStyle();
   }, [currentCrr]);
 
-  // 1. Procedural Cel-Shading Toon Ramp Texture (Stepped gradients)
+  // 2. Procedural Cel-Shading Toon Ramp Texture (Stepped gradients)
   const toonRampTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 4;
@@ -128,18 +167,16 @@ export function DataTreeGarden({
     return texture;
   }, []);
 
-  // 2. Procedural Hand-Painted Tiled Grass Texture
+  // 3. Procedural Hand-Painted Tiled Grass Texture
   const grassTiledTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
     const ctx = canvas.getContext('2d')!;
 
-    // Green grass base fill
     ctx.fillStyle = '#223a1a';
     ctx.fillRect(0, 0, 256, 256);
 
-    // Light green speckles
     for (let i = 0; i < 250; i++) {
       const x = Math.random() * 256;
       const y = Math.random() * 256;
@@ -147,7 +184,6 @@ export function DataTreeGarden({
       ctx.fillRect(x, y, 2 + Math.random() * 2, 2 + Math.random() * 2);
     }
 
-    // Hand-painted clovers
     ctx.fillStyle = '#2c4f24';
     for (let i = 0; i < 30; i++) {
       const cx = Math.random() * 256;
@@ -166,18 +202,17 @@ export function DataTreeGarden({
     return texture;
   }, []);
 
-  // 3. Procedural Hand-Painted Soil Texture
+  // 4. Procedural Hand-Painted Soil Texture
   const soilTiledTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 128;
     const ctx = canvas.getContext('2d')!;
 
-    // Dark brown soil base fill
-    ctx.fillStyle = '#2c1d11';
+    // Wet soil base for stormy Gamma, dry base for others
+    ctx.fillStyle = theme === 'gamma' ? '#18110a' : '#2c1d11';
     ctx.fillRect(0, 0, 128, 128);
 
-    // Dark dirt speckles
     for (let i = 0; i < 150; i++) {
       const x = Math.random() * 128;
       const y = Math.random() * 128;
@@ -185,7 +220,6 @@ export function DataTreeGarden({
       ctx.fillRect(x, y, 2, 2);
     }
 
-    // Small pebbles
     for (let i = 0; i < 10; i++) {
       const x = Math.random() * 128;
       const y = Math.random() * 128;
@@ -200,7 +234,7 @@ export function DataTreeGarden({
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(5, 5);
     return texture;
-  }, []);
+  }, [theme]);
 
   // Static tufts scatter
   const grassTufts = useMemo(() => {
@@ -208,7 +242,6 @@ export function DataTreeGarden({
     for (let i = 0; i < 90; i++) {
       let x = (Math.random() - 0.5) * 28;
       let z = (Math.random() - 0.5) * 28;
-      // Avoid center raised bed
       if (Math.abs(x) < 7.0 && Math.abs(z) < 6.0) {
         x += x > 0 ? 7.0 : -7.0;
         z += z > 0 ? 6.0 : -6.0;
@@ -221,11 +254,10 @@ export function DataTreeGarden({
   // Generate static coordinates for 40 wildflowers scattered in the grass
   const wildflowers = useMemo(() => {
     const flowers: { pos: [number, number, number]; color: string }[] = [];
-    const colors = ['#ffffff', '#e74c3c', '#f1c40f', '#9b59b6']; // White, red, yellow, purple
+    const colors = ['#ffffff', '#e74c3c', '#f1c40f', '#9b59b6'];
     for (let i = 0; i < 40; i++) {
       let x = (Math.random() - 0.5) * 26;
       let z = (Math.random() - 0.5) * 26;
-      // Avoid center soil bed
       if (Math.abs(x) < 7.0 && Math.abs(z) < 6.0) {
         x += x > 0 ? 7.0 : -7.0;
         z += z > 0 ? 6.0 : -6.0;
@@ -340,57 +372,65 @@ export function DataTreeGarden({
         width: '100%',
         height: '100%',
         position: 'relative',
-        background: isRainy
-          ? '#a8b0ad'
-          : 'linear-gradient(to top, #fff3d1, #a1c4fd)', // Warm morning sunset gradient
+        background: skyBackground,
         overflow: 'hidden',
       }}
     >
       <Canvas
         camera={{ position: [0, 8, 12], fov: 45 }}
-        shadows
+        shadows // Step 3: Enable shadows on Canvas
         gl={{
           antialias: true,
+          alpha: false, // Step 3: Fast and rich rendering
+          powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.15,
         }}
         onClick={handleCanvasClick}
       >
         {/* Atmospheric Volumetric Fog */}
-        <fogExp2 attach="fog" args={[isRainy ? '#a8b0ad' : '#fdfbf7', isRainy ? 0.022 : 0.01]} />
+        <fogExp2 attach="fog" args={[fogColor, fogDensity]} />
 
         {/* Lighting setup based on instruction.md */}
         <hemisphereLight color="#a1c4fd" groundColor="#223a1a" intensity={0.95} />
 
+        {/* Step 3: Explicit shadow bounds & map size */}
         <directionalLight
           position={[15, 20, 10]}
           intensity={2.8}
-          castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
+          castShadow // Step 3: Enable directional light shadow mapping
+          shadow-mapSize={[2048, 2048]}
+          shadow-camera-far={50}
+          shadow-camera-left={-15}
+          shadow-camera-right={15}
+          shadow-camera-top={15}
+          shadow-camera-bottom={-15}
           shadow-bias={-0.0001}
-          color="#fff3d1"
+          color={lightColor}
         />
 
         {/* Secondary soft point fill light */}
         <pointLight position={[-8, 6, -8]} intensity={0.5} color="#fffdf0" />
 
-        {/* 1. Central Core Well representing CRR */}
+        {/* 1. Volumetric God Ray Sunbeams (Step 5) - Rendered for sunny weather only */}
+        {theme !== 'gamma' && <Sunbeams />}
+
+        {/* 2. Central Core Well representing CRR */}
         <Well position={[0, 0, 0]} crr={currentCrr} projectName={projectName} onHover={setHoveredInfo} />
 
-        {/* 2. Procedural Epic DataTrees (left and right) */}
+        {/* 3. Procedural Epic DataTrees (left and right) with theme styling */}
         {gardenElements.epicPRs && (
           <group position={[-3.6, 0, -1.8]}>
-            <DataTree data={gardenElements.epicPRs} onHover={setHoveredInfo} />
+            <DataTree data={gardenElements.epicPRs} onHover={setHoveredInfo} theme={theme} />
           </group>
         )}
         {gardenElements.epicIssues && (
           <group position={[3.6, 0, -1.8]}>
-            <DataTree data={gardenElements.epicIssues} onHover={setHoveredInfo} />
+            <DataTree data={gardenElements.epicIssues} onHover={setHoveredInfo} theme={theme} />
           </group>
         )}
 
-        {/* 3. Pull Request Bushes */}
+        {/* 4. Pull Request Bushes */}
         {gardenElements.prs.map((p, idx) => (
           <RoseBush
             key={`pr-${idx}`}
@@ -401,7 +441,7 @@ export function DataTreeGarden({
           />
         ))}
 
-        {/* 4. Issue Weeds */}
+        {/* 5. Issue Weeds */}
         {gardenElements.issues.map((i, idx) => (
           <SpikyWeed
             key={`issue-${idx}`}
@@ -412,7 +452,7 @@ export function DataTreeGarden({
           />
         ))}
 
-        {/* 5. Cozy Garden Gnomes (AI Agents) */}
+        {/* 6. Cozy Garden Gnomes (AI Agents) */}
         <GardenGnome
           color="#2575fc"
           position={[-1.4, 0.01, -1.8]}
@@ -435,8 +475,7 @@ export function DataTreeGarden({
           onHover={setHoveredInfo}
         />
 
-        {/* 6. Picket Fences Borders (crooked hand-built look) */}
-        {/* Back Border */}
+        {/* 7. Picket Fences Borders (crooked hand-built look) */}
         <Fence position={[-4.5, 0, -6.5]} />
         <Fence position={[-3, 0, -6.5]} />
         <Fence position={[-1.5, 0, -6.5]} />
@@ -444,7 +483,6 @@ export function DataTreeGarden({
         <Fence position={[1.5, 0, -6.5]} />
         <Fence position={[3, 0, -6.5]} />
         <Fence position={[4.5, 0, -6.5]} />
-        {/* Front Border */}
         <Fence position={[-4.5, 0, 6.5]} />
         <Fence position={[-3, 0, 6.5]} />
         <Fence position={[-1.5, 0, 6.5]} />
@@ -459,8 +497,7 @@ export function DataTreeGarden({
         <Lantern position={[-4.5, 0, 6.4]} />
         <Lantern position={[4.5, 0, 6.4]} />
 
-        {/* 7. Flat Stepping Stones (Paths) */}
-        {/* Path from Well to Left Tree */}
+        {/* 8. Flat Stepping Stones (Paths) */}
         <mesh position={[-1.0, 0.01, -0.65]} rotation={[-Math.PI / 2, 0, 0.4]}>
           <cylinderGeometry args={[0.22, 0.22, 0.02, 8]} />
           <meshStandardMaterial color="#948c82" roughness={0.9} />
@@ -469,7 +506,6 @@ export function DataTreeGarden({
           <cylinderGeometry args={[0.24, 0.24, 0.02, 8]} />
           <meshStandardMaterial color="#948c82" roughness={0.9} />
         </mesh>
-        {/* Path from Well to Right Tree */}
         <mesh position={[1.0, 0.01, -0.65]} rotation={[-Math.PI / 2, 0, -0.4]}>
           <cylinderGeometry args={[0.22, 0.22, 0.02, 8]} />
           <meshStandardMaterial color="#948c82" roughness={0.9} />
@@ -479,7 +515,7 @@ export function DataTreeGarden({
           <meshStandardMaterial color="#948c82" roughness={0.9} />
         </mesh>
 
-        {/* 8. Weather Effects System */}
+        {/* 9. Weather Effects System */}
         <WeatherSystem isRainy={isRainy} />
 
         {/* Hay Day Clutter & Accessories */}
@@ -496,6 +532,62 @@ export function DataTreeGarden({
         <Chicken position={[1.5, 0.01, 2.8]} speed={0.8} phase={2.5} />
         <Chicken position={[-2.4, 0.01, -3.2]} speed={1.1} phase={4.8} />
 
+        {/* 10. Scattered Project Crops (Step 4 & 5) */}
+        {theme === 'alpha' && (
+          <>
+            {/* Project Alpha: Tall Corn Rows and Pumpkin Crates */}
+            <TallCornCrop position={[-3.2, 0.01, 3.2]} />
+            <TallCornCrop position={[-2.2, 0.01, 3.2]} />
+            <TallCornCrop position={[-1.2, 0.01, 3.2]} />
+            <TallCornCrop position={[-3.2, 0.01, 4.4]} />
+            <TallCornCrop position={[-2.2, 0.01, 4.4]} />
+            <TallCornCrop position={[-1.2, 0.01, 4.4]} />
+            <CropCrate position={[2.5, 0.01, 2.5]} />
+            <CropCrate position={[1.0, 0.01, 3.5]} />
+          </>
+        )}
+
+        {theme === 'beta' && (
+          <>
+            {/* Project Beta: Orange Carrot Rows */}
+            <CarrotCrop position={[-3.5, 0.01, 2.8]} />
+            <CarrotCrop position={[-2.5, 0.01, 2.8]} />
+            <CarrotCrop position={[-1.5, 0.01, 2.8]} />
+            <CarrotCrop position={[-3.5, 0.01, 3.8]} />
+            <CarrotCrop position={[-2.5, 0.01, 3.8]} />
+            <CarrotCrop position={[-1.5, 0.01, 3.8]} />
+            <CarrotCrop position={[-3.5, 0.01, 4.8]} />
+            <CarrotCrop position={[-2.5, 0.01, 4.8]} />
+            <CarrotCrop position={[-1.5, 0.01, 4.8]} />
+          </>
+        )}
+
+        {theme === 'gamma' && (
+          <>
+            {/* Project Gamma: Leafy Cabbages and Wild Spiky weeds (bug representation) */}
+            <CabbageCrop position={[-3.5, 0.01, 3.2]} />
+            <CabbageCrop position={[-2.0, 0.01, 3.2]} />
+            <CabbageCrop position={[-0.5, 0.01, 3.2]} />
+            <CabbageCrop position={[-3.5, 0.01, 4.4]} />
+            <CabbageCrop position={[-2.0, 0.01, 4.4]} />
+            <CabbageCrop position={[-0.5, 0.01, 4.4]} />
+            <SpikyWeed position={[2.5, 0.01, 2.5]} status="active" />
+            <SpikyWeed position={[1.0, 0.01, 3.5]} status="active" />
+          </>
+        )}
+
+        {theme === 'default' && (
+          <>
+            {/* Default/Live: Mixed Crop Patch */}
+            <CarrotCrop position={[-3.5, 0.01, 3.0]} />
+            <CarrotCrop position={[-2.5, 0.01, 3.0]} />
+            <CabbageCrop position={[-3.5, 0.01, 4.2]} />
+            <CabbageCrop position={[-2.0, 0.01, 4.2]} />
+            <TallCornCrop position={[1.8, 0.01, 3.0]} />
+            <CropCrate position={[2.2, 0.01, 4.2]} />
+          </>
+        )}
+
         {/* Scattered Colorful Wildflowers */}
         {wildflowers.map((w, idx) => (
           <Wildflower key={`flower-${idx}`} position={w.pos} color={w.color} />
@@ -506,7 +598,7 @@ export function DataTreeGarden({
           <GrassTuft key={`tuft-${idx}`} position={pos} />
         ))}
 
-        {/* Instanced Grass scatter for heavy foliage texture (1300 blades) */}
+        {/* Instanced Grass scatter (2,000 blades) (Step 2) */}
         <InstancedGrass toonRamp={toonRampTexture} />
 
         {/* Central Raised Soil Bed (Dark, organic earth brown with soil texture) */}
@@ -530,7 +622,7 @@ export function DataTreeGarden({
           far={4.5}
         />
 
-        {/* Post-Processing Composer (dreamy glow + Screen Space Ambient Occlusion) */}
+        {/* Post-Processing Composer (bloom + Screen Space Ambient Occlusion shadows) */}
         <EffectComposer>
           <SSAO samples={11} radius={0.35} intensity={14} luminanceInfluence={0.5} />
           <Bloom luminanceThreshold={0.28} intensity={0.95} />

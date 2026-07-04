@@ -829,3 +829,83 @@ export function ChickenCoop({ position }: { position: [number, number, number] }
     </group>
   );
 }
+
+// ─── TALL CORN CROP ──────────────────────────────────────────────────
+export function TallCornCrop({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* Green main stalk */}
+      <mesh position={[0, 0.3, 0]} castShadow>
+        <cylinderGeometry args={[0.015, 0.024, 0.6, 6]} />
+        <meshStandardMaterial color="#2d5e20" roughness={0.8} flatShading />
+      </mesh>
+      {/* Leaves */}
+      <mesh position={[0.08, 0.25, 0]} rotation={[0, 0, -Math.PI / 4]} castShadow>
+        <boxGeometry args={[0.12, 0.012, 0.03]} />
+        <meshStandardMaterial color="#4a8f33" roughness={0.8} />
+      </mesh>
+      <mesh position={[-0.08, 0.38, 0]} rotation={[0, 0, Math.PI / 4]} castShadow>
+        <boxGeometry args={[0.12, 0.012, 0.03]} />
+        <meshStandardMaterial color="#4a8f33" roughness={0.8} />
+      </mesh>
+      {/* Yellow corn cobs */}
+      <mesh position={[0.04, 0.3, 0.02]} rotation={[0, 0.3, -0.2]} castShadow>
+        <dodecahedronGeometry args={[0.05, 0]} />
+        <meshStandardMaterial color="#f1c40f" roughness={0.6} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── CABBAGE CROP ────────────────────────────────────────────────────
+export function CabbageCrop({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* Outer dark leaves */}
+      <mesh position={[0, 0.06, 0]} castShadow>
+        <dodecahedronGeometry args={[0.13, 0]} />
+        <meshStandardMaterial color="#1f4c22" roughness={0.9} flatShading />
+      </mesh>
+      {/* Inner light leaf cluster */}
+      <mesh position={[0, 0.09, 0]} castShadow>
+        <dodecahedronGeometry args={[0.095, 1]} />
+        <meshStandardMaterial color="#7ed685" roughness={0.85} flatShading />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── CARROT CROP ─────────────────────────────────────────────────────
+export function CarrotCrop({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* Orange root sticking out slightly */}
+      <mesh position={[0, 0.06, 0]} rotation={[Math.PI, 0, 0]} castShadow>
+        <coneGeometry args={[0.05, 0.16, 6]} />
+        <meshStandardMaterial color="#e67e22" roughness={0.7} flatShading />
+      </mesh>
+      {/* Green leaves */}
+      <mesh position={[0, 0.13, 0]} castShadow>
+        <dodecahedronGeometry args={[0.04, 0]} />
+        <meshStandardMaterial color="#27ae60" roughness={0.85} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── VOLUMETRIC SUNBEAM GOD RAYS ─────────────────────────────────────
+export function Sunbeams() {
+  return (
+    <group position={[12, 12, -6]} rotation={[0, 0, -Math.PI / 4]}>
+      <mesh>
+        <cylinderGeometry args={[0.2, 5, 20, 8, 1, true]} />
+        <meshBasicMaterial color="#fff6d1" transparent opacity={0.12} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} />
+      </mesh>
+      <mesh position={[-1.2, 0, 0.8]} rotation={[0.1, 0, 0.1]}>
+        <cylinderGeometry args={[0.1, 4, 18, 8, 1, true]} />
+        <meshBasicMaterial color="#fffdf0" transparent opacity={0.08} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} />
+      </mesh>
+    </group>
+  );
+}
+

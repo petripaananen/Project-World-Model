@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -25,9 +25,10 @@ interface BranchProps {
   length: number;
   radius: number;
   onHover: (data: HoveredData | null) => void;
+  theme?: string;
 }
 
-function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps) {
+function Branch({ node, depth, maxDepth, length, radius, onHover, theme }: BranchProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -45,7 +46,24 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
   const baseBranchColor = new THREE.Color('#4d3319').lerp(new THREE.Color('#2d1a0a'), depth / maxDepth);
   const branchColor = isHovered ? baseBranchColor.clone().addScalar(0.15) : baseBranchColor;
 
-  const baseLeafColor = new THREE.Color('#d35400').lerp(new THREE.Color('#27ae60'), node.progress);
+  // Theme-aware foliage color maps (Step 4 & 1)
+  const baseLeafColor = useMemo(() => {
+    if (theme === 'alpha') {
+      // Infrastructure: crimson red / deep orange
+      return new THREE.Color('#d35400').lerp(new THREE.Color('#c0392b'), node.progress);
+    }
+    if (theme === 'beta') {
+      // Frontend: cherry blossom pink / soft peach
+      return new THREE.Color('#ffe2e2').lerp(new THREE.Color('#fbc2eb'), node.progress);
+    }
+    if (theme === 'gamma') {
+      // Data: deep slate forest spruce pine green
+      return new THREE.Color('#2d5a27').lerp(new THREE.Color('#11300e'), 1 - node.progress);
+    }
+    // Default / Live: bright leaf green / harvest yellow
+    return new THREE.Color('#e67e22').lerp(new THREE.Color('#27ae60'), node.progress);
+  }, [theme, node.progress]);
+
   const leafColor = isHovered ? baseLeafColor.clone().addScalar(0.2) : baseLeafColor;
 
   const children = node.subtasks || [];
@@ -102,12 +120,13 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
           onPointerOut={handlePointerOut}
           onPointerMove={handlePointerMove}
         >
-          {/* Main Faceted Leaf Cluster */}
+          {/* Main Low-Poly Faceted Leaf Cluster (Step 1) */}
           <mesh castShadow>
             <dodecahedronGeometry args={[radius * 2.6 * (node.progress + 0.5), 1]} />
             <meshStandardMaterial
               color={leafColor}
-              roughness={0.9}
+              roughness={0.8}
+              metalness={0.1}
               flatShading
               emissive={leafColor}
               emissiveIntensity={isHovered ? 0.35 : node.progress * 0.12}
@@ -118,7 +137,8 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
             <dodecahedronGeometry args={[radius * 1.9 * (node.progress + 0.5), 1]} />
             <meshStandardMaterial
               color={leafColor}
-              roughness={0.9}
+              roughness={0.8}
+              metalness={0.1}
               flatShading
               emissive={leafColor}
               emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
@@ -129,7 +149,8 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
             <dodecahedronGeometry args={[radius * 1.7 * (node.progress + 0.5), 1]} />
             <meshStandardMaterial
               color={leafColor}
-              roughness={0.9}
+              roughness={0.8}
+              metalness={0.1}
               flatShading
               emissive={leafColor}
               emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
@@ -140,7 +161,8 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
             <dodecahedronGeometry args={[radius * 1.6 * (node.progress + 0.5), 1]} />
             <meshStandardMaterial
               color={leafColor}
-              roughness={0.9}
+              roughness={0.8}
+              metalness={0.1}
               flatShading
               emissive={leafColor}
               emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
@@ -149,8 +171,10 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
 
           {/* Stylized hanging fruits (Apples/Peaches) */}
           {[[0.2, 0.1, 0.2], [-0.2, -0.1, 0.2], [0.3, -0.2, -0.2], [-0.3, 0.2, -0.3]].map((fPos, fIdx) => {
-            const isRedApple = !node.id.includes('issue'); // Apple tree on PRs, peach tree on Issues
-            const fruitColor = isRedApple ? '#e74c3c' : '#e67e22';
+            let fruitColor = '#e74c3c'; // Apple red
+            if (theme === 'beta') fruitColor = '#f1c40f'; // Yellow pear
+            else if (theme === 'gamma') fruitColor = '#e67e22'; // Orange peach
+
             return (
               <mesh
                 key={`fruit-${fIdx}`}
@@ -174,17 +198,22 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
             const angleSpread = 0.45 + (node.risk * 0.2);
             const mid = (branchCount - 1) / 2;
             const zRotation = (index - mid) * angleSpread;
-            const yRotation = (index * Math.PI * 2) / branchCount;
+            const branchLength = length * 0.78;
+            const branchRadius = radius * 0.72;
 
             return (
-              <group key={subtask.id} rotation={[0, yRotation, zRotation]}>
+              <group
+                key={subtask.id}
+                rotation={[0, 0, zRotation]}
+              >
                 <Branch
                   node={subtask}
                   depth={depth + 1}
                   maxDepth={maxDepth}
-                  length={length * 0.72}
-                  radius={radius * 0.65}
+                  length={branchLength}
+                  radius={branchRadius}
                   onHover={onHover}
+                  theme={theme}
                 />
               </group>
             );
@@ -195,19 +224,23 @@ function Branch({ node, depth, maxDepth, length, radius, onHover }: BranchProps)
   );
 }
 
-export function DataTree({ data, onHover }: { data: TaskNode; onHover: (data: HoveredData | null) => void }) {
-  const safeMaxDepth = Math.min(data.complexity, 4);
+interface DataTreeProps {
+  data: TaskNode;
+  onHover: (data: HoveredData | null) => void;
+  theme?: string;
+}
 
+export function DataTree({ data, onHover, theme }: DataTreeProps) {
+  const maxDepth = Math.min(Math.max(data.complexity, 1), 4);
   return (
-    <group>
-      <Branch
-        node={data}
-        depth={0}
-        maxDepth={safeMaxDepth}
-        length={3}
-        radius={0.25}
-        onHover={onHover}
-      />
-    </group>
+    <Branch
+      node={data}
+      depth={1}
+      maxDepth={maxDepth}
+      length={1.8}
+      radius={0.24}
+      onHover={onHover}
+      theme={theme}
+    />
   );
 }
