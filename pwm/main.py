@@ -541,6 +541,10 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+    # Load config first to check for API credentials
+    config = PWMConfig.from_env()
+    default_mode = "analyze" if config.validate_api_access() else "demo"
+
     parser = argparse.ArgumentParser(
         description="Project World Model (PWM) - Integration Debt Analysis Pipeline",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -554,8 +558,8 @@ def main():
     parser.add_argument(
         "--mode",
         choices=["demo", "analyze"],
-        default="demo",
-        help="Pipeline mode: 'demo' (no API needed) or 'analyze' (uses Gemini)",
+        default=default_mode,
+        help=f"Pipeline mode: 'demo' (no API needed) or 'analyze' (uses Gemini, default: {default_mode})",
     )
     parser.add_argument(
         "--ingestion",
@@ -613,8 +617,7 @@ def main():
 
     args = parser.parse_args()
 
-    # Load config
-    config = PWMConfig.from_env()
+    # Re-use loaded config
     config.verbose = args.verbose
 
     # Apply port override

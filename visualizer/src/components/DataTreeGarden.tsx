@@ -1,7 +1,7 @@
-import { useRef, useState, useMemo, Suspense } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { ContactShadows, OrbitControls } from '@react-three/drei';
-import { EffectComposer, Bloom, SSAO } from '@react-three/postprocessing';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { DataTree } from './DataTree';
 import type { TaskNode, HoveredData } from './DataTree';
@@ -13,16 +13,13 @@ import {
   Fence,
   GrassTuft,
   Lantern,
-  Chicken,
   WoodenBarrel,
   CropCrate,
   Wildflower,
-  ChickenCoop,
   TallCornCrop,
   CabbageCrop,
   CarrotCrop,
   Sunbeams,
-  SteppingStone,
 } from './ProceduralAssets';
 import { WeatherSystem } from './WeatherSystem';
 
@@ -103,6 +100,7 @@ export function DataTreeGarden({
   uiVisible = true,
 }: DataTreeGardenProps) {
   const [hoveredInfo, setHoveredInfo] = useState<HoveredData | null>(null);
+  const [showLegend, setShowLegend] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const currentCrr = crr ?? 1.25;
@@ -247,25 +245,29 @@ export function DataTreeGarden({
         x += x > 0 ? 7.0 : -7.0;
         z += z > 0 ? 6.0 : -6.0;
       }
-      tufts.push([x, 0.01, z]);
+          tufts.push([x, 0.01, z]);
     }
     return tufts;
   }, []);
 
-  // Generate static coordinates for 40 wildflowers scattered in the grass
+  // Generate static coordinates for 80 wildflowers scattered in the grass
   const wildflowers = useMemo(() => {
-    const flowers: { pos: [number, number, number]; color: string }[] = [];
-    const colors = ['#ffffff', '#e74c3c', '#f1c40f', '#9b59b6'];
-    for (let i = 0; i < 40; i++) {
-      let x = (Math.random() - 0.5) * 26;
-      let z = (Math.random() - 0.5) * 26;
-      if (Math.abs(x) < 7.0 && Math.abs(z) < 6.0) {
-        x += x > 0 ? 7.0 : -7.0;
-        z += z > 0 ? 6.0 : -6.0;
-      }
+    const flowers: { pos: [number, number, number]; color: string; scale: number }[] = [];
+    const colors = [
+      '#e74c3c', '#9b59b6', '#f1c40f', '#e67e22', 
+      '#e84393', '#ffffff', '#fd79a8', '#00cec9',
+      '#9c88ff', '#fbc531', '#4cd137', '#487eb0'
+    ];
+    for (let i = 0; i < 80; i++) {
+      const angle = (i / 80) * Math.PI * 2 + Math.sin(i * 2.5) * 0.3;
+      const radius = 6.8 + Math.cos(i * 1.7) * 4.0;
+      const x = radius * Math.cos(angle);
+      const z = radius * Math.sin(angle);
+      const scale = 3.5 + Math.sin(i) * 1.5; // ranges from 2.0 to 5.0
       flowers.push({
         pos: [x, 0.015, z],
         color: colors[i % colors.length],
+        scale,
       });
     }
     return flowers;
@@ -278,6 +280,107 @@ export function DataTreeGarden({
     const prs: any[] = [];
     const issues: any[] = [];
 
+    // 1. Define Static Exclusion Zones (well, trees, gnomes, crates, barrels)
+    const exclusions: { x: number; z: number; r: number }[] = [
+      { x: 0, z: 0, r: 1.6 },      // Central Well
+      { x: -1.4, z: -1.8, r: 0.9 }, // Gnome 1
+      { x: 1.4, z: -1.8, r: 0.9 },  // Gnome 2
+      { x: 0.0, z: 1.8, r: 0.9 },   // Gnome 3
+      { x: -1.1, z: -1.0, r: 0.7 }, // Barrel 1
+      { x: 1.1, z: -1.0, r: 0.7 },  // Barrel 2
+      { x: -1.2, z: 0.8, r: 0.7 },  // Crate 1
+      { x: 1.2, z: 0.8, r: 0.7 },   // Crate 2
+      { x: -3.6, z: -1.8, r: 1.4 }, // Tree Left (Epic)
+      { x: 3.6, z: -1.8, r: 1.4 },  // Tree Right (Epic)
+    ];
+
+    // Theme-specific crop exclusions
+    const themeName = (projectName || '').toLowerCase();
+    if (themeName.includes('alpha')) {
+      exclusions.push(
+        { x: -3.2, z: 3.2, r: 0.6 }, { x: -2.2, z: 3.2, r: 0.6 }, { x: -1.2, z: 3.2, r: 0.6 },
+        { x: -3.2, z: 4.4, r: 0.6 }, { x: -2.2, z: 4.4, r: 0.6 }, { x: -1.2, z: 4.4, r: 0.6 },
+        { x: 2.5, z: 2.5, r: 0.7 }, { x: 1.0, z: 3.5, r: 0.7 }
+      );
+    } else if (themeName.includes('beta')) {
+      exclusions.push(
+        { x: -3.5, z: 2.8, r: 0.5 }, { x: -2.5, z: 2.8, r: 0.5 }, { x: -1.5, z: 2.8, r: 0.5 },
+        { x: -3.5, z: 3.8, r: 0.5 }, { x: -2.5, z: 3.8, r: 0.5 }, { x: -1.5, z: 3.8, r: 0.5 },
+        { x: -3.5, z: 4.8, r: 0.5 }, { x: -2.5, z: 4.8, r: 0.5 }, { x: -1.5, z: 4.8, r: 0.5 }
+      );
+    } else if (themeName.includes('gamma')) {
+      exclusions.push(
+        { x: -3.5, z: 3.2, r: 0.5 }, { x: -2.0, z: 3.2, r: 0.5 }, { x: -0.5, z: 3.2, r: 0.5 },
+        { x: -3.5, z: 4.4, r: 0.5 }, { x: -2.0, z: 4.4, r: 0.5 }, { x: -0.5, z: 4.4, r: 0.5 },
+        { x: 2.5, z: 2.5, r: 0.65 }, { x: 1.0, z: 3.5, r: 0.65 }
+      );
+    } else {
+      exclusions.push(
+        { x: -3.5, z: 3.0, r: 0.5 }, { x: -2.5, z: 3.0, r: 0.5 },
+        { x: -3.5, z: 4.2, r: 0.5 }, { x: -2.0, z: 4.2, r: 0.5 },
+        { x: 1.8, z: 3.0, r: 0.5 }, { x: 2.2, z: 4.2, r: 0.7 }
+      );
+    }
+
+    const placedItems: { x: number; z: number; r: number }[] = [];
+
+    const getCollisionFreePosition = (
+      proposedX: number,
+      proposedZ: number,
+      placed: { x: number; z: number; r: number }[],
+      excs: { x: number; z: number; r: number }[]
+    ): [number, number, number] => {
+      let x = proposedX;
+      let z = proposedZ;
+      const radius = 0.65; // Collision radius of the bush/weed
+      
+      let angle = 0;
+      const step = 0.25;
+      const maxAttempts = 100;
+      
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        let collides = false;
+        
+        // Exclusions check
+        for (const esc of excs) {
+          const dist = Math.hypot(x - esc.x, z - esc.z);
+          if (dist < (radius + esc.r)) {
+            collides = true;
+            break;
+          }
+        }
+        
+        // Placed check
+        if (!collides) {
+          for (const item of placed) {
+            const dist = Math.hypot(x - item.x, z - item.z);
+            if (dist < (radius + item.r)) {
+              collides = true;
+              break;
+            }
+          }
+        }
+        
+        // Boundary check (keep inside fence)
+        if (!collides) {
+          if (x < -6.0 || x > 6.0 || z < -5.0 || z > 5.0) {
+            collides = true;
+          }
+        }
+        
+        if (!collides) {
+          return [x, 0.01, z];
+        }
+        
+        angle += 0.5;
+        const r = step * Math.sqrt(attempt + 1);
+        x = proposedX + r * Math.cos(angle);
+        z = proposedZ + r * Math.sin(angle);
+      }
+      
+      return [proposedX, 0.01, proposedZ];
+    };
+
     // Helper to map flat nodes to coordinates (within central raised soil bed)
     const getPlotPosition = (index: number, total: number, offsetSide: 'left' | 'right') => {
       const count = total || 1;
@@ -285,29 +388,33 @@ export function DataTreeGarden({
       const radius = 2.0 + Math.sin(index * 2) * 0.8;
       
       const xSign = offsetSide === 'left' ? -1 : 1;
-      const x = xSign * (radius * Math.cos(angle) + 2.5);
-      const z = radius * Math.sin(angle) * 0.9;
-      return [x, 0.01, z] as [number, number, number];
+      const xProposed = xSign * (radius * Math.cos(angle) + 2.5);
+      const zProposed = radius * Math.sin(angle) * 0.9;
+      
+      const [finalX, finalY, finalZ] = getCollisionFreePosition(xProposed, zProposed, placedItems, exclusions);
+      placedItems.push({ x: finalX, z: finalZ, r: 0.65 });
+      return [finalX, finalY, finalZ] as [number, number, number];
     };
 
     // Find Root/Epic tasks
-    const epicPRNode = graph.nodes.find((n: any) => n.type === 'PR' && n.category === 'epic');
-    const epicIssueNode = graph.nodes.find((n: any) => n.type === 'Issue' && n.category === 'epic');
+    const epicPRNode = graph.nodes.find((n: any) => n.type.toLowerCase() === 'pr' && n.category === 'epic');
+    const epicIssueNode = graph.nodes.find((n: any) => n.type.toLowerCase() === 'issue' && n.category === 'epic');
 
     // Filter child nodes
-    const prNodes = graph.nodes.filter((n: any) => n.type === 'PR' && n.category !== 'epic');
-    const issueNodes = graph.nodes.filter((n: any) => n.type === 'Issue' && n.category !== 'epic');
+    const prNodes = graph.nodes.filter((n: any) => n.type.toLowerCase() === 'pr' && n.category !== 'epic');
+    const issueNodes = graph.nodes.filter((n: any) => n.type.toLowerCase() === 'issue' && n.category !== 'epic');
 
     prNodes.forEach((node: any, idx: number) => {
       prs.push({
         position: getPlotPosition(idx, prNodes.length, 'left'),
-        status: node.status,
+        status: node.attributes?.status || 'Draft',
         node: {
           id: node.id,
-          title: node.label,
-          progress: node.metrics.completion,
-          complexity: node.metrics.complexity,
-          risk: node.metrics.risk
+          title: node.name,
+          progress: node.attributes?.completion ?? 0.5,
+          complexity: node.attributes?.complexity ?? 2,
+          risk: node.attributes?.riskProbability ?? 0.2,
+          elementType: 'Rose Bush'
         }
       });
     });
@@ -315,13 +422,14 @@ export function DataTreeGarden({
     issueNodes.forEach((node: any, idx: number) => {
       issues.push({
         position: getPlotPosition(idx, issueNodes.length, 'right'),
-        status: node.status,
+        status: node.attributes?.status || 'Active',
         node: {
           id: node.id,
-          title: node.label,
-          progress: node.metrics.completion,
-          complexity: node.metrics.complexity,
-          risk: node.metrics.risk
+          title: node.name,
+          progress: node.attributes?.completion ?? 0.3,
+          complexity: node.attributes?.complexity ?? 2,
+          risk: node.attributes?.riskProbability ?? 0.4,
+          elementType: 'Leafy Weed'
         }
       });
     });
@@ -329,10 +437,11 @@ export function DataTreeGarden({
     // Create default Virtual Epic if missing (ensures L-system Trees render)
     const epicPRs: TaskNode = epicPRNode ? {
       id: epicPRNode.id,
-      title: epicPRNode.label,
-      progress: epicPRNode.metrics.completion,
-      complexity: epicPRNode.metrics.complexity,
-      risk: epicPRNode.metrics.risk,
+      title: epicPRNode.attributes?.title || epicPRNode.name,
+      progress: epicPRNode.attributes?.completion ?? 0.85,
+      complexity: epicPRNode.attributes?.complexity ?? 3,
+      risk: epicPRNode.attributes?.riskProbability ?? 0.1,
+      elementType: 'Epic Tree',
       subtasks: prs.map(p => p.node)
     } : {
       id: 'epic-pr-virtual',
@@ -340,15 +449,17 @@ export function DataTreeGarden({
       progress: 0.85,
       complexity: 0.9,
       risk: 0.1,
+      elementType: 'Epic Tree',
       subtasks: prs.map(p => p.node)
     };
 
     const epicIssues: TaskNode = epicIssueNode ? {
       id: epicIssueNode.id,
-      title: epicIssueNode.label,
-      progress: epicIssueNode.metrics.completion,
-      complexity: epicIssueNode.metrics.complexity,
-      risk: epicIssueNode.metrics.risk,
+      title: epicIssueNode.attributes?.title || epicIssueNode.name,
+      progress: epicIssueNode.attributes?.completion ?? 0.35,
+      complexity: epicIssueNode.attributes?.complexity ?? 3,
+      risk: epicIssueNode.attributes?.riskProbability ?? 0.65,
+      elementType: 'Epic Tree',
       subtasks: issues.map(i => i.node)
     } : {
       id: 'epic-issue-virtual',
@@ -356,6 +467,7 @@ export function DataTreeGarden({
       progress: 0.35,
       complexity: 0.7,
       risk: 0.65,
+      elementType: 'Epic Tree',
       subtasks: issues.map(i => i.node)
     };
 
@@ -389,244 +501,247 @@ export function DataTreeGarden({
         }}
         onClick={handleCanvasClick}
       >
-        <Suspense fallback={null}>
-          {/* Atmospheric Volumetric Fog */}
-          <fogExp2 attach="fog" args={[fogColor, fogDensity]} />
+        {/* Atmospheric Volumetric Fog */}
+        <fogExp2 attach="fog" args={[fogColor, fogDensity]} />
 
-          {/* Lighting setup based on instruction.md */}
-          <hemisphereLight color="#a1c4fd" groundColor="#223a1a" intensity={0.95} />
+        {/* Lighting setup based on instruction.md */}
+        <hemisphereLight color="#a1c4fd" groundColor="#223a1a" intensity={0.95} />
 
-          {/* Step 3: Explicit shadow bounds & map size */}
-          <directionalLight
-            position={[15, 20, 10]}
-            intensity={2.8}
-            castShadow // Step 3: Enable directional light shadow mapping
-            shadow-mapSize={[2048, 2048]}
-            shadow-camera-far={50}
-            shadow-camera-left={-15}
-            shadow-camera-right={15}
-            shadow-camera-top={15}
-            shadow-camera-bottom={-15}
-            shadow-bias={-0.0001}
-            color={lightColor}
-          />
+        {/* Step 3: Explicit shadow bounds & map size */}
+        <directionalLight
+          position={[15, 20, 10]}
+          intensity={2.8}
+          castShadow // Step 3: Enable directional light shadow mapping
+          shadow-mapSize={[2048, 2048]}
+          shadow-camera-far={50}
+          shadow-camera-left={-15}
+          shadow-camera-right={15}
+          shadow-camera-top={15}
+          shadow-camera-bottom={-15}
+          shadow-bias={-0.0001}
+          color={lightColor}
+        />
 
-          {/* Secondary soft point fill light */}
-          <pointLight position={[-8, 6, -8]} intensity={0.5} color="#fffdf0" />
+        {/* Secondary soft point fill light */}
+        <pointLight position={[-8, 6, -8]} intensity={0.5} color="#fffdf0" />
 
-          {/* 1. Volumetric God Ray Sunbeams (Step 5) - Rendered for sunny weather only */}
-          {theme !== 'gamma' && <Sunbeams />}
+        {/* 1. Volumetric God Ray Sunbeams (Step 5) - Rendered for sunny weather only */}
+        {theme !== 'gamma' && <Sunbeams />}
 
-          {/* 2. Central Core Well representing CRR */}
-          <Well position={[0, 0, 0]} crr={currentCrr} projectName={projectName} onHover={setHoveredInfo} />
+        {/* 2. Central Core Well representing CRR */}
+        <Well position={[0, 0, 0]} crr={currentCrr} projectName={projectName} onHover={setHoveredInfo} />
 
-          {/* 3. Procedural Epic DataTrees (left and right) with theme styling */}
-          {gardenElements.epicPRs && (
-            <group position={[-3.6, 0, -1.8]}>
-              <DataTree data={gardenElements.epicPRs} onHover={setHoveredInfo} theme={theme} />
-            </group>
-          )}
-          {gardenElements.epicIssues && (
-            <group position={[3.6, 0, -1.8]}>
-              <DataTree data={gardenElements.epicIssues} onHover={setHoveredInfo} theme={theme} />
-            </group>
-          )}
+        {/* 3. Procedural Epic DataTrees (left and right) with theme styling */}
+        {gardenElements.epicPRs && (
+          <group position={[-3.6, 0, -1.8]}>
+            <DataTree data={gardenElements.epicPRs} onHover={setHoveredInfo} theme={theme} />
+          </group>
+        )}
+        {gardenElements.epicIssues && (
+          <group position={[3.6, 0, -1.8]}>
+            <DataTree data={gardenElements.epicIssues} onHover={setHoveredInfo} theme={theme} />
+          </group>
+        )}
 
-          {/* 4. Pull Request Bushes */}
-          {gardenElements.prs.map((p, idx) => (
-            <RoseBush
-              key={`pr-${idx}`}
-              position={p.position}
-              status={p.status}
-              node={p.node}
-              onHover={setHoveredInfo}
-            />
-          ))}
-
-          {/* 5. Issue Weeds */}
-          {gardenElements.issues.map((i, idx) => (
-            <SpikyWeed
-              key={`issue-${idx}`}
-              position={i.position}
-              status={i.status}
-              node={i.node}
-              onHover={setHoveredInfo}
-            />
-          ))}
-
-          {/* 6. Cozy Garden Gnomes (AI Agents) */}
-          <GardenGnome
-            color="#2575fc"
-            position={[-1.4, 0.01, -1.8]}
-            name="Worker Agent Gnome"
-            role="Executes tasks, generates branches, refactors code, and runs system tests."
+        {/* 4. Pull Request Bushes */}
+        {gardenElements.prs.map((p, idx) => (
+          <RoseBush
+            key={`pr-${idx}`}
+            position={p.position}
+            status={p.status}
+            node={p.node}
             onHover={setHoveredInfo}
           />
-          <GardenGnome
-            color="#9b59b6"
-            position={[1.4, 0.01, -1.8]}
-            name="Critic Agent Gnome"
-            role="Reviews pull requests, checks styling, runs linters, and rates visual fidelity."
+        ))}
+
+        {/* 5. Issue Weeds */}
+        {gardenElements.issues.map((i, idx) => (
+          <SpikyWeed
+            key={`issue-${idx}`}
+            position={i.position}
+            status={i.status}
+            node={i.node}
             onHover={setHoveredInfo}
           />
-          <GardenGnome
-            color="#ec008c"
-            position={[0.0, 0.01, 1.8]}
-            name="Opponent Agent Gnome"
-            role="Simulates system failures, breaks parameters, and tests resilience of the garden."
-            onHover={setHoveredInfo}
-          />
+        ))}
 
-          {/* 7. Picket Fences Borders (crooked hand-built look) */}
-          <Fence position={[-4.5, 0, -6.5]} />
-          <Fence position={[-3, 0, -6.5]} />
-          <Fence position={[-1.5, 0, -6.5]} />
-          <Fence position={[0, 0, -6.5]} />
-          <Fence position={[1.5, 0, -6.5]} />
-          <Fence position={[3, 0, -6.5]} />
-          <Fence position={[4.5, 0, -6.5]} />
-          <Fence position={[-4.5, 0, 6.5]} />
-          <Fence position={[-3, 0, 6.5]} />
-          <Fence position={[-1.5, 0, 6.5]} />
-          <Fence position={[0, 0, 6.5]} />
-          <Fence position={[1.5, 0, 6.5]} />
-          <Fence position={[3, 0, 6.5]} />
-          <Fence position={[4.5, 0, 6.5]} />
+        {/* 6. Cozy Garden Gnomes (AI Agents) */}
+        <GardenGnome
+          color="#2575fc"
+          position={[-1.4, 0.01, -1.8]}
+          name="Worker Agent Gnome"
+          role="Executes tasks, generates branches, refactors code, and runs system tests."
+          onHover={setHoveredInfo}
+        />
+        <GardenGnome
+          color="#9b59b6"
+          position={[1.4, 0.01, -1.8]}
+          name="Critic Agent Gnome"
+          role="Reviews pull requests, checks styling, runs linters, and rates visual fidelity."
+          onHover={setHoveredInfo}
+        />
+        <GardenGnome
+          color="#ec008c"
+          position={[0.0, 0.01, 1.8]}
+          name="Opponent Agent Gnome"
+          role="Simulates system failures, breaks parameters, and tests resilience of the garden."
+          onHover={setHoveredInfo}
+        />
 
-          {/* Fence Corner Glow Lanterns */}
-          <Lantern position={[-4.5, 0, -6.4]} />
-          <Lantern position={[4.5, 0, -6.4]} />
-          <Lantern position={[-4.5, 0, 6.4]} />
-          <Lantern position={[4.5, 0, 6.4]} />
+        {/* 7. Picket Fences Borders (crooked hand-built look) */}
+        <Fence position={[-4.5, 0, -6.5]} />
+        <Fence position={[-3, 0, -6.5]} />
+        <Fence position={[-1.5, 0, -6.5]} />
+        <Fence position={[0, 0, -6.5]} />
+        <Fence position={[1.5, 0, -6.5]} />
+        <Fence position={[3, 0, -6.5]} />
+        <Fence position={[4.5, 0, -6.5]} />
+        <Fence position={[-4.5, 0, 6.5]} />
+        <Fence position={[-3, 0, 6.5]} />
+        <Fence position={[-1.5, 0, 6.5]} />
+        <Fence position={[0, 0, 6.5]} />
+        <Fence position={[1.5, 0, 6.5]} />
+        <Fence position={[3, 0, 6.5]} />
+        <Fence position={[4.5, 0, 6.5]} />
 
-          {/* 8. Stylized Stepping Stones (Paths using Quaternius RockPath GLTF) */}
-          <SteppingStone position={[-1.0, 0.015, -0.65]} rotation={[0, 0.4, 0]} scale={[1.3, 0.3, 1.3]} />
-          <SteppingStone position={[-2.0, 0.015, -1.3]} rotation={[0, -0.8, 0]} scale={[1.4, 0.3, 1.4]} />
-          <SteppingStone position={[1.0, 0.015, -0.65]} rotation={[0, -0.4, 0]} scale={[1.3, 0.3, 1.3]} />
-          <SteppingStone position={[2.0, 0.015, -1.3]} rotation={[0, 0.8, 0]} scale={[1.4, 0.3, 1.4]} />
+        {/* Fence Corner Glow Lanterns */}
+        <Lantern position={[-4.5, 0, -6.4]} />
+        <Lantern position={[4.5, 0, -6.4]} />
+        <Lantern position={[-4.5, 0, 6.4]} />
+        <Lantern position={[4.5, 0, 6.4]} />
 
-          {/* 9. Weather Effects System */}
-          <WeatherSystem isRainy={isRainy} />
+        {/* 8. Flat Stepping Stones (Paths) */}
+        <mesh position={[-1.0, 0.015, -0.65]} rotation={[0.1, 0.5, 0.2]} scale={[0.26, 0.02, 0.22]} castShadow receiveShadow>
+          <dodecahedronGeometry args={[1, 0]} />
+          <meshStandardMaterial color="#888075" roughness={0.9} />
+        </mesh>
+        <mesh position={[-2.0, 0.015, -1.3]} rotation={[0.05, -0.4, 0.1]} scale={[0.28, 0.02, 0.25]} castShadow receiveShadow>
+          <dodecahedronGeometry args={[1, 0]} />
+          <meshStandardMaterial color="#888075" roughness={0.9} />
+        </mesh>
+        <mesh position={[1.0, 0.015, -0.65]} rotation={[0.1, -0.5, -0.2]} scale={[0.26, 0.02, 0.22]} castShadow receiveShadow>
+          <dodecahedronGeometry args={[1, 0]} />
+          <meshStandardMaterial color="#888075" roughness={0.9} />
+        </mesh>
+        <mesh position={[2.0, 0.015, -1.3]} rotation={[0.05, 0.4, -0.1]} scale={[0.28, 0.02, 0.25]} castShadow receiveShadow>
+          <dodecahedronGeometry args={[1, 0]} />
+          <meshStandardMaterial color="#888075" roughness={0.9} />
+        </mesh>
 
-          {/* Hay Day Clutter & Accessories */}
-          <WoodenBarrel position={[-1.1, 0, -1.0]} />
-          <WoodenBarrel position={[1.1, 0, -1.0]} />
-          <CropCrate position={[-1.2, 0, 0.8]} />
-          <CropCrate position={[1.2, 0, 0.8]} />
+        {/* 9. Weather Effects System */}
+        <WeatherSystem isRainy={isRainy} />
 
-          {/* Chicken Coop Cozy Centerpiece */}
-          <ChickenCoop position={[4.0, 0, 3.0]} />
+        {/* Hay Day Clutter & Accessories */}
+        <WoodenBarrel position={[-1.1, 0, -1.0]} />
+        <WoodenBarrel position={[1.1, 0, -1.0]} />
+        <CropCrate position={[-1.2, 0, 0.8]} />
+        <CropCrate position={[1.2, 0, 0.8]} />
 
-          {/* Animated Pecking Chickens */}
-          <Chicken position={[-1.8, 0.01, 1.5]} speed={0.95} phase={0} />
-          <Chicken position={[1.5, 0.01, 2.8]} speed={0.8} phase={2.5} />
-          <Chicken position={[-2.4, 0.01, -3.2]} speed={1.1} phase={4.8} />
 
-          {/* 10. Scattered Project Crops (Step 4 & 5) */}
-          {theme === 'alpha' && (
-            <>
-              {/* Project Alpha: Tall Corn Rows and Pumpkin Crates */}
-              <TallCornCrop position={[-3.2, 0.01, 3.2]} />
-              <TallCornCrop position={[-2.2, 0.01, 3.2]} />
-              <TallCornCrop position={[-1.2, 0.01, 3.2]} />
-              <TallCornCrop position={[-3.2, 0.01, 4.4]} />
-              <TallCornCrop position={[-2.2, 0.01, 4.4]} />
-              <TallCornCrop position={[-1.2, 0.01, 4.4]} />
-              <CropCrate position={[2.5, 0.01, 2.5]} />
-              <CropCrate position={[1.0, 0.01, 3.5]} />
-            </>
-          )}
 
-          {theme === 'beta' && (
-            <>
-              {/* Project Beta: Orange Carrot Rows */}
-              <CarrotCrop position={[-3.5, 0.01, 2.8]} />
-              <CarrotCrop position={[-2.5, 0.01, 2.8]} />
-              <CarrotCrop position={[-1.5, 0.01, 2.8]} />
-              <CarrotCrop position={[-3.5, 0.01, 3.8]} />
-              <CarrotCrop position={[-2.5, 0.01, 3.8]} />
-              <CarrotCrop position={[-1.5, 0.01, 3.8]} />
-              <CarrotCrop position={[-3.5, 0.01, 4.8]} />
-              <CarrotCrop position={[-2.5, 0.01, 4.8]} />
-              <CarrotCrop position={[-1.5, 0.01, 4.8]} />
-            </>
-          )}
+        {/* 10. Scattered Project Crops (Step 4 & 5) */}
+        {theme === 'alpha' && (
+          <>
+            {/* Project Alpha: Tall Corn Rows and Pumpkin Crates */}
+            <TallCornCrop position={[-3.2, 0.01, 3.2]} />
+            <TallCornCrop position={[-2.2, 0.01, 3.2]} />
+            <TallCornCrop position={[-1.2, 0.01, 3.2]} />
+            <TallCornCrop position={[-3.2, 0.01, 4.4]} />
+            <TallCornCrop position={[-2.2, 0.01, 4.4]} />
+            <TallCornCrop position={[-1.2, 0.01, 4.4]} />
+            <CropCrate position={[2.5, 0.01, 2.5]} />
+            <CropCrate position={[1.0, 0.01, 3.5]} />
+          </>
+        )}
 
-          {theme === 'gamma' && (
-            <>
-              {/* Project Gamma: Leafy Cabbages and Wild Spiky weeds (bug representation) */}
-              <CabbageCrop position={[-3.5, 0.01, 3.2]} />
-              <CabbageCrop position={[-2.0, 0.01, 3.2]} />
-              <CabbageCrop position={[-0.5, 0.01, 3.2]} />
-              <CabbageCrop position={[-3.5, 0.01, 4.4]} />
-              <CabbageCrop position={[-2.0, 0.01, 4.4]} />
-              <CabbageCrop position={[-0.5, 0.01, 4.4]} />
-              <SpikyWeed position={[2.5, 0.01, 2.5]} status="active" />
-              <SpikyWeed position={[1.0, 0.01, 3.5]} status="active" />
-            </>
-          )}
+        {theme === 'beta' && (
+          <>
+            {/* Project Beta: Orange Carrot Rows */}
+            <CarrotCrop position={[-3.5, 0.01, 2.8]} />
+            <CarrotCrop position={[-2.5, 0.01, 2.8]} />
+            <CarrotCrop position={[-1.5, 0.01, 2.8]} />
+            <CarrotCrop position={[-3.5, 0.01, 3.8]} />
+            <CarrotCrop position={[-2.5, 0.01, 3.8]} />
+            <CarrotCrop position={[-1.5, 0.01, 3.8]} />
+            <CarrotCrop position={[-3.5, 0.01, 4.8]} />
+            <CarrotCrop position={[-2.5, 0.01, 4.8]} />
+            <CarrotCrop position={[-1.5, 0.01, 4.8]} />
+          </>
+        )}
 
-          {theme === 'default' && (
-            <>
-              {/* Default/Live: Mixed Crop Patch */}
-              <CarrotCrop position={[-3.5, 0.01, 3.0]} />
-              <CarrotCrop position={[-2.5, 0.01, 3.0]} />
-              <CabbageCrop position={[-3.5, 0.01, 4.2]} />
-              <CabbageCrop position={[-2.0, 0.01, 4.2]} />
-              <TallCornCrop position={[1.8, 0.01, 3.0]} />
-              <CropCrate position={[2.2, 0.01, 4.2]} />
-            </>
-          )}
+        {theme === 'gamma' && (
+          <>
+            {/* Project Gamma: Leafy Cabbages and Wild Spiky weeds (bug representation) */}
+            <CabbageCrop position={[-3.5, 0.01, 3.2]} />
+            <CabbageCrop position={[-2.0, 0.01, 3.2]} />
+            <CabbageCrop position={[-0.5, 0.01, 3.2]} />
+            <CabbageCrop position={[-3.5, 0.01, 4.4]} />
+            <CabbageCrop position={[-2.0, 0.01, 4.4]} />
+            <CabbageCrop position={[-0.5, 0.01, 4.4]} />
+            <SpikyWeed position={[2.5, 0.01, 2.5]} status="active" />
+            <SpikyWeed position={[1.0, 0.01, 3.5]} status="active" />
+          </>
+        )}
 
-          {/* Scattered Colorful Wildflowers */}
-          {wildflowers.map((w, idx) => (
-            <Wildflower key={`flower-${idx}`} position={w.pos} />
-          ))}
+        {theme === 'default' && (
+          <>
+            {/* Default/Live: Mixed Crop Patch */}
+            <CarrotCrop position={[-3.5, 0.01, 3.0]} />
+            <CarrotCrop position={[-2.5, 0.01, 3.0]} />
+            <CabbageCrop position={[-3.5, 0.01, 4.2]} />
+            <CabbageCrop position={[-2.0, 0.01, 4.2]} />
+            <TallCornCrop position={[1.8, 0.01, 3.0]} />
+            <CropCrate position={[2.2, 0.01, 4.2]} />
+          </>
+        )}
 
-          {/* Grass Blade Tufts scattered randomly */}
-          {grassTufts.map((pos, idx) => (
-            <GrassTuft key={`tuft-${idx}`} position={pos} />
-          ))}
+        {/* Scattered Colorful Wildflowers */}
+        {wildflowers.map((w, idx) => (
+          <Wildflower key={`flower-${idx}`} position={w.pos} color={w.color} scale={w.scale} />
+        ))}
 
-          {/* Instanced Grass scatter (2,000 blades) (Step 2) */}
-          <InstancedGrass toonRamp={toonRampTexture} />
+        {/* Grass Blade Tufts scattered randomly */}
+        {grassTufts.map((pos, idx) => (
+          <GrassTuft key={`tuft-${idx}`} position={pos} />
+        ))}
 
-          {/* Central Raised Soil Bed (Dark, organic earth brown with soil texture) */}
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]} receiveShadow>
-            <planeGeometry args={[13.5, 11.5]} />
-            <meshStandardMaterial map={soilTiledTexture} roughness={1.0} />
-          </mesh>
+        {/* Instanced Grass scatter (2,000 blades) (Step 2) */}
+        <InstancedGrass toonRamp={toonRampTexture} />
 
-          {/* Surrounding Outer Grass Terrain Base Plane (Deep muted green with tiled grass texture) */}
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-            <planeGeometry args={[45, 45]} />
-            <meshStandardMaterial map={grassTiledTexture} color={grassColor} roughness={1.0} />
-          </mesh>
+        {/* Central Raised Soil Bed (Dark, organic earth brown with soil texture) */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]} receiveShadow>
+          <planeGeometry args={[13.5, 11.5]} />
+          <meshStandardMaterial map={soilTiledTexture} roughness={1.0} />
+        </mesh>
 
-          {/* Soft Shadow Layer */}
-          <ContactShadows
-            position={[0, 0, 0]}
-            opacity={0.35}
-            scale={16}
-            blur={1.6}
-            far={4.5}
-          />
+        {/* Surrounding Outer Grass Terrain Base Plane (Deep muted green with tiled grass texture) */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
+          <planeGeometry args={[45, 45]} />
+          <meshStandardMaterial map={grassTiledTexture} color={grassColor} roughness={1.0} />
+        </mesh>
 
-          {/* Post-Processing Composer (bloom + Screen Space Ambient Occlusion shadows) */}
-          <EffectComposer>
-            <SSAO samples={11} radius={0.35} intensity={14} luminanceInfluence={0.5} />
-            <Bloom luminanceThreshold={0.28} intensity={0.95} />
-          </EffectComposer>
+        {/* Soft Shadow Layer */}
+        <ContactShadows
+          position={[0, 0, 0]}
+          opacity={0.35}
+          scale={16}
+          blur={1.6}
+          far={4.5}
+        />
 
-          {/* Camera Interactive Controls */}
-          <OrbitControls
-            enableDamping
-            dampingFactor={0.05}
-            maxPolarAngle={Math.PI / 2 - 0.05}
-            minDistance={3}
-            maxDistance={24}
-          />
-        </Suspense>
+        {/* Post-Processing Composer (bloom glow) */}
+        <EffectComposer>
+          <Bloom luminanceThreshold={0.28} intensity={0.95} />
+        </EffectComposer>
+
+        {/* Camera Interactive Controls */}
+        <OrbitControls
+          enableDamping
+          dampingFactor={0.05}
+          maxPolarAngle={Math.PI / 2 - 0.05}
+          minDistance={3}
+          maxDistance={24}
+        />
       </Canvas>
 
       {/* Floating Hover Details Card Overlay */}
@@ -639,44 +754,90 @@ export function DataTreeGarden({
             top: hoveredInfo.y + 15,
             zIndex: 1000,
             pointerEvents: 'none',
+            background: 'rgba(23, 28, 41, 0.95)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '10px',
+            padding: '12px 14px',
+            color: '#fff',
+            minWidth: '220px',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+            textAlign: 'left',
           }}
         >
-          <div className="hover-header">
-            <h4>{hoveredInfo.node.title}</h4>
+          {/* Garden Element Type Tag */}
+          <div
+            style={{
+              color: hoveredInfo.node.elementType === 'Leafy Weed' ? '#ff4d4d' :
+                     hoveredInfo.node.elementType === 'Rose Bush' ? '#2ecc71' :
+                     hoveredInfo.node.elementType === 'Epic Tree' ? '#3498db' :
+                     hoveredInfo.node.elementType === 'Stone Well' ? '#f1c40f' : '#e67e22',
+              fontSize: '11px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              marginBottom: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            {hoveredInfo.node.elementType === 'Leafy Weed' ? '🌿 Leafy Weed (Issue)' :
+             hoveredInfo.node.elementType === 'Rose Bush' ? '🌹 Rose Bush (PR)' :
+             hoveredInfo.node.elementType === 'Epic Tree' ? '🌳 Epic Tree (Epic)' :
+             hoveredInfo.node.elementType === 'Stone Well' ? '💧 Stone Well (Repository)' :
+             hoveredInfo.node.elementType === 'Garden Gnome' ? '🧙 Garden Gnome (AI Agent)' : '💮 Garden Element'}
+          </div>
+
+          <div className="hover-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '8px' }}>
+            <h4 style={{ margin: 0, fontSize: '13px', color: '#fff', lineHeight: '1.3' }}>
+              <strong>{hoveredInfo.node.title}</strong>
+            </h4>
             {hoveredInfo.node.id !== 'well-core' &&
               !hoveredInfo.node.id.startsWith('gnome-') && (
-                <span className="node-id-tag">{hoveredInfo.node.id}</span>
+                <span style={{ fontSize: '10px', background: 'rgba(255,255,255,0.12)', padding: '1px 5px', borderRadius: '3px', color: '#ccc', whiteSpace: 'nowrap' }}>
+                  {hoveredInfo.node.id}
+                </span>
               )}
           </div>
           <div className="hover-body">
             {hoveredInfo.node.description ? (
-              <p className="hover-desc">{hoveredInfo.node.description}</p>
+              <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.4', color: '#ddd' }}>{hoveredInfo.node.description}</p>
             ) : (
-              <div className="hover-metrics">
-                <div className="metric-row">
-                  <span>Progress:</span>
-                  <div className="progress-bar-container">
-                    <div
-                      className="progress-bar-fill"
-                      style={{ width: `${hoveredInfo.node.progress * 100}%` }}
-                    ></div>
+              <div className="hover-metrics" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                  <span style={{ color: '#aaa' }}>Progress:</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, justifyContent: 'flex-end' }}>
+                    <div style={{ width: '60px', height: '6px', background: 'rgba(255,255,255,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div
+                        style={{
+                          width: `${hoveredInfo.node.progress * 100}%`,
+                          height: '100%',
+                          background: hoveredInfo.node.progress > 0.8 ? '#2ecc71' : hoveredInfo.node.progress > 0.4 ? '#f1c40f' : '#e74c3c'
+                        }}
+                      ></div>
+                    </div>
+                    <span style={{ fontWeight: 600, minWidth: '30px', textAlign: 'right' }}>
+                      {Math.round(hoveredInfo.node.progress * 100)}%
+                    </span>
                   </div>
-                  <span className="metric-pct">
-                    {Math.round(hoveredInfo.node.progress * 100)}%
-                  </span>
                 </div>
-                <div className="metric-row">
-                  <span>Complexity:</span>
-                  <span className="metric-badge complexity-badge">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                  <span style={{ color: '#aaa' }}>Complexity:</span>
+                  <span style={{ fontWeight: 600, background: 'rgba(255,255,255,0.1)', padding: '1px 5px', borderRadius: '3px' }}>
                     {hoveredInfo.node.complexity.toFixed(2)}
                   </span>
                 </div>
-                <div className="metric-row">
-                  <span>Risk Factor:</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                  <span style={{ color: '#aaa' }}>Risk Factor:</span>
                   <span
-                    className={`metric-badge risk-badge ${
-                      hoveredInfo.node.risk > 0.5 ? 'risk-high' : 'risk-low'
-                    }`}
+                    style={{
+                      fontWeight: 600,
+                      color: hoveredInfo.node.risk > 0.5 ? '#ff4d4d' : '#2ecc71',
+                      background: hoveredInfo.node.risk > 0.5 ? 'rgba(255,77,77,0.15)' : 'rgba(46,204,113,0.15)',
+                      padding: '1px 5px',
+                      borderRadius: '3px'
+                    }}
                   >
                     {hoveredInfo.node.risk.toFixed(2)}
                   </span>
@@ -685,6 +846,127 @@ export function DataTreeGarden({
             )}
           </div>
         </div>
+      )}
+
+      {/* 📖 DTO Garden Legend Panel */}
+      {showLegend && (
+        <div
+          className="glass-card legend-panel"
+          style={{
+            position: 'absolute',
+            left: 20,
+            top: 140, // Below workspace overview card
+            width: 320,
+            maxHeight: 'calc(100% - 240px)',
+            overflowY: 'auto',
+            zIndex: 1001,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+            padding: 16,
+            background: 'rgba(23, 28, 41, 0.9)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: 12,
+            backdropFilter: 'blur(10px)',
+            color: '#fff',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+            textAlign: 'left',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: 8 }}>
+            <h3 style={{ margin: 0, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>📖 DTO Garden Legend</h3>
+            <button
+              onClick={() => setShowLegend(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'rgba(255, 255, 255, 0.6)',
+                fontSize: 18,
+                cursor: 'pointer',
+                padding: '0 4px',
+              }}
+            >
+              &times;
+            </button>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontSize: 13, lineHeight: '1.4' }}>
+            <div>
+              <strong style={{ color: '#e67e22', display: 'block', marginBottom: 2 }}>🌳 Epic Trees (Epics)</strong>
+              <span>Represents Project Epics. Height and leaf growth reflect progress. Gnarled trunk rotation reflects risk/complexity. Fruits are deliverables.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#2ecc71', display: 'block', marginBottom: 2 }}>🌹 Rose Bushes (Pull Requests)</strong>
+              <span>Represents Pull Requests (PRs). Green for Completed, Yellow for Under Review, Grey for Draft. Active PRs sprout flowers.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#e74c3c', display: 'block', marginBottom: 2 }}>🌿 Leafy Weeds (Issues/Bugs)</strong>
+              <span>Represents Jira/Linear Issues. Red clumps are active high-priority bugs/tasks; dry grey clumps reside in the backlog.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#f1c40f', display: 'block', marginBottom: 2 }}>💧 Stone Well (Main Repository)</strong>
+              <span>Represents the central repo & main branch. The well water\'s health reflects the overall workspace code integration stability.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#3498db', display: 'block', marginBottom: 2 }}>🧙 Garden Gnomes (AI Agents)</strong>
+              <span>Operational AI Agents (Worker, Critic, Opponent) executing tasks, running pipeline checks, and testing system stability.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#e67e22', display: 'block', marginBottom: 2 }}>📦 Crop Crates (Deliverables)</strong>
+              <span>Represents completed milestones or merged packages ready for deployment.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#95a5a6', display: 'block', marginBottom: 2 }}>🛢️ Wooden Barrels (Builds)</strong>
+              <span>Represents generated build artifacts, packages, or container images in the CI pipeline.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#948c82', display: 'block', marginBottom: 2 }}>🛤️ Stepping Stones (CI/CD Path)</strong>
+              <span>Represents the commit history path and CI/CD stages leading into the central branch.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#8e4a23', display: 'block', marginBottom: 2 }}>💮 Wildflowers (Dependencies)</strong>
+              <span>The 5-circle objects scattered outside the fence represent external open-source libraries and package imports.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#7cd936', display: 'block', marginBottom: 2 }}>🚧 Fences (Workspace Scope)</strong>
+              <span>Fences define active branch boundaries. Grass outside represents untracked files or third-party scopes.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#34495e', display: 'block', marginBottom: 2 }}>⛈️ Weather (Pipeline Load)</strong>
+              <span>Sunny weather represents clean integration. High technical debt or failing tests trigger overcast skies and rain.</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Toggle Button */}
+      {!showLegend && uiVisible && (
+        <button
+          onClick={() => setShowLegend(true)}
+          style={{
+            position: 'absolute',
+            left: 20,
+            bottom: 20,
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '10px 14px',
+            background: 'rgba(23, 28, 41, 0.85)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: 8,
+            backdropFilter: 'blur(5px)',
+            color: '#fff',
+            fontWeight: 500,
+            fontSize: 13,
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+            transition: 'all 0.2s',
+          }}
+        >
+          📖 DTO Glossary
+        </button>
       )}
     </div>
   );

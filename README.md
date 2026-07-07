@@ -83,7 +83,7 @@ Clone the repository and install dependencies in a virtual environment:
 ```bash
 python -m venv venv
 source venv/Scripts/activate  # On Windows
-pip install -r pwm/requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 2. Configuration

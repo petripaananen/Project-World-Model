@@ -1,7 +1,6 @@
 import { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useGLTF } from '@react-three/drei';
 import type { TaskNode, HoveredData } from './DataTree';
 
 interface AssetProps {
@@ -41,6 +40,7 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
           progress: Math.min(Math.max(crr / 2, 0), 1),
           complexity: 1,
           risk: crr > 1.0 ? 0.7 : 0.1,
+          elementType: 'Stone Well'
         },
         x: e.clientX,
         y: e.clientY
@@ -65,6 +65,7 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
           progress: Math.min(Math.max(crr / 2, 0), 1),
           complexity: 1,
           risk: crr > 1.0 ? 0.7 : 0.1,
+          elementType: 'Stone Well'
         },
         x: e.clientX,
         y: e.clientY
@@ -199,18 +200,62 @@ export function Well({ position, crr, projectName, onHover, onClick }: WellProps
         <meshStandardMaterial color="#4a3b32" roughness={0.8} />
       </mesh>
 
-      {/* Well Roof */}
+      {/* Well Roof with decorative wooden hip timbers & copper peak spire */}
       <mesh position={[0, 1.7, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
         <coneGeometry args={[1.1, 0.55, 4]} />
         <meshStandardMaterial color="#8e4a23" roughness={0.85} flatShading />
       </mesh>
-    </group>
+      {/* Decorative timbers running down the 4 hips of the roof */}
+      {[0, 1, 2, 3].map((i) => {
+        const angle = (i * Math.PI) / 2 + Math.PI / 4;
+        return (
+          <mesh
+            key={i}
+            position={[0.45 * Math.sin(angle), 1.62, 0.45 * Math.cos(angle)]}
+            rotation={[0.4, angle, 0]}
+            castShadow
+          >
+            <boxGeometry args={[0.08, 0.75, 0.08]} />
+            <meshStandardMaterial color="#4a3b32" roughness={0.9} />
+          </mesh>
+        );
+      })}
+      {/* Metal Peak Finial Spire */}
+      <mesh position={[0, 2.05, 0]} castShadow>
+        <coneGeometry args={[0.03, 0.22, 6]} />
+        <meshStandardMaterial color="#4a4d4f" metalness={0.8} roughness={0.2} />
+      </mesh>    </group>
   );
 }
 
 // ─── 2. Fluffy Faceted Rose Bush (Pull Request) ──────────────────────
 interface BushProps extends AssetProps {
   status: string; // 'approved', 'under review', 'draft'
+}
+
+// Helper component to render a detailed stylized flower (Hay Day style)
+function RoseBloom({ position, color }: { position: [number, number, number]; color: string }) {
+  return (
+    <group position={position}>
+      {/* Central yellow disc */}
+      <mesh castShadow>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshStandardMaterial color="#f1c40f" roughness={0.5} />
+      </mesh>
+      {/* 5 surrounding petals */}
+      {[0, 1, 2, 3, 4].map((i) => {
+        const angle = (i * 2 * Math.PI) / 5;
+        const x = 0.07 * Math.cos(angle);
+        const z = 0.07 * Math.sin(angle);
+        return (
+          <mesh key={i} position={[x, 0.01, z]} rotation={[0.1, angle, 0]} scale={[1.6, 0.4, 1.6]} castShadow>
+            <sphereGeometry args={[0.05, 8, 8]} />
+            <meshStandardMaterial color={color} roughness={0.8} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
 }
 
 export function RoseBush({ position, status, node, onHover, onClick }: BushProps) {
@@ -260,50 +305,38 @@ export function RoseBush({ position, status, node, onHover, onClick }: BushProps
       onPointerOut={handlePointerOut}
       onPointerMove={handlePointerMove}
     >
-      {/* 5-Dodecahedron Faceted Organic Foliage (Hay Day style) */}
+      {/* 5-Icosahedron Smooth Fluffy Foliage (Hay Day style) */}
       <mesh castShadow position={[0, 0.32, 0]}>
-        <dodecahedronGeometry args={[0.36, 1]} />
-        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} flatShading />
+        <icosahedronGeometry args={[0.36, 2]} />
+        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} />
       </mesh>
       <mesh castShadow position={[0.12, 0.42, -0.08]}>
-        <dodecahedronGeometry args={[0.26, 1]} />
-        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} flatShading />
+        <icosahedronGeometry args={[0.26, 2]} />
+        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} />
       </mesh>
       <mesh castShadow position={[-0.12, 0.4, 0.08]}>
-        <dodecahedronGeometry args={[0.24, 1]} />
-        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} flatShading />
+        <icosahedronGeometry args={[0.24, 2]} />
+        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} />
       </mesh>
       <mesh castShadow position={[0.08, 0.28, 0.12]}>
-        <dodecahedronGeometry args={[0.22, 1]} />
-        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} flatShading />
+        <icosahedronGeometry args={[0.22, 2]} />
+        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} />
       </mesh>
       <mesh castShadow position={[-0.1, 0.28, -0.1]}>
-        <dodecahedronGeometry args={[0.2, 1]} />
-        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} flatShading />
+        <icosahedronGeometry args={[0.2, 2]} />
+        <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.9} />
       </mesh>
 
-      {/* Tiny colorful blooms */}
+      {/* Detailed Stylized Blooms */}
       {(status.toLowerCase() === 'approved' || status.toLowerCase() === 'completed') && (
         <>
-          <mesh position={[0.15, 0.52, 0.15]} castShadow>
-            <sphereGeometry args={[0.06, 6, 6]} />
-            <meshStandardMaterial color="#e74c3c" emissive="#e74c3c" emissiveIntensity={0.25} />
-          </mesh>
-          <mesh position={[-0.18, 0.45, 0.2]} castShadow>
-            <sphereGeometry args={[0.05, 6, 6]} />
-            <meshStandardMaterial color="#e74c3c" />
-          </mesh>
-          <mesh position={[0.0, 0.56, -0.12]} castShadow>
-            <sphereGeometry args={[0.05, 6, 6]} />
-            <meshStandardMaterial color="#e74c3c" />
-          </mesh>
+          <RoseBloom position={[0.15, 0.52, 0.15]} color="#e74c3c" />
+          <RoseBloom position={[-0.18, 0.45, 0.2]} color="#e74c3c" />
+          <RoseBloom position={[0.0, 0.56, -0.12]} color="#e74c3c" />
         </>
       )}
       {(status.toLowerCase() === 'under review' || status.toLowerCase() === 'pending') && (
-        <mesh position={[0.02, 0.6, 0.02]} castShadow>
-          <sphereGeometry args={[0.06, 6, 6]} />
-          <meshStandardMaterial color="#f1c40f" />
-        </mesh>
+        <RoseBloom position={[0.02, 0.6, 0.02]} color="#f39c12" />
       )}
 
       {/* Small Brown Pot Base */}
@@ -366,26 +399,42 @@ export function SpikyWeed({ position, status, node, onHover, onClick }: WeedProp
       onPointerMove={handlePointerMove}
     >
       <group position={[0, 0.05, 0]}>
-        {/* Leaf Blades */}
-        <mesh castShadow rotation={[0, 0, 0.45]} position={[0.1, 0.2, 0]}>
-          <coneGeometry args={[0.06, 0.45, 4]} />
-          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.8} />
+        {/* Organic Leafy Weed Blades (Hay Day Style) */}
+        {/* Flat, elongated, smooth spheres rotated outwards in a rosette */}
+        {/* Leaf 1 */}
+        <mesh castShadow rotation={[0.3, 0, 0.45]} position={[0.1, 0.2, 0.02]} scale={[0.08, 0.4, 0.24]}>
+          <sphereGeometry args={[1, 16, 16]} />
+          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
         </mesh>
-        <mesh castShadow rotation={[0, 0, -0.45]} position={[-0.1, 0.2, 0]}>
-          <coneGeometry args={[0.06, 0.45, 4]} />
-          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.8} />
+        {/* Leaf 2 */}
+        <mesh castShadow rotation={[-0.3, 0, -0.45]} position={[-0.1, 0.2, -0.02]} scale={[0.08, 0.4, 0.24]}>
+          <sphereGeometry args={[1, 16, 16]} />
+          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
         </mesh>
-        <mesh castShadow rotation={[0.4, 0, 0]} position={[0, 0.18, 0.1]}>
-          <coneGeometry args={[0.05, 0.38, 4]} />
-          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.8} />
+        {/* Leaf 3 */}
+        <mesh castShadow rotation={[0.45, 0.2, 0.1]} position={[0.02, 0.18, 0.1]} scale={[0.07, 0.36, 0.2]}>
+          <sphereGeometry args={[1, 16, 16]} />
+          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
         </mesh>
-        <mesh castShadow rotation={[-0.4, 0, 0]} position={[0, 0.18, -0.1]}>
-          <coneGeometry args={[0.05, 0.38, 4]} />
-          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.8} />
+        {/* Leaf 4 */}
+        <mesh castShadow rotation={[-0.45, -0.2, -0.1]} position={[-0.02, 0.18, -0.1]} scale={[0.07, 0.36, 0.2]}>
+          <sphereGeometry args={[1, 16, 16]} />
+          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
         </mesh>
-        <mesh castShadow position={[0, 0.28, 0]}>
-          <coneGeometry args={[0.045, 0.55, 4]} />
-          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.15) : baseColor} roughness={0.8} />
+        {/* Leaf 5 (Center tall leaf) */}
+        <mesh castShadow rotation={[0.05, 0, -0.05]} position={[0, 0.26, 0]} scale={[0.08, 0.48, 0.26]}>
+          <sphereGeometry args={[1, 16, 16]} />
+          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.15) : baseColor} roughness={0.85} />
+        </mesh>
+        {/* Leaf 6 (Extra small side leaf) */}
+        <mesh castShadow rotation={[0.1, 0.4, 0.7]} position={[0.12, 0.14, -0.04]} scale={[0.06, 0.26, 0.18]}>
+          <sphereGeometry args={[1, 16, 16]} />
+          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
+        </mesh>
+        {/* Leaf 7 (Extra small side leaf) */}
+        <mesh castShadow rotation={[-0.1, -0.4, -0.7]} position={[-0.12, 0.14, 0.04]} scale={[0.06, 0.26, 0.18]}>
+          <sphereGeometry args={[1, 16, 16]} />
+          <meshStandardMaterial color={hovered ? baseColor.clone().addScalar(0.12) : baseColor} roughness={0.85} />
         </mesh>
       </group>
     </group>
@@ -426,6 +475,7 @@ export function GardenGnome({ position, color, name, role, onHover, onClick }: G
           complexity: 0.5,
           risk: 0.1,
           description: role,
+          elementType: 'Garden Gnome'
         } as any,
         x: e.clientX,
         y: e.clientY
@@ -451,6 +501,7 @@ export function GardenGnome({ position, color, name, role, onHover, onClick }: G
           complexity: 0.5,
           risk: 0.1,
           description: role,
+          elementType: 'Garden Gnome'
         } as any,
         x: e.clientX,
         y: e.clientY
@@ -519,6 +570,24 @@ interface FenceProps {
 export function Fence({ position, rotation = [0, 0, 0] }: FenceProps) {
   return (
     <group position={position} rotation={rotation}>
+      {/* Heavy Corner Slat Posts (Fidelity upgrade) */}
+      <mesh position={[-0.75, 0.38, 0]} castShadow>
+        <boxGeometry args={[0.09, 0.76, 0.09]} />
+        <meshStandardMaterial color="#b5a28c" roughness={0.95} />
+      </mesh>
+      <mesh position={[-0.75, 0.78, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <coneGeometry args={[0.075, 0.08, 4]} />
+        <meshStandardMaterial color="#b5a28c" roughness={0.95} />
+      </mesh>
+      <mesh position={[0.75, 0.38, 0]} castShadow>
+        <boxGeometry args={[0.09, 0.76, 0.09]} />
+        <meshStandardMaterial color="#b5a28c" roughness={0.95} />
+      </mesh>
+      <mesh position={[0.75, 0.78, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <coneGeometry args={[0.075, 0.08, 4]} />
+        <meshStandardMaterial color="#b5a28c" roughness={0.95} />
+      </mesh>
+
       {/* Horizontal rails */}
       <mesh position={[0, 0.2, 0]} castShadow>
         <boxGeometry args={[1.5, 0.04, 0.04]} />
@@ -566,14 +635,22 @@ export function Fence({ position, rotation = [0, 0, 0] }: FenceProps) {
   );
 }
 
-// ─── 6. 3D Grass Tuft Component (Clover GLTF) ────────────────────────
+// ─── 6. 3D Grass Tuft Component ─────────────────────────────────────
 export function GrassTuft({ position }: { position: [number, number, number] }) {
-  const { scene } = useGLTF('/models/Stylized Nature MegaKit[Standard]/glTF/Clover_1.gltf');
-  const clonedScene = useMemo(() => scene.clone(), [scene]);
-
   return (
-    <group position={position} scale={[1.1, 1.1, 1.1]}>
-      <primitive object={clonedScene} />
+    <group position={position}>
+      <mesh rotation={[0.18, 0.05, 0.1]} castShadow>
+        <coneGeometry args={[0.02, 0.2, 3]} />
+        <meshStandardMaterial color="#3d5c36" roughness={0.95} />
+      </mesh>
+      <mesh rotation={[-0.12, -0.15, -0.12]} position={[0.05, 0, 0.03]} castShadow>
+        <coneGeometry args={[0.016, 0.16, 3]} />
+        <meshStandardMaterial color="#496d41" roughness={0.95} />
+      </mesh>
+      <mesh rotation={[0.08, -0.08, 0.22]} position={[-0.04, 0, -0.04]} castShadow>
+        <coneGeometry args={[0.014, 0.14, 3]} />
+        <meshStandardMaterial color="#557d4c" roughness={0.95} />
+      </mesh>
     </group>
   );
 }
@@ -701,19 +778,35 @@ export function Chicken({ position, speed = 1.0, phase = 0 }: { position: [numbe
 export function WoodenBarrel({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
-      {/* Wood slats cylinder */}
+      {/* Wood slats cylinder - Smoother and bulgy */}
       <mesh position={[0, 0.25, 0]} castShadow>
-        <cylinderGeometry args={[0.18, 0.21, 0.5, 9]} />
+        <cylinderGeometry args={[0.18, 0.22, 0.5, 18]} />
         <meshStandardMaterial color="#7a5230" roughness={0.95} flatShading />
       </mesh>
 
-      {/* Iron Hoop Rings */}
-      <mesh position={[0, 0.4, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.19, 0.01, 4, 16]} />
+      {/* Wooden Top Lid */}
+      <mesh position={[0, 0.49, 0]} castShadow>
+        <cylinderGeometry args={[0.17, 0.17, 0.02, 18]} />
+        <meshStandardMaterial color="#633e21" roughness={0.9} />
+      </mesh>
+
+      {/* Spigot Tap */}
+      <mesh position={[0, 0.25, 0.22]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+        <cylinderGeometry args={[0.015, 0.015, 0.08, 8]} />
+        <meshStandardMaterial color="#4a4d4f" metalness={0.7} roughness={0.3} />
+      </mesh>
+
+      {/* 3 Iron Hoop Rings */}
+      <mesh position={[0, 0.42, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.185, 0.012, 4, 24]} />
         <meshStandardMaterial color="#4a4d4f" metalness={0.85} roughness={0.2} />
       </mesh>
-      <mesh position={[0, 0.1, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.19, 0.01, 4, 16]} />
+      <mesh position={[0, 0.25, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.225, 0.012, 4, 24]} />
+        <meshStandardMaterial color="#4a4d4f" metalness={0.85} roughness={0.2} />
+      </mesh>
+      <mesh position={[0, 0.08, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.185, 0.012, 4, 24]} />
         <meshStandardMaterial color="#4a4d4f" metalness={0.85} roughness={0.2} />
       </mesh>
     </group>
@@ -740,27 +833,62 @@ export function CropCrate({ position }: { position: [number, number, number] }) 
         <meshStandardMaterial color="#8a5e37" />
       </mesh>
 
-      {/* Apples (PR Nodes) filling the crate */}
+      {/* Diagonal X-bracing on front and back for high-fidelity look */}
+      <mesh position={[0, 0.1, 0.205]} rotation={[0, 0, 0.35]} castShadow>
+        <boxGeometry args={[0.55, 0.03, 0.006]} />
+        <meshStandardMaterial color="#714a27" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 0.1, 0.205]} rotation={[0, 0, -0.35]} castShadow>
+        <boxGeometry args={[0.55, 0.03, 0.006]} />
+        <meshStandardMaterial color="#714a27" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 0.1, -0.205]} rotation={[0, 0, 0.35]} castShadow>
+        <boxGeometry args={[0.55, 0.03, 0.006]} />
+        <meshStandardMaterial color="#714a27" roughness={0.9} />
+      </mesh>
+      <mesh position={[0, 0.1, -0.205]} rotation={[0, 0, -0.35]} castShadow>
+        <boxGeometry args={[0.55, 0.03, 0.006]} />
+        <meshStandardMaterial color="#714a27" roughness={0.9} />
+      </mesh>
+
+      {/* Apples (PR Nodes) filling the crate with tiny green stem/leaf detail */}
       {[-0.15, 0, 0.15].map((x, idx) =>
         [-0.1, 0.1].map((z, jdx) => (
-          <mesh key={`${idx}-${jdx}`} position={[x, 0.19, z]} castShadow>
-            <sphereGeometry args={[0.065, 8, 8]} />
-            <meshStandardMaterial color="#d35400" roughness={0.25} />
-          </mesh>
+          <group key={`${idx}-${jdx}`} position={[x, 0.19, z]}>
+            {/* Apple Fruit */}
+            <mesh castShadow>
+              <sphereGeometry args={[0.065, 12, 12]} />
+              <meshStandardMaterial color="#d35400" roughness={0.25} />
+            </mesh>
+            {/* Small green leaf stem */}
+            <mesh position={[0, 0.06, 0]} rotation={[0.4, 0, 0.2]} scale={[0.1, 0.8, 0.25]} castShadow>
+              <sphereGeometry args={[0.02, 6, 6]} />
+              <meshStandardMaterial color="#27ae60" roughness={0.6} />
+            </mesh>
+          </group>
         ))
       )}
     </group>
   );
 }
 
-// ─── 11. Colorful Wildflower (Flower GLTF) ──────────────────────────
-export function Wildflower({ position }: { position: [number, number, number]; color?: string }) {
-  const { scene } = useGLTF('/models/Stylized Nature MegaKit[Standard]/glTF/Flower_3_Single.gltf');
-  const clonedScene = useMemo(() => scene.clone(), [scene]);
-
+// ─── 11. Colorful Wildflower ────────────────────────────────────────
+export function Wildflower({ position, color = '#ffffff', scale = 1.0 }: { position: [number, number, number]; color?: string; scale?: number }) {
   return (
-    <group position={position} scale={[1.4, 1.4, 1.4]}>
-      <primitive object={clonedScene} />
+    <group position={position} scale={[scale, scale, scale]}>
+      {/* Center Pollen */}
+      <mesh position={[0, 0.04, 0]}>
+        <sphereGeometry args={[0.02, 6, 6]} />
+        <meshStandardMaterial color="#f1c40f" roughness={0.3} />
+      </mesh>
+
+      {/* Petals */}
+      {[[0.03, 0], [-0.03, 0], [0, 0.03], [0, -0.03]].map(([x, z], i) => (
+        <mesh key={i} position={[x, 0.035, z]} rotation={[0, (i * Math.PI) / 4, 0]}>
+          <sphereGeometry args={[0.02, 6, 6]} scale={[1.3, 0.5, 0.7]} />
+          <meshStandardMaterial color={color} roughness={0.8} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -892,21 +1020,4 @@ export function Sunbeams() {
     </group>
   );
 }
-
-// ─── STEPPING STONE (RockPath GLTF) ──────────────────────────────────
-export function SteppingStone({ position, rotation = [0, 0, 0], scale = [1.2, 0.25, 1.2] }: { position: [number, number, number]; rotation?: [number, number, number]; scale?: [number, number, number] }) {
-  const { scene } = useGLTF('/models/Stylized Nature MegaKit[Standard]/glTF/RockPath_Round_Small_1.gltf');
-  const clonedScene = useMemo(() => scene.clone(), [scene]);
-
-  return (
-    <group position={position} rotation={rotation} scale={scale} castShadow receiveShadow>
-      <primitive object={clonedScene} />
-    </group>
-  );
-}
-
-// Preload common kit assets
-useGLTF.preload('/models/Stylized Nature MegaKit[Standard]/glTF/Clover_1.gltf');
-useGLTF.preload('/models/Stylized Nature MegaKit[Standard]/glTF/Flower_3_Single.gltf');
-useGLTF.preload('/models/Stylized Nature MegaKit[Standard]/glTF/RockPath_Round_Small_1.gltf');
 

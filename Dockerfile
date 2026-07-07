@@ -30,5 +30,5 @@ COPY --from=frontend-builder /app/visualizer/dist ./visualizer/dist
 ENV PORT=8080
 EXPOSE 8080
 
-# Launch the orchestrator in demo mode
-CMD python -m pwm.main --mode demo --ingestion mock --web --loop --no-interactive
+# Launch the orchestrator (auto-detects mode based on GOOGLE_API_KEY environment variable)
+CMD python -m pwm.main --ingestion mock --web --loop --no-interactive

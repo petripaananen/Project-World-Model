@@ -1,6 +1,5 @@
 import { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
 export interface TaskNode {
@@ -11,6 +10,7 @@ export interface TaskNode {
   risk: number; // 0.0 to 1.0 (drives gnarled angles + sway amplitude)
   subtasks?: TaskNode[];
   description?: string;
+  elementType?: string;
 }
 
 export interface HoveredData {
@@ -19,67 +19,66 @@ export interface HoveredData {
   y: number;
 }
 
-interface GLTFTreeProps {
+interface BranchProps {
   node: TaskNode;
-  theme?: string;
+  depth: number;
+  maxDepth: number;
+  length: number;
+  radius: number;
   onHover: (data: HoveredData | null) => void;
+  theme?: string;
 }
 
-// ─── STYLIZED GLTF TREE (Quaternius Nature Kit) ──────────────────────
-export function GLTFTree({ node, theme, onHover }: GLTFTreeProps) {
+function Branch({ node, depth, maxDepth, length, radius, onHover, theme }: BranchProps) {
   const groupRef = useRef<THREE.Group>(null);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Map project themes to Quaternius tree assets
-  const modelPath = useMemo(() => {
-    if (theme === 'alpha') {
-      return '/models/Stylized Nature MegaKit[Standard]/glTF/CommonTree_1.gltf';
-    }
-    if (theme === 'beta') {
-      return '/models/Stylized Nature MegaKit[Standard]/glTF/CommonTree_2.gltf';
-    }
-    if (theme === 'gamma') {
-      return '/models/Stylized Nature MegaKit[Standard]/glTF/Pine_1.gltf';
-    }
-    return '/models/Stylized Nature MegaKit[Standard]/glTF/TwistedTree_1.gltf';
-  }, [theme]);
-
-  const { scene } = useGLTF(modelPath);
-  const clonedScene = useMemo(() => {
-    const clone = scene.clone();
-
-    // Traverse and customize leaves/materials for styling
-    clone.traverse((child: any) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-
-        // Custom tint pink cherry blossoms for Project Beta
-        if (theme === 'beta' && child.name.toLowerCase().includes('leaves')) {
-          child.material = child.material.clone();
-          child.material.color.set('#fbc2eb');
-        }
-      }
-    });
-
-    return clone;
-  }, [scene, theme]);
-
-  // Wind sway logic
+  // Sway based on risk factor (higher risk sways more) and hover state (physical response)
   useFrame((state) => {
     if (!groupRef.current) return;
     const t = state.clock.getElapsedTime();
-    // High risk projects sway and tilt more gnarledly
-    const sway = Math.sin(t * 1.5) * (node.risk * 0.02 + 0.008);
-    groupRef.current.rotation.z = sway;
-    groupRef.current.rotation.x = sway * 0.4;
+    const swayAmplitude = isHovered ? 0.04 * (node.risk + 0.1) : 0.015 * (node.risk + 0.1);
+    groupRef.current.rotation.z = Math.sin(t + depth) * swayAmplitude;
   });
+
+  if (depth > maxDepth) return null;
+
+  // Base colors on progress: healthy green vs unstarted/delayed orange/amber
+  const baseBranchColor = new THREE.Color('#4d3319').lerp(new THREE.Color('#2d1a0a'), depth / maxDepth);
+  const branchColor = isHovered ? baseBranchColor.clone().addScalar(0.15) : baseBranchColor;
+
+  // Theme-aware foliage color maps (Step 4 & 1)
+  const baseLeafColor = useMemo(() => {
+    if (theme === 'alpha') {
+      // Infrastructure: crimson red / deep orange
+      return new THREE.Color('#d35400').lerp(new THREE.Color('#c0392b'), node.progress);
+    }
+    if (theme === 'beta') {
+      // Frontend: cherry blossom pink / soft peach
+      return new THREE.Color('#ffe2e2').lerp(new THREE.Color('#fbc2eb'), node.progress);
+    }
+    if (theme === 'gamma') {
+      // Data: deep slate forest spruce pine green
+      return new THREE.Color('#2d5a27').lerp(new THREE.Color('#11300e'), 1 - node.progress);
+    }
+    // Default / Live: bright leaf green / harvest yellow
+    return new THREE.Color('#e67e22').lerp(new THREE.Color('#27ae60'), node.progress);
+  }, [theme, node.progress]);
+
+  const leafColor = isHovered ? baseLeafColor.clone().addScalar(0.2) : baseLeafColor;
+
+  const children = node.subtasks || [];
+  const branchCount = children.length;
 
   const handlePointerOver = (e: any) => {
     e.stopPropagation();
     document.body.style.cursor = 'pointer';
     setIsHovered(true);
-    onHover({ node, x: e.clientX, y: e.clientY });
+    onHover({
+      node,
+      x: e.clientX,
+      y: e.clientY
+    });
   };
 
   const handlePointerOut = (e: any) => {
@@ -91,36 +90,137 @@ export function GLTFTree({ node, theme, onHover }: GLTFTreeProps) {
 
   const handlePointerMove = (e: any) => {
     e.stopPropagation();
-    onHover({ node, x: e.clientX, y: e.clientY });
+    onHover({
+      node,
+      x: e.clientX,
+      y: e.clientY
+    });
   };
 
-  // Grow scale with epic task progress completion
-  const treeScale = node.progress * 1.4 + 0.7;
-
   return (
-    <group
-      ref={groupRef}
-      scale={[treeScale, treeScale, treeScale]}
-      onPointerOver={handlePointerOver}
-      onPointerOut={handlePointerOut}
-      onPointerMove={handlePointerMove}
-    >
-      <primitive object={clonedScene} />
+    <group ref={groupRef}>
+      {/* Branch cylinder */}
+      <mesh
+        position={[0, length / 2, 0]}
+        rotation={[Math.sin(length * 12) * 0.05, 0, Math.cos(radius * 24) * 0.05]} // Whimsical organic bend
+        castShadow
+        receiveShadow
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+        onPointerMove={handlePointerMove}
+      >
+        <cylinderGeometry args={[radius * 0.7, radius, length, 8]} />
+        <meshStandardMaterial color={branchColor} roughness={0.95} flatShading />
+      </mesh>
 
-      {/* Subtle selection hover outline/glow */}
-      {isHovered && (
-        <mesh position={[0, 1.8, 0]}>
-          <cylinderGeometry args={[1.5, 1.5, 3.8, 8, 1, true]} />
-          <meshBasicMaterial color="#39ff14" transparent opacity={0.12} side={THREE.DoubleSide} />
-        </mesh>
+      {/* Sprout leaves at leaf node or max depth */}
+      {depth === maxDepth || children.length === 0 ? (
+        <group
+          position={[0, length, 0]}
+          onPointerOver={handlePointerOver}
+          onPointerOut={handlePointerOut}
+          onPointerMove={handlePointerMove}
+        >
+          {/* Main Smooth Fluffy Leaf Cluster (Step 1) */}
+          <mesh castShadow>
+            <icosahedronGeometry args={[radius * 2.6 * (node.progress + 0.5), 2]} />
+            <meshStandardMaterial
+              color={leafColor}
+              roughness={0.8}
+              metalness={0.1}
+              emissive={leafColor}
+              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.12}
+            />
+          </mesh>
+          {/* Top Leaf Cluster */}
+          <mesh castShadow position={[0, radius * 1.3, 0]}>
+            <icosahedronGeometry args={[radius * 1.9 * (node.progress + 0.5), 2]} />
+            <meshStandardMaterial
+              color={leafColor}
+              roughness={0.8}
+              metalness={0.1}
+              emissive={leafColor}
+              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
+            />
+          </mesh>
+          {/* Left Leaf Cluster */}
+          <mesh castShadow position={[-radius * 1.4, 0, 0]}>
+            <icosahedronGeometry args={[radius * 1.7 * (node.progress + 0.5), 2]} />
+            <meshStandardMaterial
+              color={leafColor}
+              roughness={0.8}
+              metalness={0.1}
+              emissive={leafColor}
+              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
+            />
+          </mesh>
+          {/* Back Leaf Cluster */}
+          <mesh castShadow position={[0, -radius * 0.3, -radius * 1.2]}>
+            <icosahedronGeometry args={[radius * 1.6 * (node.progress + 0.5), 2]} />
+            <meshStandardMaterial
+              color={leafColor}
+              roughness={0.8}
+              metalness={0.1}
+              emissive={leafColor}
+              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
+            />
+          </mesh>
+
+          {/* Stylized hanging fruits (Apples/Peaches) */}
+          {[[0.2, 0.1, 0.2], [-0.2, -0.1, 0.2], [0.3, -0.2, -0.2], [-0.3, 0.2, -0.3]].map((fPos, fIdx) => {
+            let fruitColor = '#e74c3c'; // Apple red
+            if (theme === 'beta') fruitColor = '#f1c40f'; // Yellow pear
+            else if (theme === 'gamma') fruitColor = '#e67e22'; // Orange peach
+
+            return (
+              <mesh
+                key={`fruit-${fIdx}`}
+                position={[
+                  fPos[0] * radius * 3.2 * (node.progress + 0.5),
+                  fPos[1] * radius * 3.2 * (node.progress + 0.5) - 0.2,
+                  fPos[2] * radius * 3.2 * (node.progress + 0.5),
+                ]}
+                castShadow
+              >
+                <sphereGeometry args={[radius * 0.45 * (node.progress + 0.5), 12, 12]} />
+                <meshStandardMaterial color={fruitColor} roughness={0.3} />
+              </mesh>
+            );
+          })}
+        </group>
+      ) : (
+        // Sprout child branches
+        <group position={[0, length, 0]}>
+          {children.map((subtask, index) => {
+            const angleSpread = 0.45 + (node.risk * 0.2);
+            const mid = (branchCount - 1) / 2;
+            const zRotation = (index - mid) * angleSpread;
+            const branchLength = length * 0.78;
+            const branchRadius = radius * 0.72;
+
+            return (
+              <group
+                key={subtask.id}
+                rotation={[0, 0, zRotation]}
+              >
+                <Branch
+                  node={subtask}
+                  depth={depth + 1}
+                  maxDepth={maxDepth}
+                  length={branchLength}
+                  radius={branchRadius}
+                  onHover={onHover}
+                  theme={theme}
+                />
+              </group>
+            );
+          })}
+        </group>
       )}
     </group>
   );
 }
 
-
-
-// ─── TREE EXPORT (Main Render entry point) ──────────────────────────
 interface DataTreeProps {
   data: TaskNode;
   onHover: (data: HoveredData | null) => void;
@@ -128,12 +228,16 @@ interface DataTreeProps {
 }
 
 export function DataTree({ data, onHover, theme }: DataTreeProps) {
-  // Use Quaternius low-poly game models for trees
-  return <GLTFTree node={data} theme={theme} onHover={onHover} />;
+  const maxDepth = Math.min(Math.max(data.complexity, 1), 4);
+  return (
+    <Branch
+      node={data}
+      depth={1}
+      maxDepth={maxDepth}
+      length={1.8}
+      radius={0.24}
+      onHover={onHover}
+      theme={theme}
+    />
+  );
 }
-
-// Preload assets
-useGLTF.preload('/models/Stylized Nature MegaKit[Standard]/glTF/CommonTree_1.gltf');
-useGLTF.preload('/models/Stylized Nature MegaKit[Standard]/glTF/CommonTree_2.gltf');
-useGLTF.preload('/models/Stylized Nature MegaKit[Standard]/glTF/Pine_1.gltf');
-useGLTF.preload('/models/Stylized Nature MegaKit[Standard]/glTF/TwistedTree_1.gltf');

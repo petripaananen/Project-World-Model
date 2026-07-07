@@ -1,7 +1,7 @@
 # Unified Requirements for Project World Model (PWM) Workspace
 
 # Core & API
-google-genai>=1.0.0
+google-genai>=2.0.0
 google-auth>=2.0.0
 python-dotenv>=1.0.0
 mcp>=1.0.0

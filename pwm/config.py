@@ -49,12 +49,12 @@ class ModelConfig(BaseModel):
     """LLM model configuration."""
     # Primary reasoning model (for Worker/Critic agents)
     reasoning_model: str = Field(
-        default="gemini-2.5-pro",
+        default="gemini-3.5-flash",
         description="Model for deep causal reasoning tasks",
     )
     # Fast model (for data processing, summarization)
     fast_model: str = Field(
-        default="gemini-2.5-flash",
+        default="gemini-3.5-flash",
         description="Model for quick processing tasks",
     )
     temperature: float = Field(default=0.2, description="Generation temperature")
@@ -124,10 +124,10 @@ class CRRConfig(BaseModel):
     """Compute-to-Rework Ratio calculation parameters."""
     # Cost assumptions
     token_cost_per_million_input: float = Field(
-        default=1.25, description="USD per 1M input tokens (Gemini 2.5 Pro)"
+        default=1.50, description="USD per 1M input tokens (Gemini 3.5 Flash)"
     )
     token_cost_per_million_output: float = Field(
-        default=10.0, description="USD per 1M output tokens (Gemini 2.5 Pro)"
+        default=9.0, description="USD per 1M output tokens (Gemini 3.5 Flash)"
     )
     # Human cost assumptions
     developer_hourly_rate: float = Field(
@@ -341,8 +341,8 @@ class PWMConfig(BaseModel):
                 gce_zone=os.getenv("GCP_GCE_ZONE", "us-central1-a"),
             ),
             models=ModelConfig(
-                reasoning_model=os.getenv("PWM_REASONING_MODEL", "gemini-2.5-pro"),
-                fast_model=os.getenv("PWM_FAST_MODEL", "gemini-2.5-flash"),
+                reasoning_model=os.getenv("PWM_REASONING_MODEL", "gemini-3.5-flash"),
+                fast_model=os.getenv("PWM_FAST_MODEL", "gemini-3.5-flash"),
                 vjepa_endpoint_url=os.getenv("PWM_VJEPA_ENDPOINT_URL", ""),
                 lewm_endpoint_url=os.getenv("PWM_LEWM_ENDPOINT_URL", ""),
                 lmms_engine_endpoint_url=os.getenv("PWM_LMMS_ENGINE_ENDPOINT_URL", ""),

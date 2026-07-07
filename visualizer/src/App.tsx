@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html, Sparkles, Environment, ContactShadows, Float } from '@react-three/drei';
 import * as THREE from 'three';
@@ -1443,13 +1443,15 @@ function App() {
             {/* Standard mode: React-Three-Fiber DTO Simulation */}
             {!dtoSimActive && (
               <Canvas shadows camera={{ position: [0, 8, 12], fov: 48 }}>
-                <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 - 0.05} minDistance={5} maxDistance={25} />
-                <DTOSimulation 
-                  graph={activeProjectData?.graph || null} 
-                  crr={activeProjectData?.telemetry?.crr} 
-                  qaLimit={qaLimit}
-                  opponentLimit={opponentLimit}
-                />
+                <Suspense fallback={null}>
+                  <OrbitControls makeDefault maxPolarAngle={Math.PI / 2 - 0.05} minDistance={5} maxDistance={25} />
+                  <DTOSimulation 
+                    graph={activeProjectData?.graph || null} 
+                    crr={activeProjectData?.telemetry?.crr} 
+                    qaLimit={qaLimit}
+                    opponentLimit={opponentLimit}
+                  />
+                </Suspense>
               </Canvas>
             )}
 

@@ -106,7 +106,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 ## 4. The 8-Phase Development Roadmap
 
 > [!NOTE]
-> All phases from Phase 1 through Phase 6 are now fully completed. The framework utilizes a robust modular package `pwm/layers` incorporating REST connectors to V-JEPA 2.1, LeWM, LMMs-Engine, and NVIDIA NemoClaw endpoints, complete with dynamic Vertex AI (Gemini 2.5 Pro/Flash) semantic fallbacks. The frontend includes an interactive **3D Classical Garden Simulation** (DTO Simulation) built with React-Three-Fiber and Three.js under the `visualizer/` subdirectory.
+> All phases from Phase 1 through Phase 6 are now fully completed. The framework utilizes a robust modular package `pwm/layers` incorporating REST connectors to V-JEPA 2.1, LeWM, LMMs-Engine, and NVIDIA NemoClaw endpoints, complete with dynamic Vertex AI (Gemini 3.5 Flash) semantic fallbacks. The frontend includes an interactive **3D Classical Garden Simulation** (DTO Simulation) built with React-Three-Fiber and Three.js under the `visualizer/` subdirectory.
 
 | Phase | Name | Status | Thesis Grounding |
 |-------|------|--------|-----------------|

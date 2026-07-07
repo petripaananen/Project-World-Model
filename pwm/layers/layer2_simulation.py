@@ -71,7 +71,7 @@ class Layer2Simulation:
                     context_str += f"Visual Timeline - Sprint Milestones/Critical Blockers: {blocked_list}\n"
                     
                 # Use the detector's client to avoid duplicate initialization logic
-                client = self.detector._client
+                client = self.detector.client
                     
                 response = client.models.embed_content(
                     model='text-embedding-004',

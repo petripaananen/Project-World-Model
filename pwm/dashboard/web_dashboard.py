@@ -36,7 +36,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from starlette.websockets import WebSocketState
 
 from pwm.config import PWMConfig
@@ -204,6 +204,20 @@ def create_app(
         # Serve the built Vite assets
         app.mount("/assets", StaticFiles(directory=str(dist_dir / "assets")), name="assets")
         
+        # Serve 3D models directory
+        models_dir = dist_dir / "models"
+        if models_dir.exists():
+            app.mount("/models", StaticFiles(directory=str(models_dir)), name="models")
+            
+        # Serve root level static files (favicon, icons)
+        @app.get("/favicon.svg", response_class=FileResponse)
+        async def favicon():
+            return FileResponse(dist_dir / "favicon.svg")
+            
+        @app.get("/icons.svg", response_class=FileResponse)
+        async def icons():
+            return FileResponse(dist_dir / "icons.svg")
+            
         @app.get("/", response_class=HTMLResponse)
         async def index():
             """Serve the Vite React SPA."""

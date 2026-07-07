@@ -90,6 +90,8 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
 
         self.config.google_api_key = ""
         agent = MockAgent(config=self.config)
+        # Access client property to trigger lazy client creation
+        _ = agent.client
         mock_genai_client.assert_called_once_with(
             vertexai=True,
             project="test-project-123",

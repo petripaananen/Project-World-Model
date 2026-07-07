@@ -58,8 +58,8 @@ class BaseAgent(ABC):
         self._total_output_tokens = 0
         self._token_lock = asyncio.Lock()
 
-        # Initialize Gemini client
-        self._client = self._create_client()
+        # Initialize Gemini client lazily
+        self._client = None
 
     def _create_client(self) -> genai.Client:
         """Create the appropriate Gemini client based on config."""
@@ -75,6 +75,13 @@ class BaseAgent(ABC):
             raise ValueError(
                 "No API access configured. Set GCP_PROJECT_ID or GOOGLE_API_KEY."
             )
+
+    @property
+    def client(self) -> genai.Client:
+        """Get or initialize the Gemini client on demand."""
+        if self._client is None:
+            self._client = self._create_client()
+        return self._client
 
     @property
     def token_usage(self) -> Dict[str, int]:
@@ -179,7 +186,7 @@ class BaseAgent(ABC):
         last_error = None
         for attempt in range(max_retries):
             try:
-                response = await self._client.aio.models.generate_content(
+                response = await self.client.aio.models.generate_content(
                     model=self.model_name,
                     contents=sanitized_prompt,
                     config=gen_config,
