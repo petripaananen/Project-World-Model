@@ -1,6 +1,7 @@
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { BillboardTreeFoliage } from './BillboardAssets';
 
 export interface TaskNode {
   id: string;
@@ -47,25 +48,7 @@ function Branch({ node, depth, maxDepth, length, radius, onHover, theme }: Branc
   const baseBranchColor = new THREE.Color('#4d3319').lerp(new THREE.Color('#2d1a0a'), depth / maxDepth);
   const branchColor = isHovered ? baseBranchColor.clone().addScalar(0.15) : baseBranchColor;
 
-  // Theme-aware foliage color maps (Step 4 & 1)
-  const baseLeafColor = useMemo(() => {
-    if (theme === 'alpha') {
-      // Infrastructure: crimson red / deep orange
-      return new THREE.Color('#d35400').lerp(new THREE.Color('#c0392b'), node.progress);
-    }
-    if (theme === 'beta') {
-      // Frontend: cherry blossom pink / soft peach
-      return new THREE.Color('#ffe2e2').lerp(new THREE.Color('#fbc2eb'), node.progress);
-    }
-    if (theme === 'gamma') {
-      // Data: deep slate forest spruce pine green
-      return new THREE.Color('#2d5a27').lerp(new THREE.Color('#11300e'), 1 - node.progress);
-    }
-    // Default / Live: bright leaf green / harvest yellow
-    return new THREE.Color('#e67e22').lerp(new THREE.Color('#27ae60'), node.progress);
-  }, [theme, node.progress]);
 
-  const leafColor = isHovered ? baseLeafColor.clone().addScalar(0.2) : baseLeafColor;
 
   const children = node.subtasks || [];
   const branchCount = children.length;
@@ -121,72 +104,12 @@ function Branch({ node, depth, maxDepth, length, radius, onHover, theme }: Branc
           onPointerOut={handlePointerOut}
           onPointerMove={handlePointerMove}
         >
-          {/* Main Smooth Fluffy Leaf Cluster (Step 1) */}
-          <mesh castShadow>
-            <icosahedronGeometry args={[radius * 2.6 * (node.progress + 0.5), 2]} />
-            <meshStandardMaterial
-              color={leafColor}
-              roughness={0.8}
-              metalness={0.1}
-              emissive={leafColor}
-              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.12}
-            />
-          </mesh>
-          {/* Top Leaf Cluster */}
-          <mesh castShadow position={[0, radius * 1.3, 0]}>
-            <icosahedronGeometry args={[radius * 1.9 * (node.progress + 0.5), 2]} />
-            <meshStandardMaterial
-              color={leafColor}
-              roughness={0.8}
-              metalness={0.1}
-              emissive={leafColor}
-              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
-            />
-          </mesh>
-          {/* Left Leaf Cluster */}
-          <mesh castShadow position={[-radius * 1.4, 0, 0]}>
-            <icosahedronGeometry args={[radius * 1.7 * (node.progress + 0.5), 2]} />
-            <meshStandardMaterial
-              color={leafColor}
-              roughness={0.8}
-              metalness={0.1}
-              emissive={leafColor}
-              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
-            />
-          </mesh>
-          {/* Back Leaf Cluster */}
-          <mesh castShadow position={[0, -radius * 0.3, -radius * 1.2]}>
-            <icosahedronGeometry args={[radius * 1.6 * (node.progress + 0.5), 2]} />
-            <meshStandardMaterial
-              color={leafColor}
-              roughness={0.8}
-              metalness={0.1}
-              emissive={leafColor}
-              emissiveIntensity={isHovered ? 0.35 : node.progress * 0.1}
-            />
-          </mesh>
-
-          {/* Stylized hanging fruits (Apples/Peaches) */}
-          {[[0.2, 0.1, 0.2], [-0.2, -0.1, 0.2], [0.3, -0.2, -0.2], [-0.3, 0.2, -0.3]].map((fPos, fIdx) => {
-            let fruitColor = '#e74c3c'; // Apple red
-            if (theme === 'beta') fruitColor = '#f1c40f'; // Yellow pear
-            else if (theme === 'gamma') fruitColor = '#e67e22'; // Orange peach
-
-            return (
-              <mesh
-                key={`fruit-${fIdx}`}
-                position={[
-                  fPos[0] * radius * 3.2 * (node.progress + 0.5),
-                  fPos[1] * radius * 3.2 * (node.progress + 0.5) - 0.2,
-                  fPos[2] * radius * 3.2 * (node.progress + 0.5),
-                ]}
-                castShadow
-              >
-                <sphereGeometry args={[radius * 0.45 * (node.progress + 0.5), 12, 12]} />
-                <meshStandardMaterial color={fruitColor} roughness={0.3} />
-              </mesh>
-            );
-          })}
+          <BillboardTreeFoliage
+            radius={radius}
+            progress={node.progress}
+            isHovered={isHovered}
+            theme={theme}
+          />
         </group>
       ) : (
         // Sprout child branches
