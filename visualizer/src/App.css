@@ -2604,6 +2604,14 @@ body {
 
 
 
+.dto-sim-active .breadcrumbs {
+
+  display: none;
+
+}
+
+
+
 .dto-sim-active .crumb.parent {
 
   color: rgba(255, 255, 255, 0.55);
@@ -2698,13 +2706,13 @@ body {
 
   position: absolute;
 
-  top: 0;
+  top: 64px;
 
   left: 0;
 
   width: 100%;
 
-  height: 100%;
+  height: calc(100% - 64px);
 
   padding: 2.25rem;
 
@@ -8292,3 +8300,72 @@ body {
 @keyframes spark-badge-rotate {
   to { transform: rotate(360deg); }
 }
+
+/* ==========================================================================
+   Inactivity Overlay (Vertex AI Cost Saving Measure)
+   ========================================================================== */
+
+.inactive-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 11, 14, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inactive-modal {
+  max-width: 480px;
+  width: 90%;
+  padding: 2.5rem;
+  background: rgba(23, 25, 30, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.inactive-icon {
+  font-size: 4rem;
+  color: #3b82f6; /* Modern Blue */
+}
+
+.inactive-modal h3 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #ffffff;
+}
+
+.inactive-modal p {
+  color: #8a8d98;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 0.5rem 0;
+}
+
+.resume-btn {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resume-btn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+

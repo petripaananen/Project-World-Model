@@ -34,6 +34,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 import sys
 import uuid
 from datetime import datetime
@@ -202,6 +203,7 @@ async def agent_worker(
     while True:
         p_state, s_state, slack_state = await queue.get()
         try:
+            config.reset_cumulative_tokens()
             state = PWMPipelineState(run_id=str(uuid.uuid4())[:8], started_at=datetime.now())
             state.project_state = p_state
             state.sprint_state = s_state
@@ -331,8 +333,9 @@ async def run_async_architecture(
         tasks.append(asyncio.create_task(start_dashboard(config, dashboard_state)))
 
     # Spawn workers
+    poll_interval = int(os.getenv("PWM_POLL_INTERVAL", "900"))
     tasks.append(asyncio.create_task(
-        ingest_worker(queue, config, ingestion_mode, interval=60)
+        ingest_worker(queue, config, ingestion_mode, interval=poll_interval)
     ))
     tasks.append(asyncio.create_task(
         agent_worker(queue, config, mode, no_interactive, event_logger, dashboard_state)
@@ -362,6 +365,7 @@ async def run_pipeline(
     Returns:
         Complete PWMPipelineState with all layers populated
     """
+    config.reset_cumulative_tokens()
     state = PWMPipelineState(
         run_id=str(uuid.uuid4())[:8],
         started_at=datetime.now(),

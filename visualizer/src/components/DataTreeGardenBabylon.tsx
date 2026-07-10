@@ -50,7 +50,7 @@ export function DataTreeGardenBabylon({
       lightColor: new BABYLON.Color3(1, 0.95, 0.85),
       ambientColor: new BABYLON.Color3(0.5, 0.55, 0.65),
       fogColor: new BABYLON.Color3(0.98, 0.96, 0.94),
-      fogDensity: isRainy ? 0.024 : 0.012,
+      fogDensity: isRainy ? 0.008 : 0.002,
       grassColorHex: '#7cd936',
     };
 
@@ -435,9 +435,10 @@ export function DataTreeGardenBabylon({
       groundRainEmitter = BABYLON.MeshBuilder.CreatePlane("rainEmitter", { size: 24 }, scene);
       groundRainEmitter.rotation.x = Math.PI / 2;
       groundRainEmitter.position.y = 8;
+      groundRainEmitter.isVisible = false;
       
       const rainPS = new BABYLON.ParticleSystem("rainParticles", 300, scene);
-      rainPS.particleTexture = new BABYLON.Texture("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='16'><rect width='2' height='12' fill='white' opacity='0.5'/></svg>", scene);
+      rainPS.particleTexture = new BABYLON.Texture("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc0JyBoZWlnaHQ9JzE2Jz48cmVjdCB3aWR0aD0nMicgaGVpZ2h0PScxMicgZmlsbD0nd2hpdGUnIG9wYWNpdHk9JzAuNScvPjwvc3ZnPg==", scene);
       rainPS.emitter = groundRainEmitter;
       rainPS.minEmitBox = new BABYLON.Vector3(-11, 0, -11);
       rainPS.maxEmitBox = new BABYLON.Vector3(11, 0, 11);

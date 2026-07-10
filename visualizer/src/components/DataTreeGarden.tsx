@@ -165,9 +165,9 @@ export function DataTreeGarden({
           style={{
             position: 'absolute',
             left: 20,
-            top: 140, // Below workspace overview card
+            bottom: 20, // Sit at bottom left to avoid overlap with HUD cards
             width: 320,
-            maxHeight: 'calc(100% - 240px)',
+            maxHeight: '340px',
             overflowY: 'auto',
             zIndex: 1001,
             display: 'flex',

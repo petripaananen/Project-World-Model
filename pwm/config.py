@@ -288,6 +288,12 @@ class PWMConfig(BaseModel):
             return True
         return False
 
+    def reset_cumulative_tokens(self) -> None:
+        """Reset cumulative token and cost counters for a new pipeline run."""
+        with self._token_lock:
+            self._cumulative_input_tokens = 0
+            self._cumulative_output_tokens = 0
+
     def add_tokens(self, input_tokens: int, output_tokens: int) -> None:
         """Accumulate token counts across all agent execution threads.
 

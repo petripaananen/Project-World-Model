@@ -830,6 +830,7 @@ function App() {
     slack: true
   });
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [isInactive, setIsInactive] = useState(false);
 
   // Project data adjustments on sync
   const [projectMetricsOffset, setProjectMetricsOffset] = useState<Record<string, { prs: number, issues: number }>>({
@@ -866,7 +867,32 @@ function App() {
     setSelectedGardenNode(null);
   }, [selectedProject]);
 
+  // Inactivity tracking (suspend telemetry to allow scale-to-zero)
   useEffect(() => {
+    let timeoutId: number;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(() => {
+        setIsInactive(true);
+      }, 15 * 60 * 1000); // 15 minutes
+    };
+
+    if (!isInactive) {
+      const events = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'];
+      events.forEach(e => window.addEventListener(e, resetTimer));
+      resetTimer();
+
+      return () => {
+        clearTimeout(timeoutId);
+        events.forEach(e => window.removeEventListener(e, resetTimer));
+      };
+    }
+  }, [isInactive]);
+
+  useEffect(() => {
+    if (isInactive) return;
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
     const ws = new WebSocket(`${protocol}//${host}/ws`);
@@ -879,7 +905,7 @@ function App() {
       } catch (err) {}
     };
     return () => ws.close();
-  }, []);
+  }, [isInactive]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1225,6 +1251,19 @@ function App() {
   return (
     <div className={`app-container ${dtoSimActive ? 'dto-sim-active' : 'standard-active'}`}>
       
+      {isInactive && (
+        <div className="inactive-overlay">
+          <div className="inactive-modal glass-card">
+            <span className="material-symbols-outlined inactive-icon">pause_circle</span>
+            <h3>Telemetry Paused</h3>
+            <p>To reduce background Vertex AI token consumption, the live updates have been suspended due to inactivity.</p>
+            <button className="resume-btn" onClick={() => setIsInactive(false)}>
+              Resume Updates
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Left Sidebar Nav Drawer (B rebranding renames to Project World Model) */}
       <aside className={`sidebar-nav ${dtoSimActive ? 'collapsed' : ''}`}>
         <div className="sidebar-brand">
@@ -1456,17 +1495,19 @@ function App() {
             )}
 
             {/* DTO Simulation: R3F L-System Data Tree Garden */}
-            <DataTreeGarden
-              active={dtoSimActive}
-              crr={activeProjectData?.telemetry?.crr}
-              projectName={activeProjectData?.name}
-              graph={enrichedGraph}
-              opponentLimit={opponentLimit}
-              eventCount={selectedProject ? (ingestionEvents[selectedProject]?.length || 0) : 0}
-              onSelectNode={setSelectedGardenNode}
-              sprintVelocity={activeProjectData?.telemetry?.sprintVelocity}
-              uiVisible={uiVisible}
-            />
+            {dtoSimActive && (
+              <DataTreeGarden
+                active={dtoSimActive}
+                crr={activeProjectData?.telemetry?.crr}
+                projectName={activeProjectData?.name}
+                graph={enrichedGraph}
+                opponentLimit={opponentLimit}
+                eventCount={selectedProject ? (ingestionEvents[selectedProject]?.length || 0) : 0}
+                onSelectNode={setSelectedGardenNode}
+                sprintVelocity={activeProjectData?.telemetry?.sprintVelocity}
+                uiVisible={uiVisible}
+              />
+            )}
           </div>
 
           {/* Dynamic UI Overlay Layer */}
