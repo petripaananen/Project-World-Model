@@ -162,6 +162,8 @@ export function DataTreeGarden({
       {showLegend && (
         <div
           className="glass-card legend-panel"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
           style={{
             position: 'absolute',
             left: 20,
@@ -170,6 +172,7 @@ export function DataTreeGarden({
             maxHeight: '340px',
             overflowY: 'auto',
             zIndex: 1001,
+            pointerEvents: 'auto',
             display: 'flex',
             flexDirection: 'column',
             gap: 12,
@@ -187,15 +190,23 @@ export function DataTreeGarden({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: 8 }}>
             <h3 style={{ margin: 0, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>📖 DTO Garden Legend</h3>
             <button
-              onClick={() => setShowLegend(false)}
+              onClick={(e) => { e.stopPropagation(); setShowLegend(false); }}
+              onPointerDown={(e) => e.stopPropagation()}
               style={{
                 background: 'none',
                 border: 'none',
                 color: 'rgba(255, 255, 255, 0.6)',
                 fontSize: 18,
                 cursor: 'pointer',
-                padding: '0 4px',
+                padding: '4px 8px',
+                lineHeight: 1,
+                borderRadius: 4,
+                transition: 'background 0.15s, color 0.15s',
+                zIndex: 1,
               }}
+              onMouseEnter={(e) => { (e.target as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; (e.target as HTMLElement).style.color = '#fff'; }}
+              onMouseLeave={(e) => { (e.target as HTMLElement).style.background = 'none'; (e.target as HTMLElement).style.color = 'rgba(255,255,255,0.6)'; }}
+              title="Close DTO Glossary"
             >
               &times;
             </button>
@@ -253,12 +264,14 @@ export function DataTreeGarden({
       {/* Floating Toggle Button */}
       {!showLegend && uiVisible && (
         <button
-          onClick={() => setShowLegend(true)}
+          onClick={(e) => { e.stopPropagation(); setShowLegend(true); }}
+          onPointerDown={(e) => e.stopPropagation()}
           style={{
             position: 'absolute',
             left: 20,
             bottom: 20,
             zIndex: 1000,
+            pointerEvents: 'auto',
             display: 'flex',
             alignItems: 'center',
             gap: 6,
