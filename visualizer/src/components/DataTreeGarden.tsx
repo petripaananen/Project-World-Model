@@ -30,9 +30,9 @@ export function DataTreeGarden({
   }, [projectName]);
 
   const skyBackground = useMemo(() => {
-    if (theme === 'alpha') return 'linear-gradient(to top, #e74c3c, #feb47b)'; // Deep sunset
-    if (theme === 'beta') return 'linear-gradient(to top, #fbc2eb, #a1c4fd)'; // Pink sunrise
-    if (theme === 'gamma') return 'linear-gradient(to top, #5c6b73, #2f4f4f)'; // Overcast stormy grey
+    if (theme === 'alpha') return 'linear-gradient(to top, #a1c4fd, #c2e9fb)'; // Bright clear blue daylight sky
+    if (theme === 'beta') return 'linear-gradient(to top, #e0c3fc, #8ec5fc)'; // Soft morning blue-pink sky
+    if (theme === 'gamma') return 'linear-gradient(to top, #a3bded, #c4e0e5)'; // Bright overcast soft grey-blue sky
     return 'linear-gradient(to top, #fff3d1, #a1c4fd)'; // Soft spring daylight
   }, [theme]);
 

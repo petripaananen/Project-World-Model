@@ -7,20 +7,20 @@ export function createGrassTexture(scene: BABYLON.Scene): BABYLON.DynamicTexture
   const texture = new BABYLON.DynamicTexture("grassTex", size, scene, true);
   const ctx = texture.getContext();
 
-  // Dark green base
-  ctx.fillStyle = "#1e3516";
+  // Dark green base (updated to bright warm lime green for Hay Day aesthetic)
+  ctx.fillStyle = "#a2e048";
   ctx.fillRect(0, 0, size, size);
 
-  // Noise specks
+  // Noise specks (updated to bright greens)
   for (let i = 0; i < 600; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
-    ctx.fillStyle = Math.random() > 0.5 ? "#26431c" : "#172b11";
+    ctx.fillStyle = Math.random() > 0.5 ? "#b5f25c" : "#89c833";
     ctx.fillRect(x, y, 2 + Math.random() * 2, 2 + Math.random() * 2);
   }
 
-  // Painterly clover shapes
-  ctx.fillStyle = "#224c1b";
+  // Painterly clover shapes (updated to bright green)
+  ctx.fillStyle = "#7cb92a";
   for (let i = 0; i < 60; i++) {
     const cx = Math.random() * size;
     const cy = Math.random() * size;
@@ -44,15 +44,15 @@ export function createSoilTexture(scene: BABYLON.Scene, theme: string): BABYLON.
   const texture = new BABYLON.DynamicTexture("soilTex", size, scene, true);
   const ctx = texture.getContext();
 
-  // Wet organic brown base
-  ctx.fillStyle = theme === 'gamma' ? "#140e09" : "#22160d";
+  // Wet organic brown base (brightened to warm terracotta/clay for Hay Day style)
+  ctx.fillStyle = theme === 'gamma' ? "#2d241d" : "#7c5535";
   ctx.fillRect(0, 0, size, size);
 
-  // Dirt particles
+  // Dirt particles (warm brown specks)
   for (let i = 0; i < 400; i++) {
     const x = Math.random() * size;
     const y = Math.random() * size;
-    ctx.fillStyle = "#110b06";
+    ctx.fillStyle = "#5c3d25";
     ctx.fillRect(x, y, 1.5, 1.5);
   }
 
@@ -79,11 +79,11 @@ export function createWoodTexture(scene: BABYLON.Scene): BABYLON.DynamicTexture 
   const texture = new BABYLON.DynamicTexture("woodTex", size, scene, true);
   const ctx = texture.getContext();
 
-  ctx.fillStyle = "#5c4033";
+  ctx.fillStyle = "#8b5a2b"; // warm golden oak base
   ctx.fillRect(0, 0, size, size);
 
   // Wood grain lines
-  ctx.fillStyle = "#422e24";
+  ctx.fillStyle = "#6f421b";
   for (let i = 0; i < size; i += 6) {
     const offset = Math.sin(i * 0.05) * 15;
     ctx.fillRect(0, i + offset, size, 2);
@@ -93,7 +93,7 @@ export function createWoodTexture(scene: BABYLON.Scene): BABYLON.DynamicTexture 
   for (let i = 0; i < 3; i++) {
     const cx = Math.random() * size;
     const cy = Math.random() * size;
-    ctx.strokeStyle = "#2f2019";
+    ctx.strokeStyle = "#5c3516";
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(cx, cy, 8, 0, Math.PI * 2);
@@ -172,14 +172,15 @@ export function buildTerrain(scene: BABYLON.Scene, theme: string, grassColorHex:
 export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: number, projectName?: string) {
   const well = new BABYLON.TransformNode("well", scene);
   well.position = position;
+  const details = { 
+    id: 'well-core', 
+    title: projectName ? `${projectName} Well Core` : `CRR Core Well`, 
+    elementType: 'Stone Well',
+    description: "Represents the main repository branch. Well water health reflects the integration stability and build success of the workspace: BLUE means healthy (high CRR / stable build), whereas RED indicates a warning state (low CRR / integration debt detected)."
+  };
   well.metadata = { 
     type: 'well', 
-    details: { 
-      id: 'well-core', 
-      title: projectName ? `${projectName} Well Core` : `CRR Core Well`, 
-      elementType: 'Stone Well',
-      description: "Represents the main repository branch. Well water health reflects the integration stability and build success of the workspace."
-    } 
+    details
   };
 
   const stoneTexture = createStoneTexture(scene);
@@ -217,6 +218,7 @@ export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: 
       brick.material = stoneMat;
       brick.receiveShadows = true;
       brick.parent = rowNode;
+      brick.metadata = { type: 'well', details };
     }
   }
 
@@ -227,6 +229,7 @@ export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: 
   rim.material = stoneMat;
   rim.receiveShadows = true;
   rim.parent = well;
+  rim.metadata = { type: 'well', details };
 
   // 3. Water Core (Shifts blue to red based on CRR)
   const water = BABYLON.MeshBuilder.CreateCylinder("wellWater", { diameter: 1.5, height: 0.1 }, scene);
@@ -245,18 +248,20 @@ export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: 
   waterMat.roughness = 0.1;
   waterMat.metallic = 0.8;
   water.material = waterMat;
-  water.metadata = { type: 'well' };
+  water.metadata = { type: 'well', details };
 
   // 4. Wooden Support Pillars
   const pillarL = BABYLON.MeshBuilder.CreateCylinder("pillarL", { diameter: 0.08, height: 1.3 }, scene);
   pillarL.position.set(-0.68, 1.35, 0);
   pillarL.material = woodMat;
   pillarL.parent = well;
+  pillarL.metadata = { type: 'well', details };
 
   const pillarR = BABYLON.MeshBuilder.CreateCylinder("pillarR", { diameter: 0.08, height: 1.3 }, scene);
   pillarR.position.set(0.68, 1.35, 0);
   pillarR.material = woodMat;
   pillarR.parent = well;
+  pillarR.metadata = { type: 'well', details };
 
   // 5. Crossbar Beam
   const beam = BABYLON.MeshBuilder.CreateCylinder("crossBeam", { diameter: 0.07, height: 1.3 }, scene);
@@ -264,6 +269,7 @@ export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: 
   beam.rotation.z = Math.PI / 2;
   beam.material = woodMat;
   beam.parent = well;
+  beam.metadata = { type: 'well', details };
 
   // 6. Well Roof (Square Pyramid)
   const roof = BABYLON.MeshBuilder.CreateCylinder("wellRoof", { 
@@ -276,10 +282,11 @@ export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: 
   roof.rotation.y = Math.PI / 4; // Align sides parallel to pillars
   
   const roofMat = new BABYLON.PBRMaterial("roofMat", scene);
-  roofMat.albedoColor = new BABYLON.Color3(0.55, 0.28, 0.15); // terracotta roof color
+  roofMat.albedoColor = new BABYLON.Color3(0.85, 0.45, 0.25); // bright warm terracotta roof
   roofMat.roughness = 0.85;
   roof.material = roofMat;
   roof.parent = well;
+  roof.metadata = { type: 'well', details };
 
   return well;
 }
@@ -497,7 +504,8 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   const gnome = new BABYLON.TransformNode("gnome", scene);
   gnome.position = position;
   gnome.scaling.set(1.3, 1.3, 1.3);
-  gnome.metadata = { type: 'gnome', details: { id: `gnome-${name.toLowerCase().replace(/\s+/g, '-')}`, title: name, progress: 1.0, complexity: 0.5, risk: 0.1, description: role, elementType: 'Garden Gnome' } };
+  const details = { id: `gnome-${name.toLowerCase().replace(/\s+/g, '-')}`, title: name, progress: 1.0, complexity: 0.5, risk: 0.1, description: role, elementType: 'Garden Gnome' };
+  gnome.metadata = { type: 'gnome', details };
 
   // Material setup
   const hatMat = new BABYLON.PBRMaterial("gnomeHat", scene);
@@ -525,18 +533,21 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   coat.position.y = 0.11;
   coat.material = clothingMat;
   coat.parent = gnome;
+  coat.metadata = { type: 'gnome', details };
 
   // 2. Face
   const face = BABYLON.MeshBuilder.CreateSphere("gnomeFace", { diameter: 0.1 }, scene);
   face.position.set(0, 0.23, 0.01);
   face.material = faceMat;
   face.parent = gnome;
+  face.metadata = { type: 'gnome', details };
 
   // 3. Nose
   const nose = BABYLON.MeshBuilder.CreateSphere("gnomeNose", { diameter: 0.026 }, scene);
   nose.position.set(0, 0.225, 0.06);
   nose.material = faceMat;
   nose.parent = gnome;
+  nose.metadata = { type: 'gnome', details };
 
   // 4. Beard (Compound fluffy sphere cluster instead of a flat shape)
   const beardRoot = new BABYLON.TransformNode("beardRoot", scene);
@@ -552,6 +563,7 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
     puff.position.set(pt[0], pt[1], pt[2]);
     puff.material = beardMat;
     puff.parent = beardRoot;
+    puff.metadata = { type: 'gnome', details };
   });
 
   // 5. Tall Pointed Gnome Hat (Slanted slightly backward for personality)
@@ -560,17 +572,20 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   hat.rotation.x = -0.15;
   hat.material = hatMat;
   hat.parent = gnome;
+  hat.metadata = { type: 'gnome', details };
 
   // 6. Black boots
   const bootL = BABYLON.MeshBuilder.CreateBox("bootL", { width: 0.04, height: 0.04, depth: 0.08 }, scene);
   bootL.position.set(-0.045, 0.02, 0.02);
   bootL.material = bootMat;
   bootL.parent = gnome;
+  bootL.metadata = { type: 'gnome', details };
 
   const bootR = BABYLON.MeshBuilder.CreateBox("bootR", { width: 0.04, height: 0.04, depth: 0.08 }, scene);
   bootR.position.set(0.045, 0.02, 0.02);
   bootR.material = bootMat;
   bootR.parent = gnome;
+  bootR.metadata = { type: 'gnome', details };
 
   return gnome;
 }
@@ -578,7 +593,8 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
 export function buildRoseBush(scene: BABYLON.Scene, position: BABYLON.Vector3, status: string, node?: any) {
   const bushNode = new BABYLON.TransformNode("roseBush", scene);
   bushNode.position = position;
-  bushNode.metadata = { type: 'pr', details: node };
+  const details = node;
+  bushNode.metadata = { type: 'pr', details };
 
   // Determine colors based on PR status
   const s = status.toLowerCase();
@@ -608,6 +624,7 @@ export function buildRoseBush(scene: BABYLON.Scene, position: BABYLON.Vector3, s
   pot.position.y = 0.08;
   pot.material = potMat;
   pot.parent = bushNode;
+  pot.metadata = { type: 'pr', details };
 
   // 2. High-Fidelity Multi-Cluster Organic Canopy (Overlap noise spheres)
   const canopy = new BABYLON.TransformNode("bushCanopy", scene);
@@ -628,6 +645,7 @@ export function buildRoseBush(scene: BABYLON.Scene, position: BABYLON.Vector3, s
     sphere.material = foliageMat;
     sphere.receiveShadows = true;
     sphere.parent = canopy;
+    sphere.metadata = { type: 'pr', details };
 
     // Apply simple vertex noise for organic roughness
     const positions = sphere.getVerticesData(BABYLON.VertexBuffer.PositionKind);
@@ -667,6 +685,7 @@ export function buildRoseBush(scene: BABYLON.Scene, position: BABYLON.Vector3, s
     flower.scaling.set(1.2, 0.5, 1.2);
     flower.material = bloomMat;
     flower.parent = bushNode;
+    flower.metadata = { type: 'pr', details };
   }
 
   return bushNode;
@@ -675,7 +694,8 @@ export function buildRoseBush(scene: BABYLON.Scene, position: BABYLON.Vector3, s
 export function buildWeed(scene: BABYLON.Scene, position: BABYLON.Vector3, status: string, node?: any) {
   const weedNode = new BABYLON.TransformNode("weed", scene);
   weedNode.position = position;
-  weedNode.metadata = { type: 'issue', details: node };
+  const details = node;
+  weedNode.metadata = { type: 'issue', details };
 
   const s = status.toLowerCase();
   const baseColor = s === 'backlog' ? new BABYLON.Color3(0.55, 0.52, 0.48) : new BABYLON.Color3(0.85, 0.25, 0.15); // dry grey vs active red
@@ -693,6 +713,7 @@ export function buildWeed(scene: BABYLON.Scene, position: BABYLON.Vector3, statu
     leaf.rotation.set(0.4, angle, 0.3); // rotate and tilt outward
     leaf.material = weedMat;
     leaf.parent = weedNode;
+    leaf.metadata = { type: 'issue', details };
 
     // Tweak vertices to taper leaf tips
     const positions = leaf.getVerticesData(BABYLON.VertexBuffer.PositionKind);
@@ -713,6 +734,7 @@ export function buildWeed(scene: BABYLON.Scene, position: BABYLON.Vector3, statu
   centerSpike.position.y = 0.18;
   centerSpike.material = weedMat;
   centerSpike.parent = weedNode;
+  centerSpike.metadata = { type: 'issue', details };
 
   return weedNode;
 }
@@ -810,7 +832,8 @@ export function buildCrop(scene: BABYLON.Scene, position: BABYLON.Vector3, type:
 export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node: any, theme: string) {
   const tree = new BABYLON.TransformNode("tree", scene);
   tree.position = position;
-  tree.metadata = { type: 'epic', details: node };
+  const details = node;
+  tree.metadata = { type: 'epic', details };
 
   const branchMat = new BABYLON.PBRMaterial("branchMat", scene);
   branchMat.albedoColor = new BABYLON.Color3(0.26, 0.18, 0.12);
@@ -844,6 +867,8 @@ export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node:
     branch.material = branchMat;
     branch.receiveShadows = true;
     branch.parent = parentNode;
+    branch.isPickable = true;
+    branch.metadata = { type: 'epic', details };
 
     // Taper/deform slightly for organic look
     const pos = branch.getVerticesData(BABYLON.VertexBuffer.PositionKind);
@@ -880,6 +905,7 @@ export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node:
         s.material = leafMat;
         s.receiveShadows = true;
         s.parent = foliageGroup;
+        s.metadata = { type: 'epic', details };
 
         // Apply noise vertex offset to canopy puffs
         const spos = s.getVerticesData(BABYLON.VertexBuffer.PositionKind);
@@ -919,12 +945,14 @@ export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node:
         fruit.position.set(fo[0] * scaleFactor, fo[1] * scaleFactor - 0.1, fo[2] * scaleFactor);
         fruit.material = fruitMat;
         fruit.parent = foliageGroup;
+        fruit.metadata = { type: 'epic', details };
       });
 
       return;
     }
 
-    const angleSpread = 0.42 + (node.risk * 0.18);
+    // Reduce spread slightly to avoid overlapping branches between trees
+    const angleSpread = 0.28 + (node.risk * 0.1);
     const numBranches = 2; // split in 2 branches
     for (let i = 0; i < numBranches; i++) {
       const zRot = (i - 0.5) * angleSpread * 2;
@@ -933,7 +961,8 @@ export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node:
       bNode.rotation.z = zRot;
       bNode.rotation.y = (depth * Math.PI) / 3; // swirl spiral distribution
       
-      createBranch(bNode, length * 0.76, radius * 0.7, depth + 1, maxDepth);
+      // Reduce branch length scaling factor from 0.76 to 0.68 for more compact trees
+      createBranch(bNode, length * 0.68, radius * 0.7, depth + 1, maxDepth);
     }
   }
 

@@ -44,36 +44,39 @@ export function DataTreeGardenBabylon({
 
   const isRainy = crr < 1.0 || theme === 'gamma';
 
-  // Theme-aware color settings
+  // Theme-aware color settings (brightened for warm, cozy Hay Day style)
   const themeColors = useMemo(() => {
     const profile = {
-      lightColor: new BABYLON.Color3(1, 0.95, 0.85),
-      ambientColor: new BABYLON.Color3(0.5, 0.55, 0.65),
-      fogColor: new BABYLON.Color3(0.98, 0.96, 0.94),
-      fogDensity: isRainy ? 0.008 : 0.002,
-      grassColorHex: '#7cd936',
+      lightColor: new BABYLON.Color3(1.0, 0.98, 0.95), // Bright white-warm sunlight
+      ambientColor: new BABYLON.Color3(0.7, 0.72, 0.75), // Bright blue-sky ambient fill
+      fogColor: new BABYLON.Color3(0.95, 0.98, 1.0), // Clean light sky-haze fog
+      fogDensity: isRainy ? 0.008 : 0.0006, // Very thin fog for clear visibility when sunny
+      grassColorHex: '#a2e048', // Default bright lime green
     };
 
     if (theme === 'alpha') {
-      profile.lightColor = new BABYLON.Color3(1, 0.8, 0.65); // deep sunset gold
-      profile.ambientColor = new BABYLON.Color3(0.5, 0.35, 0.3);
-      profile.fogColor = new BABYLON.Color3(0.88, 0.42, 0.33);
-      profile.grassColorHex = '#b8a655';
+      // Project Alpha: Warm, golden bright afternoon (cheerful daylight)
+      profile.lightColor = new BABYLON.Color3(1.0, 0.96, 0.88);
+      profile.ambientColor = new BABYLON.Color3(0.68, 0.65, 0.62);
+      profile.fogColor = new BABYLON.Color3(0.96, 0.94, 0.9);
+      profile.grassColorHex = '#a2e048'; // Bright chartreuse/lime
     } else if (theme === 'beta') {
-      profile.lightColor = new BABYLON.Color3(1, 0.9, 0.92); // pink sunrise
-      profile.ambientColor = new BABYLON.Color3(0.4, 0.45, 0.6);
-      profile.fogColor = new BABYLON.Color3(0.92, 0.85, 0.9);
-      profile.grassColorHex = '#8ad24e';
+      // Project Beta: Cheerful bright morning sun
+      profile.lightColor = new BABYLON.Color3(1.0, 0.94, 0.96);
+      profile.ambientColor = new BABYLON.Color3(0.66, 0.68, 0.76);
+      profile.fogColor = new BABYLON.Color3(0.94, 0.92, 0.96);
+      profile.grassColorHex = '#8cd24e';
     } else if (theme === 'gamma') {
-      profile.lightColor = new BABYLON.Color3(0.62, 0.68, 0.72); // cold storm grey
-      profile.ambientColor = new BABYLON.Color3(0.26, 0.3, 0.35);
-      profile.fogColor = new BABYLON.Color3(0.29, 0.34, 0.35);
-      profile.grassColorHex = '#4a5b3f';
+      // Project Gamma: Overcast rainy daylight but still clear and bright
+      profile.lightColor = new BABYLON.Color3(0.8, 0.84, 0.88);
+      profile.ambientColor = new BABYLON.Color3(0.48, 0.52, 0.58);
+      profile.fogColor = new BABYLON.Color3(0.7, 0.74, 0.78);
+      profile.grassColorHex = '#7ca262';
     }
 
     // Shift grass hex drier based on health
-    const lush = new BABYLON.Color3(0.13, 0.22, 0.1);
-    const dry = new BABYLON.Color3(0.38, 0.32, 0.2);
+    const lush = BABYLON.Color3.FromHexString(profile.grassColorHex); // use bright grass color from theme
+    const dry = new BABYLON.Color3(0.82, 0.78, 0.52); // warm bright straw yellow (#d1c784)
     const factor = Math.min(Math.max((crr - 0.7) / 0.8, 0), 1);
     profile.grassColorHex = BABYLON.Color3.Lerp(dry, lush, factor).toHexString();
 
@@ -282,16 +285,16 @@ export function DataTreeGardenBabylon({
     camera.upperRadiusLimit = 22;
     camera.upperBetaLimit = Math.PI / 2 - 0.05; // Prevent camera going below ground level
 
-    // 3. Lighting
+    // 3. Lighting (Brightened up with higher fill/sun intensities and warmer bounce)
     const light = new BABYLON.HemisphericLight("ambientLight", new BABYLON.Vector3(0, 1, 0), scene);
     light.diffuse = themeColors.ambientColor;
-    light.groundColor = new BABYLON.Color3(0.12, 0.18, 0.08);
-    light.intensity = 0.8;
+    light.groundColor = new BABYLON.Color3(0.35, 0.45, 0.25); // bright grass reflection bounce
+    light.intensity = 1.25; // Increased ambient fill intensity
 
-    const dirLight = new BABYLON.DirectionalLight("sunLight", new BABYLON.Vector3(-0.6, -1.0, -0.4), scene);
+    const dirLight = new BABYLON.DirectionalLight("sunLight", new BABYLON.Vector3(-0.5, -0.85, -0.45), scene);
     dirLight.position = new BABYLON.Vector3(12, 20, 8);
     dirLight.diffuse = themeColors.lightColor;
-    dirLight.intensity = 2.4;
+    dirLight.intensity = 3.2; // Increased sun light intensity for fully sunlit look
 
     // 4. Shadow Setup
     const shadowGenerator = new BABYLON.ShadowGenerator(2048, dirLight);
@@ -485,15 +488,10 @@ export function DataTreeGardenBabylon({
               lastHoveredMesh = picked;
               document.body.style.cursor = 'pointer';
             }
-            const canvas = scene.getEngine().getRenderingCanvas();
-            const rect = canvas ? canvas.getBoundingClientRect() : null;
-            const x = rect ? pointerInfo.event.clientX - rect.left : pointerInfo.event.offsetX;
-            const y = rect ? pointerInfo.event.clientY - rect.top : pointerInfo.event.offsetY;
-
             onHover({
               node: details,
-              x: x,
-              y: y
+              x: scene.pointerX,
+              y: scene.pointerY
             });
             return;
           }
