@@ -57,6 +57,7 @@ from pwm.ingestion.models import (
 from pwm.logging.event_logger import EventLogger
 from pwm.simulation.crr_engine import CRREngine
 from pwm.simulation.debt_detector import DebtDetector
+from pwm.agents.budget_guard_agent import CognitiveBudgetGuard, BudgetAction
 from pwm.layers import (
     Layer1Observation,
     Layer2Simulation,
@@ -199,11 +200,13 @@ async def agent_worker(
     dashboard = CLIDashboard()
     layer1 = Layer1Observation(config)
     layer2 = Layer2Simulation(config)
+    budget_guard = CognitiveBudgetGuard(config, event_logger)
     
     while True:
         p_state, s_state, slack_state = await queue.get()
         try:
             config.reset_cumulative_tokens()
+            budget_guard.reset()
             state = PWMPipelineState(run_id=str(uuid.uuid4())[:8], started_at=datetime.now())
             state.project_state = p_state
             state.sprint_state = s_state
@@ -268,6 +271,14 @@ async def agent_worker(
             if not state.debt_report.conflicts:
                 print(f"[🤖 Agent Worker] No conflicts detected. Waiting for next snapshot.")
                 continue
+
+            # Layer 5 Subagent: Cognitive Budget Guard — check before expensive L3/L4 work
+            budget_action = budget_guard.evaluate_budget()
+            if budget_action == BudgetAction.HALT:
+                print(f"[💰 Budget Guard] HALT — budget exhausted. Skipping agent pipeline for run {state.run_id}.")
+                if event_logger:
+                    await event_logger.log_error(state.run_id, "Cognitive Budget Guard halted pipeline: budget exhausted.")
+                continue
                 
             # Layer 3/4: Agents (shared pipeline step)
             try:
@@ -284,6 +295,13 @@ async def agent_worker(
                 if event_logger:
                     await event_logger.log_error(state.run_id, err_msg)
                 continue
+
+            # Post-pipeline budget summary
+            if config.verbose:
+                summary = budget_guard.get_budget_summary()
+                print(f"[💰 Budget Guard] Post-run: {summary['action']} — "
+                      f"{summary['binding_utilization']:.1%} utilized, "
+                      f"${summary['cumulative_cost_usd']:.4f} spent")
                 
             # Push state to web dashboard if connected
             if dashboard_state:

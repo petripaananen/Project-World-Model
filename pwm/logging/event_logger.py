@@ -67,6 +67,8 @@ class EventType(str, Enum):
     TELEMETRY_INGESTED = "telemetry_ingested"
     GROUNDING_CALIBRATED = "grounding_calibrated"
     CALIBRATION_UPDATED = "calibration_updated"
+    BUDGET_ALERT = "budget_alert"
+    ARTISTIC_INTEGRITY_CHECK = "artistic_integrity_check"
     ERROR = "error"
 
 
@@ -378,6 +380,43 @@ class EventLogger:
             actor="system",
             summary=f"Error: {error_msg}",
             details={"error": error_msg},
+        ))
+
+    async def log_budget_alert(
+        self, run_id: str, action: str, utilization: float, cost_usd: float
+    ) -> None:
+        """Convenience: log a Cognitive Budget Guard alert."""
+        await self.log(PWMEvent(
+            event_type=EventType.BUDGET_ALERT,
+            run_id=run_id,
+            actor="budget_guard",
+            summary=f"Budget Guard: {action.upper()} at {utilization:.1%} utilization (${cost_usd:.4f})",
+            details={
+                "action": action,
+                "utilization": utilization,
+                "cost_usd": cost_usd,
+            },
+        ))
+
+    async def log_artistic_integrity(
+        self, run_id: str, creative_fidelity_score: float,
+        degradation_detected: bool, recommendation: str
+    ) -> None:
+        """Convenience: log an Artistic Integrity Critic check result."""
+        await self.log(PWMEvent(
+            event_type=EventType.ARTISTIC_INTEGRITY_CHECK,
+            run_id=run_id,
+            actor="artistic_integrity_agent",
+            summary=(
+                f"Artistic Integrity: fidelity={creative_fidelity_score:.0%}, "
+                f"degradation={'YES' if degradation_detected else 'NO'}, "
+                f"recommendation={recommendation}"
+            ),
+            details={
+                "creative_fidelity_score": creative_fidelity_score,
+                "degradation_detected": degradation_detected,
+                "recommendation": recommendation,
+            },
         ))
 
     def get_events(

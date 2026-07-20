@@ -18,6 +18,7 @@ from pwm.config import PWMConfig
 from pwm.ingestion.models import PWMPipelineState, ResolutionProposal, CriticVerdict, CriticVerdictStatus
 from pwm.agents.critic_agent import CriticAgent
 from pwm.agents.opponent_agent import OpponentAgent
+from pwm.agents.artistic_integrity_agent import ArtisticIntegrityAgent
 
 class WorkerAgentDispatcher:
     def __init__(self, config: PWMConfig):
@@ -47,6 +48,7 @@ class Layer4Validation:
         self.endpoint_url = config.models.nemoclaw_endpoint_url
         self.opponent = OpponentAgent(config)
         self.critic = CriticAgent(config)
+        self.artistic_integrity = ArtisticIntegrityAgent(config)
         self._worker_dispatcher = WorkerAgentDispatcher(config)
 
     @property
@@ -54,9 +56,10 @@ class Layer4Validation:
         c_usage = self.critic.token_usage
         o_usage = self.opponent.token_usage
         w_usage = self._worker_dispatcher.token_usage
+        a_usage = self.artistic_integrity.token_usage
         return {
-            "input_tokens": c_usage["input_tokens"] + o_usage["input_tokens"] + w_usage["input_tokens"],
-            "output_tokens": c_usage["output_tokens"] + o_usage["output_tokens"] + w_usage["output_tokens"],
+            "input_tokens": c_usage["input_tokens"] + o_usage["input_tokens"] + w_usage["input_tokens"] + a_usage["input_tokens"],
+            "output_tokens": c_usage["output_tokens"] + o_usage["output_tokens"] + w_usage["output_tokens"] + a_usage["output_tokens"],
         }
 
     async def validate_proposals(
@@ -142,4 +145,53 @@ class Layer4Validation:
             "worker_agent": self._worker_dispatcher,
         }
         critic_data = await self.critic.process(critic_data)
-        return critic_data.get("proposals", []), critic_data.get("verdicts", [])
+        proposals = critic_data.get("proposals", [])
+        verdicts = critic_data.get("verdicts", [])
+
+        # 3. Run Artistic Integrity Agent on art-relevant proposals
+        for proposal, verdict in zip(proposals, verdicts):
+            if proposal.target_conflict and self.artistic_integrity.is_art_relevant(proposal.target_conflict, proposal):
+                try:
+                    art_verdict = await self.artistic_integrity.audit_proposal(
+                        conflict=proposal.target_conflict,
+                        worker_proposal=proposal,
+                        project_context=project_context,
+                    )
+
+                    # Append artistic integrity findings to the critic's critique
+                    fidelity = art_verdict.get("creative_fidelity_score", 1.0)
+                    degradation = art_verdict.get("quality_degradation_detected", False)
+                    recommendation = art_verdict.get("recommendation", "pass")
+
+                    if degradation:
+                        verdict.critique += (
+                            f"\n\n[🎨 Artistic Integrity Audit]\n"
+                            f"Creative Fidelity Score: {fidelity:.0%}\n"
+                            f"Quality Degradation: DETECTED\n"
+                            f"Details: {art_verdict.get('degradation_details', 'N/A')}\n"
+                            f"Affected Areas: {', '.join(art_verdict.get('affected_creative_areas', []))}\n"
+                            f"Recommendation: {recommendation.upper()}"
+                        )
+                        # Downgrade verdict if degradation is significant
+                        if recommendation == "reject":
+                            verdict.verdict = CriticVerdictStatus.REJECTED
+                            verdict.suggested_revisions.append(
+                                "Artistic Integrity Agent: Proposal significantly degrades creative quality. Revise to preserve visual fidelity."
+                            )
+                        elif recommendation == "flag_for_review":
+                            if verdict.verdict == CriticVerdictStatus.APPROVED:
+                                verdict.verdict = CriticVerdictStatus.NEEDS_REVISION
+                            verdict.suggested_revisions.append(
+                                "Artistic Integrity Agent: Minor creative quality concerns — flag for Scenario Strategist review."
+                            )
+                    else:
+                        verdict.critique += (
+                            f"\n\n[🎨 Artistic Integrity Audit]\n"
+                            f"Creative Fidelity Score: {fidelity:.0%}\n"
+                            f"Quality Degradation: None detected. Creative vision preserved."
+                        )
+                except Exception as e:
+                    if self.config.verbose:
+                        print(f"[Layer 4] Artistic Integrity check failed ({e}). Continuing without.")
+
+        return proposals, verdicts

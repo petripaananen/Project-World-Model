@@ -27,6 +27,8 @@ from .kanban_flow_agent import KanbanFlowAgent
 from .scrum_master_agent import ScrumMasterAgent
 from .stakeholder_agent import StakeholderAgent
 from .portfolio_agent import RiskPortfolioAgent
+from .budget_guard_agent import CognitiveBudgetGuard, BudgetAction
+from .artistic_integrity_agent import ArtisticIntegrityAgent
 
 __all__ = [
     "BaseAgent",
@@ -43,5 +45,8 @@ __all__ = [
     "ScrumMasterAgent",
     "StakeholderAgent",
     "RiskPortfolioAgent",
+    "CognitiveBudgetGuard",
+    "BudgetAction",
+    "ArtisticIntegrityAgent",
 ]
 

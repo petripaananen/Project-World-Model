@@ -308,6 +308,11 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
         layer4 = Layer4Validation(self.config)
         layer4.critic.process = AsyncMock(return_value={"proposals": [proposal], "verdicts": [mock_verdict]})
         layer4.opponent.generate_counter_proposal = AsyncMock(return_value=ResolutionStrategy(title="Opponent Strategy", description="Opponent"))
+        layer4.artistic_integrity.audit_proposal = AsyncMock(return_value={
+            "creative_fidelity_score": 1.0,
+            "quality_degradation_detected": False,
+            "recommendation": "pass"
+        })
         
         props, verdicts = await layer4.validate_proposals(state, "Base Context", mode="analyze")
         self.assertEqual(verdicts[0].verdict, CriticVerdictStatus.APPROVED)
@@ -317,6 +322,11 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
         layer4 = Layer4Validation(self.config)
         layer4.critic.process = AsyncMock(return_value={"proposals": [proposal], "verdicts": [mock_verdict]})
         layer4.opponent.generate_counter_proposal = AsyncMock(return_value=ResolutionStrategy(title="Opponent Strategy", description="Opponent"))
+        layer4.artistic_integrity.audit_proposal = AsyncMock(return_value={
+            "creative_fidelity_score": 1.0,
+            "quality_degradation_detected": False,
+            "recommendation": "pass"
+        })
         
         mock_response = MagicMock()
         mock_response.status_code = 200
