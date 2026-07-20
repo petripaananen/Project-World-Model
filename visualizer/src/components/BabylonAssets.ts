@@ -534,6 +534,7 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   coat.material = clothingMat;
   coat.parent = gnome;
   coat.metadata = { type: 'gnome', details };
+  coat.isPickable = true;
 
   // 2. Face
   const face = BABYLON.MeshBuilder.CreateSphere("gnomeFace", { diameter: 0.1 }, scene);
@@ -541,6 +542,7 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   face.material = faceMat;
   face.parent = gnome;
   face.metadata = { type: 'gnome', details };
+  face.isPickable = true;
 
   // 3. Nose
   const nose = BABYLON.MeshBuilder.CreateSphere("gnomeNose", { diameter: 0.026 }, scene);
@@ -548,6 +550,7 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   nose.material = faceMat;
   nose.parent = gnome;
   nose.metadata = { type: 'gnome', details };
+  nose.isPickable = true;
 
   // 4. Beard (Compound fluffy sphere cluster instead of a flat shape)
   const beardRoot = new BABYLON.TransformNode("beardRoot", scene);
@@ -564,6 +567,7 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
     puff.material = beardMat;
     puff.parent = beardRoot;
     puff.metadata = { type: 'gnome', details };
+    puff.isPickable = true;
   });
 
   // 5. Tall Pointed Gnome Hat (Slanted slightly backward for personality)
@@ -573,6 +577,7 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   hat.material = hatMat;
   hat.parent = gnome;
   hat.metadata = { type: 'gnome', details };
+  hat.isPickable = true;
 
   // 6. Black boots
   const bootL = BABYLON.MeshBuilder.CreateBox("bootL", { width: 0.04, height: 0.04, depth: 0.08 }, scene);
@@ -580,12 +585,14 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   bootL.material = bootMat;
   bootL.parent = gnome;
   bootL.metadata = { type: 'gnome', details };
+  bootL.isPickable = true;
 
   const bootR = BABYLON.MeshBuilder.CreateBox("bootR", { width: 0.04, height: 0.04, depth: 0.08 }, scene);
   bootR.position.set(0.045, 0.02, 0.02);
   bootR.material = bootMat;
   bootR.parent = gnome;
   bootR.metadata = { type: 'gnome', details };
+  bootR.isPickable = true;
 
   return gnome;
 }

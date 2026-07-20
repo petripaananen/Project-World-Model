@@ -85,7 +85,7 @@ DEPLOY_ARGS=(
     --region="${GCP_REGION}"
     --platform=managed
     --allow-unauthenticated
-    --set-env-vars="GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_LOCATION=${GCP_REGION},PWM_ISSUE_TRACKER=jira,PWM_JIRA_PROJECT_KEY=PROJ,PWM_JIRA_CLOUD_ID=project-world-model.atlassian.net"
+    --set-env-vars="GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_LOCATION=${GCP_REGION},PWM_ISSUE_TRACKER=jira,PWM_JIRA_PROJECT_KEY=PROJ,PWM_JIRA_CLOUD_ID=project-world-model.atlassian.net,PWM_POLL_INTERVAL=1800"
     --description="Project World Model (PWM) Dashboard & Orchestrator"
 )
 

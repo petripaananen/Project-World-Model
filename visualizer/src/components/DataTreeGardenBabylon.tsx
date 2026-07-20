@@ -306,9 +306,9 @@ export function DataTreeGardenBabylon({
     buildWell(scene, new BABYLON.Vector3(0, 0, 0), crr, projectName);
 
     // 6. Build Gnomes (AI Agents)
-    buildGnome(scene, new BABYLON.Vector3(-1.4, 0.01, -1.8), '#2575fc', "Worker Agent Gnome", "Executes tasks, generates branches, refactors code, and runs system tests.");
-    buildGnome(scene, new BABYLON.Vector3(1.4, 0.01, -1.8), '#9b59b6', "Critic Agent Gnome", "Reviews pull requests, checks styling, runs linters, and rates visual fidelity.");
-    buildGnome(scene, new BABYLON.Vector3(0.0, 0.01, 1.8), '#ec008c', "Opponent Agent Gnome", "Simulates system failures, breaks parameters, and tests resilience of the garden.");
+    const workerGnome = buildGnome(scene, new BABYLON.Vector3(-1.4, 0.01, -1.8), '#2575fc', "Worker Agent Gnome", "Executes tasks, generates branches, refactors code, and runs system tests.");
+    const criticGnome = buildGnome(scene, new BABYLON.Vector3(1.4, 0.01, -1.8), '#9b59b6', "Critic Agent Gnome", "Reviews pull requests, checks styling, runs linters, and rates visual fidelity.");
+    const opponentGnome = buildGnome(scene, new BABYLON.Vector3(0.0, 0.01, 1.8), '#ec008c', "Opponent Agent Gnome", "Simulates system failures, breaks parameters, and tests resilience of the garden.");
 
     // 7. Dynamic Data Trees (Left & Right)
     if (gardenElements.epicPRs) {
@@ -505,12 +505,178 @@ export function DataTreeGardenBabylon({
       }
     });
 
-    // 14. Render Loop
+    // 14. Gnome Movement & Interaction loop
+    const gnomesList = [
+      {
+        node: workerGnome,
+        home: new BABYLON.Vector3(-1.4, 0.01, -1.8),
+        role: 'worker',
+        target: null as BABYLON.Vector3 | null,
+        targetNodeId: null as string | null,
+        state: 'idle', // 'idle', 'walking', 'working'
+        timer: 0,
+        angleOffset: 0,
+      },
+      {
+        node: criticGnome,
+        home: new BABYLON.Vector3(1.4, 0.01, -1.8),
+        role: 'critic',
+        target: null as BABYLON.Vector3 | null,
+        targetNodeId: null as string | null,
+        state: 'idle',
+        timer: 0,
+        angleOffset: Math.PI * 2 / 3,
+      },
+      {
+        node: opponentGnome,
+        home: new BABYLON.Vector3(0.0, 0.01, 1.8),
+        role: 'opponent',
+        target: null as BABYLON.Vector3 | null,
+        targetNodeId: null as string | null,
+        state: 'idle',
+        timer: 0,
+        angleOffset: Math.PI * 4 / 3,
+      }
+    ];
+
+    let animationTime = 0;
+    const movementSpeed = 0.015; // Cozy walking speed
+
+    const gnomeRenderObs = scene.onBeforeRenderObservable.add(() => {
+      const dt = engine.getDeltaTime() / 1000;
+      animationTime += dt;
+
+      gnomesList.forEach(g => {
+        if (!g.node) return;
+
+        // 1. Target Selection (Idle State)
+        if (g.state === 'idle') {
+          let targetSelected = false;
+
+          if (g.role === 'worker') {
+            const weeds = gardenElements.issues;
+            if (weeds.length > 0) {
+              const weed = weeds[Math.floor(Math.random() * weeds.length)];
+              const issuePos = weed.position;
+              g.target = new BABYLON.Vector3(
+                issuePos.x + Math.cos(g.angleOffset) * 0.45,
+                0.01,
+                issuePos.z + Math.sin(g.angleOffset) * 0.45
+              );
+              g.targetNodeId = weed.node.id;
+              targetSelected = true;
+            }
+          } else if (g.role === 'critic') {
+            const bushes = gardenElements.prs;
+            if (bushes.length > 0) {
+              const bush = bushes[Math.floor(Math.random() * bushes.length)];
+              const prPos = bush.position;
+              g.target = new BABYLON.Vector3(
+                prPos.x + Math.cos(g.angleOffset) * 0.45,
+                0.01,
+                prPos.z + Math.sin(g.angleOffset) * 0.45
+              );
+              g.targetNodeId = bush.node.id;
+              targetSelected = true;
+            }
+          } else if (g.role === 'opponent') {
+            const weeds = gardenElements.issues;
+            // Opponent targets either the Central Well or active issues
+            if (Math.random() > 0.4 || weeds.length === 0) {
+              g.target = new BABYLON.Vector3(
+                Math.cos(g.angleOffset) * 1.1,
+                0.01,
+                Math.sin(g.angleOffset) * 1.1
+              );
+              g.targetNodeId = 'well';
+              targetSelected = true;
+            } else {
+              const weed = weeds[Math.floor(Math.random() * weeds.length)];
+              const issuePos = weed.position;
+              g.target = new BABYLON.Vector3(
+                issuePos.x + Math.cos(g.angleOffset) * 0.45,
+                0.01,
+                issuePos.z + Math.sin(g.angleOffset) * 0.45
+              );
+              g.targetNodeId = weed.node.id;
+              targetSelected = true;
+            }
+          }
+
+          if (!targetSelected) {
+            g.target = g.home.clone();
+            g.targetNodeId = 'home';
+          }
+
+          g.state = 'walking';
+        }
+
+        // 2. Walking State
+        if (g.state === 'walking' && g.target) {
+          const dir = g.target.subtract(g.node.position);
+          dir.y = 0; // Keep on ground plane
+          const dist = dir.length();
+
+          if (dist > 0.05) {
+            dir.normalize();
+            g.node.position.addInPlace(dir.scale(movementSpeed));
+
+            // Smoothly rotate to face target heading direction
+            const targetRotation = Math.atan2(dir.x, dir.z);
+            let diff = targetRotation - g.node.rotation.y;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            g.node.rotation.y += diff * 0.1;
+
+            // Cozy bouncing hop animation during walk
+            g.node.position.y = 0.01 + Math.abs(Math.sin(animationTime * 12)) * 0.08;
+            g.node.rotation.x = 0.12; // lean forward slightly
+          } else {
+            // Arrived at target!
+            g.state = 'working';
+            g.timer = 6 + Math.random() * 8; // work for 6-14 seconds
+            g.node.position.y = 0.01;
+            g.node.rotation.x = 0; // stand straight
+          }
+        }
+
+        // 3. Working State
+        if (g.state === 'working') {
+          g.timer -= dt;
+
+          // Gentle breathing bobbing animation
+          g.node.position.y = 0.01 + Math.sin(animationTime * 3) * 0.015;
+
+          // Face the target element while working on it
+          let lookTarget = g.home;
+          if (g.targetNodeId === 'well') {
+            lookTarget = new BABYLON.Vector3(0, 0, 0);
+          } else if (g.targetNodeId && g.targetNodeId !== 'home') {
+            const weed = gardenElements.issues.find(i => i.node.id === g.targetNodeId);
+            const bush = gardenElements.prs.find(p => p.node.id === g.targetNodeId);
+            if (weed) lookTarget = weed.position;
+            else if (bush) lookTarget = bush.position;
+          }
+          const lookDir = lookTarget.subtract(g.node.position);
+          const lookAngle = Math.atan2(lookDir.x, lookDir.z);
+          let diff = lookAngle - g.node.rotation.y;
+          while (diff < -Math.PI) diff += Math.PI * 2;
+          while (diff > Math.PI) diff -= Math.PI * 2;
+          g.node.rotation.y += diff * 0.05;
+
+          if (g.timer <= 0) {
+            g.state = 'idle'; // select new target on next frame
+          }
+        }
+      });
+    });
+
+    // 15. Render Loop
     engine.runRenderLoop(() => {
       scene.render();
     });
 
-    // 15. Resize & Cleanup
+    // 16. Resize & Cleanup
     const handleResize = () => {
       engine.resize();
     };
@@ -519,6 +685,7 @@ export function DataTreeGardenBabylon({
     return () => {
       window.removeEventListener("resize", handleResize);
       scene.onPointerObservable.remove(pointerObs);
+      scene.onBeforeRenderObservable.remove(gnomeRenderObs);
       scene.dispose();
       engine.dispose();
     };

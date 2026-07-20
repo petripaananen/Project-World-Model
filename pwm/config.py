@@ -60,14 +60,14 @@ class ModelConfig(BaseModel):
     temperature: float = Field(default=0.2, description="Generation temperature")
     max_output_tokens: int = Field(default=8192, description="Max output tokens")
     max_critic_rounds: int = Field(
-        default=3, description="Max Worker→Critic iteration rounds"
+        default=1, description="Max Worker→Critic iteration rounds"
     )
     max_run_cost_usd: float = Field(
-        default=2.50,
+        default=0.50,
         description="Maximum USD cost budget per pipeline run",
     )
     max_run_tokens: int = Field(
-        default=100000,
+        default=30000,
         description="Maximum cumulative tokens budget per pipeline run",
     )
     # Demo mode token counts (for CRR calculation in demo mode)
