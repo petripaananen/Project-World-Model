@@ -201,13 +201,10 @@ def create_app(
     dist_dir = Path(__file__).resolve().parent.parent.parent / "visualizer" / "dist"
     
     if dist_dir.exists():
-        # Serve the built Vite assets
-        app.mount("/assets", StaticFiles(directory=str(dist_dir / "assets")), name="assets")
-        
-        # Serve 3D models directory
-        models_dir = dist_dir / "models"
-        if models_dir.exists():
-            app.mount("/models", StaticFiles(directory=str(models_dir)), name="models")
+        # Serve all built Vite static subdirectories (assets, Low Poly Outdoor Decorations, models, etc.)
+        for child in dist_dir.iterdir():
+            if child.is_dir():
+                app.mount(f"/{child.name}", StaticFiles(directory=str(child)), name=child.name)
             
         # Serve root level static files (favicon, icons)
         @app.get("/favicon.svg", response_class=FileResponse)

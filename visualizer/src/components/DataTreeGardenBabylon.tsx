@@ -324,7 +324,7 @@ export function DataTreeGardenBabylon({
       // Graceful fallback for SSAO depth texture support
     }
 
-    // Preload GLB models in parallel
+    // Preload GLB models in parallel, then build garden elements once loaded
     const glbList = [
       "Water Fountain.glb", "Gazebo.glb", "Tree.glb", "Bonsai.glb",
       "Flower Bed.glb", "Flower Bed-dM9hXXth1I.glb", "Flower Bed-eUCvK3Oq9z.glb",
@@ -334,11 +334,15 @@ export function DataTreeGardenBabylon({
       "Garden Lamp.glb", "Lamp.glb", "Pillar.glb",
       "Bench.glb", "Table.glb", "Bird House.glb", "Chiminea.glb", "Fire Place.glb"
     ];
-    preloadGLBAssets(scene, glbList);
 
-    // 5. Build Environment Base
-    buildTerrain(scene, theme, themeColors.grassColorHex);
-    buildWell(scene, new BABYLON.Vector3(0, 0, 0), crr, projectName);
+    let cancelled = false;
+
+    preloadGLBAssets(scene, glbList).then(() => {
+      if (cancelled) return;
+
+      // 5. Build Environment Base
+      buildTerrain(scene, theme, themeColors.grassColorHex);
+      buildWell(scene, new BABYLON.Vector3(0, 0, 0), crr, projectName);
 
     // 6. Build Gnomes (AI Agents)
     const workerGnome = buildGnome(scene, new BABYLON.Vector3(-1.4, 0.01, -1.8), '#2575fc', "Worker Agent Gnome", "Executes tasks, generates branches, refactors code, and runs system tests.");
@@ -498,7 +502,7 @@ export function DataTreeGardenBabylon({
     // 13. Dynamic Interaction picking/hover details
     let lastHoveredMesh: BABYLON.AbstractMesh | null = null;
 
-    const pointerObs = scene.onPointerObservable.add((pointerInfo) => {
+    scene.onPointerObservable.add((pointerInfo) => {
       if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERMOVE) {
         const pickResult = scene.pick(scene.pointerX, scene.pointerY);
         if (pickResult && pickResult.hit && pickResult.pickedMesh) {
@@ -577,7 +581,7 @@ export function DataTreeGardenBabylon({
     let animationTime = 0;
     const movementSpeed = 0.015; // Cozy walking speed
 
-    const gnomeRenderObs = scene.onBeforeRenderObservable.add(() => {
+    scene.onBeforeRenderObservable.add(() => {
       const dt = engine.getDeltaTime() / 1000;
       animationTime += dt;
 
@@ -707,7 +711,7 @@ export function DataTreeGardenBabylon({
     });
 
     // 14b. Garden Filters visibility observable pass
-    const filterObs = scene.onBeforeRenderObservable.add(() => {
+    scene.onBeforeRenderObservable.add(() => {
       if (!filters) return;
 
       scene.meshes.forEach(m => {
@@ -734,6 +738,8 @@ export function DataTreeGardenBabylon({
       });
     });
 
+    }); // end of preloadGLBAssets.then callback
+
     // 15. Render Loop
     engine.runRenderLoop(() => {
       scene.render();
@@ -746,10 +752,8 @@ export function DataTreeGardenBabylon({
     window.addEventListener("resize", handleResize);
 
     return () => {
+      cancelled = true;
       window.removeEventListener("resize", handleResize);
-      scene.onPointerObservable.remove(pointerObs);
-      scene.onBeforeRenderObservable.remove(gnomeRenderObs);
-      scene.onBeforeRenderObservable.remove(filterObs);
       scene.dispose();
       engine.dispose();
     };
