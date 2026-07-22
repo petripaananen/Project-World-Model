@@ -76,6 +76,7 @@ export function instantiateGLBModel(
       root.computeWorldMatrix(true);
       let localMinY = Infinity;
       root.getChildMeshes(false).forEach(m => {
+        m.refreshBoundingInfo(true, true);
         m.computeWorldMatrix(true);
         const b = m.getBoundingInfo().boundingBox;
         if (b && Number.isFinite(b.minimumWorld.y) && b.minimumWorld.y < localMinY) {
@@ -700,7 +701,7 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
 
   // 1. Attempt GLB model instantiation (Statue.glb / Statue-0Mkdl3SJDT.glb)
   const statueFile = role.includes('Worker') ? 'Statue.glb' : role.includes('Critic') ? 'Statue-0Mkdl3SJDT.glb' : 'Statue-JXmywADgSk.glb';
-  const glbRoot = instantiateGLBModel(scene, statueFile, null, position, 0.4, 0, details);
+  const glbRoot = instantiateGLBModel(scene, statueFile, null, position, 0.85, 0, details);
   if (glbRoot) {
     glbRoot.metadata = { type: 'gnome', details };
     return glbRoot;

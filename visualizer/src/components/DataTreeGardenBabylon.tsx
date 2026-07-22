@@ -133,16 +133,42 @@ export function DataTreeGardenBabylon({
       return [proposedX, 0.01, proposedZ];
     };
 
-    const getPlotPosition = (index: number, total: number, offsetSide: 'left' | 'right') => {
-      const count = total || 1;
-      const itemRadius = offsetSide === 'left' ? 1.15 : 0.95;
-      const angle = (index / count) * Math.PI * 1.5;
-      const radius = 2.2 + Math.sin(index * 2) * 0.8;
-      const xSign = offsetSide === 'left' ? -1 : 1;
-      const xProposed = xSign * (radius * Math.cos(angle) + 2.5);
-      const zProposed = radius * Math.sin(angle) * 0.9;
+    // Hand-curated non-overlapping spatial anchors on left quadrant (PR Flower Beds)
+    const leftAnchors = [
+      [-4.2,  3.2],
+      [-2.0,  3.6],
+      [-4.6,  0.8],
+      [-2.4,  1.2],
+      [-4.4, -3.8],
+      [-2.2, -4.2],
+      [-4.6, -1.4],
+      [-2.4, -1.4],
+    ];
 
-      const [finalX, finalY, finalZ] = getCollisionFreePosition(xProposed, zProposed, itemRadius);
+    // Hand-curated non-overlapping spatial anchors on right quadrant (Tech Debt Rocks)
+    const rightAnchors = [
+      [ 4.2,  3.2],
+      [ 2.0,  3.6],
+      [ 4.6,  0.8],
+      [ 2.4,  1.2],
+      [ 4.4, -3.8],
+      [ 2.2, -4.2],
+      [ 4.6, -1.4],
+      [ 2.4, -1.4],
+      [ 3.8,  4.4],
+      [ 1.5,  4.4],
+      [ 3.8, -4.8],
+      [ 1.5, -4.8],
+    ];
+
+    const getPlotPosition = (index: number, _total: number, offsetSide: 'left' | 'right') => {
+      const anchors = offsetSide === 'left' ? leftAnchors : rightAnchors;
+      const itemRadius = offsetSide === 'left' ? 1.15 : 0.95;
+      const anchor = anchors[index % anchors.length];
+      const proposedX = anchor[0];
+      const proposedZ = anchor[1];
+
+      const [finalX, finalY, finalZ] = getCollisionFreePosition(proposedX, proposedZ, itemRadius);
       placedItems.push({ x: finalX, z: finalZ, r: itemRadius });
       return new BABYLON.Vector3(finalX, finalY, finalZ);
     };
