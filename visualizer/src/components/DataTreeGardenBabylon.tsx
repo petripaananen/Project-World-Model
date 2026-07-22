@@ -12,10 +12,6 @@ import {
   buildTree,
   buildFence,
   buildLantern,
-  buildWoodenBarrel,
-  buildCropCrate,
-  buildWildflower,
-  buildCrop,
 } from './BabylonAssets';
 
 interface DataTreeGardenBabylonProps {
@@ -386,83 +382,7 @@ export function DataTreeGardenBabylon({
       buildLantern(scene, new BABYLON.Vector3(x, 0, z));
     });
 
-    // 12. Flat Stepping Stones (Paths)
-    const stonePositions = [
-      [-1.0, -0.65], [-2.0, -1.3], [1.0, -0.65], [2.0, -1.3]
-    ];
-    stonePositions.forEach(([x, z], idx) => {
-      const stone = BABYLON.MeshBuilder.CreateCylinder(`stepStone_${idx}`, { diameter: 0.52, height: 0.03, tessellation: 8 }, scene);
-      stone.position.set(x, 0.015, z);
-      stone.rotation.y = idx * 0.4;
-      const stoneMat = new BABYLON.PBRMaterial(`stepStoneMat_${idx}`, scene);
-      stoneMat.albedoColor = new BABYLON.Color3(0.53, 0.5, 0.46); // warm stone grey
-      stoneMat.roughness = 0.95;
-      stone.material = stoneMat;
-      stone.receiveShadows = true;
-    });
 
-    // 13. Hay Day Clutter & Deployed Releases / Builds
-    buildWoodenBarrel(scene, new BABYLON.Vector3(-1.1, 0, -1.0));
-    buildWoodenBarrel(scene, new BABYLON.Vector3(1.1, 0, -1.0));
-    buildCropCrate(scene, new BABYLON.Vector3(-1.2, 0, 0.8));
-    buildCropCrate(scene, new BABYLON.Vector3(1.2, 0, 0.8));
-
-    // 14. Scattered Project Crops & Themed Patches
-    if (theme === 'alpha') {
-      // Project Alpha: Tall Corn Rows and Pumpkin Crates
-      buildCrop(scene, new BABYLON.Vector3(-3.2, 0.01, 3.2), 'corn');
-      buildCrop(scene, new BABYLON.Vector3(-2.2, 0.01, 3.2), 'corn');
-      buildCrop(scene, new BABYLON.Vector3(-1.2, 0.01, 3.2), 'corn');
-      buildCrop(scene, new BABYLON.Vector3(-3.2, 0.01, 4.4), 'corn');
-      buildCrop(scene, new BABYLON.Vector3(-2.2, 0.01, 4.4), 'corn');
-      buildCrop(scene, new BABYLON.Vector3(-1.2, 0.01, 4.4), 'corn');
-      buildCropCrate(scene, new BABYLON.Vector3(2.5, 0.01, 2.5));
-      buildCropCrate(scene, new BABYLON.Vector3(1.0, 0.01, 3.5));
-    } else if (theme === 'beta') {
-      // Project Beta: Orange Carrot Rows
-      buildCrop(scene, new BABYLON.Vector3(-3.5, 0.01, 2.8), 'carrot');
-      buildCrop(scene, new BABYLON.Vector3(-2.5, 0.01, 2.8), 'carrot');
-      buildCrop(scene, new BABYLON.Vector3(-1.5, 0.01, 2.8), 'carrot');
-      buildCrop(scene, new BABYLON.Vector3(-3.5, 0.01, 3.8), 'carrot');
-      buildCrop(scene, new BABYLON.Vector3(-2.5, 0.01, 3.8), 'carrot');
-      buildCrop(scene, new BABYLON.Vector3(-1.5, 0.01, 3.8), 'carrot');
-      buildCrop(scene, new BABYLON.Vector3(-3.5, 0.01, 4.8), 'carrot');
-      buildCrop(scene, new BABYLON.Vector3(-2.5, 0.01, 4.8), 'carrot');
-      buildCrop(scene, new BABYLON.Vector3(-1.5, 0.01, 4.8), 'carrot');
-    } else if (theme === 'gamma') {
-      // Project Gamma: Leafy Cabbages and Wild Spiky weeds (bug representation)
-      buildCrop(scene, new BABYLON.Vector3(-3.5, 0.01, 3.2), 'cabbage');
-      buildCrop(scene, new BABYLON.Vector3(-2.0, 0.01, 3.2), 'cabbage');
-      buildCrop(scene, new BABYLON.Vector3(-0.5, 0.01, 3.2), 'cabbage');
-      buildCrop(scene, new BABYLON.Vector3(-3.5, 0.01, 4.4), 'cabbage');
-      buildCrop(scene, new BABYLON.Vector3(-2.0, 0.01, 4.4), 'cabbage');
-      buildCrop(scene, new BABYLON.Vector3(-0.5, 0.01, 4.4), 'cabbage');
-      buildWeed(scene, new BABYLON.Vector3(2.5, 0.01, 2.5), 'active');
-      buildWeed(scene, new BABYLON.Vector3(1.0, 0.01, 3.5), 'active');
-    } else {
-      // Default/Live: Mixed Crop Patch
-      buildCrop(scene, new BABYLON.Vector3(-3.5, 0.01, 3.0), 'carrot');
-      buildCrop(scene, new BABYLON.Vector3(-2.5, 0.01, 3.0), 'carrot');
-      buildCrop(scene, new BABYLON.Vector3(-3.5, 0.01, 4.2), 'cabbage');
-      buildCrop(scene, new BABYLON.Vector3(-2.0, 0.01, 4.2), 'cabbage');
-      buildCrop(scene, new BABYLON.Vector3(1.8, 0.01, 3.0), 'corn');
-      buildCropCrate(scene, new BABYLON.Vector3(2.2, 0.01, 4.2));
-    }
-
-    // 15. Scattered Colorful Wildflowers
-    const flowerColors = [
-      '#e74c3c', '#9b59b6', '#f1c40f', '#e67e22', 
-      '#e84393', '#ffffff', '#fd79a8', '#00cec9',
-      '#9c88ff', '#fbc531', '#4cd137', '#487eb0'
-    ];
-    for (let i = 0; i < 80; i++) {
-      const angle = (i / 80) * Math.PI * 2 + Math.sin(i * 2.5) * 0.3;
-      const radius = 6.8 + Math.cos(i * 1.7) * 4.0;
-      const x = radius * Math.cos(angle);
-      const z = radius * Math.sin(angle);
-      const scale = 3.5 + Math.sin(i) * 1.5;
-      buildWildflower(scene, new BABYLON.Vector3(x, 0.015, z), flowerColors[i % flowerColors.length], scale);
-    }
 
     // 11. Shadow Assignment Pass
     scene.meshes.forEach(m => {
