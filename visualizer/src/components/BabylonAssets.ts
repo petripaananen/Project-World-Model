@@ -71,13 +71,22 @@ export function instantiateGLBModel(
       });
     });
 
-    // Compute hierarchy bounds to align bottom-most vertex flush to position.y (soil surface)
-    root.computeWorldMatrix(true);
-    const bounds = root.getHierarchyBoundingVectors(true);
-    const minY = bounds.min.y;
-    const targetY = position.y;
-    if (Number.isFinite(minY)) {
-      root.position.y += (targetY - minY);
+    // Compute hierarchy bounds to align bottom-most vertex flush to position.y (soil surface) for unparented root models
+    if (!parent) {
+      root.computeWorldMatrix(true);
+      let localMinY = Infinity;
+      root.getChildMeshes(false).forEach(m => {
+        m.computeWorldMatrix(true);
+        const b = m.getBoundingInfo().boundingBox;
+        if (b && Number.isFinite(b.minimumWorld.y) && b.minimumWorld.y < localMinY) {
+          localMinY = b.minimumWorld.y;
+        }
+      });
+
+      if (Number.isFinite(localMinY) && localMinY !== Infinity) {
+        const targetY = position.y;
+        root.position.y += (targetY - localMinY);
+      }
     }
 
     return root;

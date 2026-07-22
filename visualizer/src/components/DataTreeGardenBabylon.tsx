@@ -90,73 +90,42 @@ export function DataTreeGardenBabylon({
     const issues: any[] = [];
 
     const exclusions = [
-      { x: 0, z: 0, r: 1.6 },      // Central Well
-      { x: -1.4, z: -1.8, r: 0.9 }, // Gnome 1
-      { x: 1.4, z: -1.8, r: 0.9 },  // Gnome 2
-      { x: 0.0, z: 1.8, r: 0.9 },   // Gnome 3
-      { x: -1.1, z: -1.0, r: 0.7 }, // Barrel 1
-      { x: 1.1, z: -1.0, r: 0.7 },  // Barrel 2
-      { x: -1.2, z: 0.8, r: 0.7 },  // Crate 1
-      { x: 1.2, z: 0.8, r: 0.7 },   // Crate 2
-      { x: -3.6, z: -1.8, r: 1.4 }, // Tree Left (Epic)
-      { x: 3.6, z: -1.8, r: 1.4 },  // Tree Right (Epic)
+      { x: 0, z: 0, r: 1.8 },        // Central Stone Well Core
+      { x: -1.4, z: -1.8, r: 1.0 },   // Worker Agent Gnome
+      { x: 1.4, z: -1.8, r: 1.0 },    // Critic Agent Gnome
+      { x: 0.0, z: 1.8, r: 1.0 },     // Opponent Agent Gnome
+      { x: -3.6, z: -1.8, r: 2.0 },   // Epic Tree Left (PRs)
+      { x: 3.6, z: -1.8, r: 2.0 },    // Epic Tree Right (Issues)
     ];
-
-    if (theme === 'alpha') {
-      exclusions.push(
-        { x: -3.2, z: 3.2, r: 0.6 }, { x: -2.2, z: 3.2, r: 0.6 }, { x: -1.2, z: 3.2, r: 0.6 },
-        { x: -3.2, z: 4.4, r: 0.6 }, { x: -2.2, z: 4.4, r: 0.6 }, { x: -1.2, z: 4.4, r: 0.6 },
-        { x: 2.5, z: 2.5, r: 0.7 }, { x: 1.0, z: 3.5, r: 0.7 }
-      );
-    } else if (theme === 'beta') {
-      exclusions.push(
-        { x: -3.5, z: 2.8, r: 0.5 }, { x: -2.5, z: 2.8, r: 0.5 }, { x: -1.5, z: 2.8, r: 0.5 },
-        { x: -3.5, z: 3.8, r: 0.5 }, { x: -2.5, z: 3.8, r: 0.5 }, { x: -1.5, z: 3.8, r: 0.5 },
-        { x: -3.5, z: 4.8, r: 0.5 }, { x: -2.5, z: 4.8, r: 0.5 }, { x: -1.5, z: 4.8, r: 0.5 }
-      );
-    } else if (theme === 'gamma') {
-      exclusions.push(
-        { x: -3.5, z: 3.2, r: 0.5 }, { x: -2.0, z: 3.2, r: 0.5 }, { x: -0.5, z: 3.2, r: 0.5 },
-        { x: -3.5, z: 4.4, r: 0.5 }, { x: -2.0, z: 4.4, r: 0.5 }, { x: -0.5, z: 4.4, r: 0.5 },
-        { x: 2.5, z: 2.5, r: 0.65 }, { x: 1.0, z: 3.5, r: 0.65 }
-      );
-    } else {
-      exclusions.push(
-        { x: -3.5, z: 3.0, r: 0.5 }, { x: -2.5, z: 3.0, r: 0.5 },
-        { x: -3.5, z: 4.2, r: 0.5 }, { x: -2.0, z: 4.2, r: 0.5 },
-        { x: 1.8, z: 3.0, r: 0.5 }, { x: 2.2, z: 4.2, r: 0.7 }
-      );
-    }
 
     const placedItems: { x: number; z: number; r: number }[] = [];
 
-    const getCollisionFreePosition = (proposedX: number, proposedZ: number): [number, number, number] => {
+    const getCollisionFreePosition = (proposedX: number, proposedZ: number, itemRadius: number = 1.1): [number, number, number] => {
       let x = proposedX;
       let z = proposedZ;
-      const radius = 0.65;
       let angle = 0;
-      const step = 0.25;
+      const step = 0.35;
 
-      for (let attempt = 0; attempt < 100; attempt++) {
+      for (let attempt = 0; attempt < 120; attempt++) {
         let collides = false;
         for (const esc of exclusions) {
-          if (Math.hypot(x - esc.x, z - esc.z) < (radius + esc.r)) {
+          if (Math.hypot(x - esc.x, z - esc.z) < (itemRadius + esc.r)) {
             collides = true;
             break;
           }
         }
         if (!collides) {
           for (const item of placedItems) {
-            if (Math.hypot(x - item.x, z - item.z) < (radius + item.r)) {
+            if (Math.hypot(x - item.x, z - item.z) < (itemRadius + item.r)) {
               collides = true;
               break;
             }
           }
         }
-        if (!collides && x >= -6.0 && x <= 6.0 && z >= -5.0 && z <= 5.0) {
+        if (!collides && x >= -5.6 && x <= 5.6 && z >= -4.6 && z <= 4.6) {
           return [x, 0.01, z];
         }
-        angle += 0.5;
+        angle += 0.6;
         const r = step * Math.sqrt(attempt + 1);
         x = proposedX + r * Math.cos(angle);
         z = proposedZ + r * Math.sin(angle);
@@ -166,14 +135,15 @@ export function DataTreeGardenBabylon({
 
     const getPlotPosition = (index: number, total: number, offsetSide: 'left' | 'right') => {
       const count = total || 1;
+      const itemRadius = offsetSide === 'left' ? 1.15 : 0.95;
       const angle = (index / count) * Math.PI * 1.5;
-      const radius = 2.0 + Math.sin(index * 2) * 0.8;
+      const radius = 2.2 + Math.sin(index * 2) * 0.8;
       const xSign = offsetSide === 'left' ? -1 : 1;
       const xProposed = xSign * (radius * Math.cos(angle) + 2.5);
       const zProposed = radius * Math.sin(angle) * 0.9;
 
-      const [finalX, finalY, finalZ] = getCollisionFreePosition(xProposed, zProposed);
-      placedItems.push({ x: finalX, z: finalZ, r: 0.65 });
+      const [finalX, finalY, finalZ] = getCollisionFreePosition(xProposed, zProposed, itemRadius);
+      placedItems.push({ x: finalX, z: finalZ, r: itemRadius });
       return new BABYLON.Vector3(finalX, finalY, finalZ);
     };
 
