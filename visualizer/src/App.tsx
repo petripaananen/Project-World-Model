@@ -2520,7 +2520,7 @@ function App() {
                               className="settings-select"
                             >
                               <option value="Gemini 3.6 Flash">Gemini 3.6 Flash (Recommended)</option>
-                              <option value="Gemini 3.6 Pro">Gemini 3.6 Pro</option>
+                              <option value="Gemini 3.1 Pro">Gemini 3.1 Pro</option>
                               <option value="Gemini 1.5 Pro">Gemini 1.5 Pro</option>
                             </select>
                           </div>
