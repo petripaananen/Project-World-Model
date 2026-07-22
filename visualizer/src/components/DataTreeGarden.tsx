@@ -63,8 +63,8 @@ export function DataTreeGarden({
           className="glass-card item-hover-card"
           style={{
             position: 'absolute',
-            left: hoveredInfo.x + 15,
-            top: hoveredInfo.y + 15,
+            left: Math.min(hoveredInfo.x + 15, window.innerWidth - 300),
+            top: Math.min(hoveredInfo.y + 15, window.innerHeight - 220),
             zIndex: 1000,
             pointerEvents: 'none',
             background: 'rgba(23, 28, 41, 0.95)',
@@ -72,7 +72,9 @@ export function DataTreeGarden({
             borderRadius: '10px',
             padding: '12px 14px',
             color: '#fff',
-            minWidth: '220px',
+            width: '260px',
+            maxWidth: '280px',
+            boxSizing: 'border-box',
             fontFamily: 'system-ui, -apple-system, sans-serif',
             boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
             textAlign: 'left',
