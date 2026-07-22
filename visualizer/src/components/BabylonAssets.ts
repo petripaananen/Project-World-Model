@@ -74,6 +74,11 @@ export function instantiateGLBModel(
     // Compute hierarchy bounds to align bottom-most vertex flush to position.y (soil surface) for unparented root models
     if (!parent) {
       root.computeWorldMatrix(true);
+      root.getDescendants(false).forEach(n => {
+        if (n instanceof BABYLON.TransformNode || n instanceof BABYLON.AbstractMesh) {
+          n.computeWorldMatrix(true);
+        }
+      });
       let localMinY = Infinity;
       root.getChildMeshes(false).forEach(m => {
         m.refreshBoundingInfo(true, true);
@@ -701,15 +706,17 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
 
   // 1. Attempt GLB model instantiation (Statue.glb / Statue-0Mkdl3SJDT.glb)
   const statueFile = role.includes('Worker') ? 'Statue.glb' : role.includes('Critic') ? 'Statue-0Mkdl3SJDT.glb' : 'Statue-JXmywADgSk.glb';
-  const glbRoot = instantiateGLBModel(scene, statueFile, null, position, 0.85, 0, details);
+  const glbRoot = instantiateGLBModel(scene, statueFile, null, position, 1.2, 0, details);
   if (glbRoot) {
     glbRoot.metadata = { type: 'gnome', details };
+    glbRoot.position.y += 0.25; // Guarantee base rests visibly above ground
     return glbRoot;
   }
 
   const gnome = new BABYLON.TransformNode("gnome", scene);
-  gnome.position = position;
-  gnome.scaling.set(1.3, 1.3, 1.3);
+  gnome.position = position.clone();
+  gnome.position.y += 0.15;
+  gnome.scaling.set(1.4, 1.4, 1.4);
   gnome.metadata = { type: 'gnome', details };
 
   // Material setup
