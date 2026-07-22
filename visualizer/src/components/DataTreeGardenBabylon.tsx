@@ -90,21 +90,26 @@ export function DataTreeGardenBabylon({
     const issues: any[] = [];
 
     const exclusions = [
-      { x: 0, z: 0, r: 1.8 },        // Central Stone Well Core
-      { x: -1.4, z: -1.8, r: 1.0 },   // Worker Agent Gnome
-      { x: 1.4, z: -1.8, r: 1.0 },    // Critic Agent Gnome
-      { x: 0.0, z: 1.8, r: 1.0 },     // Opponent Agent Gnome
-      { x: -3.6, z: -1.8, r: 2.0 },   // Epic Tree Left (PRs)
-      { x: 3.6, z: -1.8, r: 2.0 },    // Epic Tree Right (Issues)
+      { x: 0, z: 0, r: 2.2 },          // Central Stone Well Core (Water Fountain GLB footprint)
+      { x: -1.4, z: -1.8, r: 0.7 },    // Worker Agent Gnome (Statue GLB, scale 0.8)
+      { x: 1.4, z: -1.8, r: 0.7 },     // Critic Agent Gnome (Statue GLB, scale 0.8)
+      { x: 0.0, z: 1.8, r: 0.7 },      // Opponent Agent Gnome (Statue GLB, scale 0.8)
+      { x: -3.6, z: -1.8, r: 2.5 },    // Epic Tree Left (Tree/Bonsai GLB canopy)
+      { x: 3.6, z: -1.8, r: 2.5 },     // Epic Tree Right (Tree/Bonsai GLB canopy)
+      // Fence pillars along back/front boundaries
+      { x: -4.5, z: -6.5, r: 0.6 }, { x: -3, z: -6.5, r: 0.6 }, { x: -1.5, z: -6.5, r: 0.6 },
+      { x: 0, z: -6.5, r: 0.6 }, { x: 1.5, z: -6.5, r: 0.6 }, { x: 3, z: -6.5, r: 0.6 }, { x: 4.5, z: -6.5, r: 0.6 },
+      { x: -4.5, z: 6.5, r: 0.6 }, { x: -3, z: 6.5, r: 0.6 }, { x: -1.5, z: 6.5, r: 0.6 },
+      { x: 0, z: 6.5, r: 0.6 }, { x: 1.5, z: 6.5, r: 0.6 }, { x: 3, z: 6.5, r: 0.6 }, { x: 4.5, z: 6.5, r: 0.6 },
     ];
 
     const placedItems: { x: number; z: number; r: number }[] = [];
 
-    const getCollisionFreePosition = (proposedX: number, proposedZ: number, itemRadius: number = 1.1): [number, number, number] => {
+    const getCollisionFreePosition = (proposedX: number, proposedZ: number, itemRadius: number = 1.4): [number, number, number] => {
       let x = proposedX;
       let z = proposedZ;
       let angle = 0;
-      const step = 0.35;
+      const step = 0.45;
 
       for (let attempt = 0; attempt < 120; attempt++) {
         let collides = false;
@@ -122,48 +127,42 @@ export function DataTreeGardenBabylon({
             }
           }
         }
-        if (!collides && x >= -5.6 && x <= 5.6 && z >= -4.6 && z <= 4.6) {
-          return [x, 0.01, z];
+        if (!collides && x >= -5.6 && x <= 5.6 && z >= -5.4 && z <= 5.4) {
+          return [x, 0, z];
         }
         angle += 0.6;
         const r = step * Math.sqrt(attempt + 1);
         x = proposedX + r * Math.cos(angle);
         z = proposedZ + r * Math.sin(angle);
       }
-      return [proposedX, 0.01, proposedZ];
+      return [proposedX, 0, proposedZ];
     };
 
     // Hand-curated non-overlapping spatial anchors on left quadrant (PR Flower Beds)
+    // Wider spacing to accommodate GLB Flower Bed models at scale 0.4
     const leftAnchors = [
-      [-4.2,  3.2],
-      [-2.0,  3.6],
-      [-4.6,  0.8],
-      [-2.4,  1.2],
-      [-4.4, -3.8],
-      [-2.2, -4.2],
-      [-4.6, -1.4],
-      [-2.4, -1.4],
+      [-4.5,  3.8],
+      [-2.2,  4.0],
+      [-4.8,  0.6],
+      [-2.4,  1.6],
+      [-4.5, -4.2],
+      [-2.2, -4.5],
     ];
 
     // Hand-curated non-overlapping spatial anchors on right quadrant (Tech Debt Rocks)
+    // Wider spacing to accommodate GLB Rock models at scale 0.45
     const rightAnchors = [
-      [ 4.2,  3.2],
-      [ 2.0,  3.6],
-      [ 4.6,  0.8],
-      [ 2.4,  1.2],
-      [ 4.4, -3.8],
-      [ 2.2, -4.2],
-      [ 4.6, -1.4],
-      [ 2.4, -1.4],
-      [ 3.8,  4.4],
-      [ 1.5,  4.4],
-      [ 3.8, -4.8],
-      [ 1.5, -4.8],
+      [ 4.5,  3.8],
+      [ 2.2,  4.0],
+      [ 4.8,  0.6],
+      [ 2.4,  1.6],
+      [ 4.5, -4.2],
+      [ 2.2, -4.5],
     ];
 
     const getPlotPosition = (index: number, _total: number, offsetSide: 'left' | 'right') => {
       const anchors = offsetSide === 'left' ? leftAnchors : rightAnchors;
-      const itemRadius = offsetSide === 'left' ? 1.15 : 0.95;
+      const itemRadius = offsetSide === 'left' ? 1.4 : 1.2;
       const anchor = anchors[index % anchors.length];
       const proposedX = anchor[0];
       const proposedZ = anchor[1];
@@ -339,9 +338,9 @@ export function DataTreeGardenBabylon({
         buildWell(scene, new BABYLON.Vector3(0, 0, 0), crr, projectName);
 
     // 6. Build Gnomes (AI Agents)
-    const workerGnome = buildGnome(scene, new BABYLON.Vector3(-1.4, 0.01, -1.8), '#2575fc', "Worker Agent Gnome", "Executes tasks, generates branches, refactors code, and runs system tests.");
-    const criticGnome = buildGnome(scene, new BABYLON.Vector3(1.4, 0.01, -1.8), '#9b59b6', "Critic Agent Gnome", "Reviews pull requests, checks styling, runs linters, and rates visual fidelity.");
-    const opponentGnome = buildGnome(scene, new BABYLON.Vector3(0.0, 0.01, 1.8), '#ec008c', "Opponent Agent Gnome", "Simulates system failures, breaks parameters, and tests resilience of the garden.");
+    const workerGnome = buildGnome(scene, new BABYLON.Vector3(-1.4, 0, -1.8), '#2575fc', "Worker Agent Gnome", "Executes tasks, generates branches, refactors code, and runs system tests.");
+    const criticGnome = buildGnome(scene, new BABYLON.Vector3(1.4, 0, -1.8), '#9b59b6', "Critic Agent Gnome", "Reviews pull requests, checks styling, runs linters, and rates visual fidelity.");
+    const opponentGnome = buildGnome(scene, new BABYLON.Vector3(0.0, 0, 1.8), '#ec008c', "Opponent Agent Gnome", "Simulates system failures, breaks parameters, and tests resilience of the garden.");
 
     // 7. Dynamic Data Trees (Left & Right)
     if (gardenElements.epicPRs) {
@@ -466,7 +465,7 @@ export function DataTreeGardenBabylon({
     const gnomesList = [
       {
         node: workerGnome,
-        home: new BABYLON.Vector3(-1.4, 0.01, -1.8),
+        home: new BABYLON.Vector3(-1.4, 0, -1.8),
         role: 'worker',
         target: null as BABYLON.Vector3 | null,
         targetNodeId: null as string | null,
@@ -476,7 +475,7 @@ export function DataTreeGardenBabylon({
       },
       {
         node: criticGnome,
-        home: new BABYLON.Vector3(1.4, 0.01, -1.8),
+        home: new BABYLON.Vector3(1.4, 0, -1.8),
         role: 'critic',
         target: null as BABYLON.Vector3 | null,
         targetNodeId: null as string | null,
@@ -486,7 +485,7 @@ export function DataTreeGardenBabylon({
       },
       {
         node: opponentGnome,
-        home: new BABYLON.Vector3(0.0, 0.01, 1.8),
+        home: new BABYLON.Vector3(0.0, 0, 1.8),
         role: 'opponent',
         target: null as BABYLON.Vector3 | null,
         targetNodeId: null as string | null,

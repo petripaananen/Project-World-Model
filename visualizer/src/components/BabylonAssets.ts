@@ -706,10 +706,10 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
 
   // 1. Attempt GLB model instantiation (Statue.glb / Statue-0Mkdl3SJDT.glb)
   const statueFile = role.includes('Worker') ? 'Statue.glb' : role.includes('Critic') ? 'Statue-0Mkdl3SJDT.glb' : 'Statue-JXmywADgSk.glb';
-  const glbRoot = instantiateGLBModel(scene, statueFile, null, position, 1.2, 0, details);
+  const glbRoot = instantiateGLBModel(scene, statueFile, null, position, 0.8, 0, details);
   if (glbRoot) {
     glbRoot.metadata = { type: 'gnome', details };
-    glbRoot.position.y += 0.25; // Guarantee base rests visibly above ground
+    // Auto-grounding in instantiateGLBModel handles bottom alignment — no extra offset needed
     return glbRoot;
   }
 
