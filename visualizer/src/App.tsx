@@ -822,7 +822,7 @@ function App() {
 
   // Settings states
   const [consensusThreshold, setConsensusThreshold] = useState<number>(75);
-  const [defaultModel, setDefaultModel] = useState<string>('Gemini 2.5 Pro');
+  const [defaultModel, setDefaultModel] = useState<string>('Gemini 3.6 Flash');
   const [retentionPolicy, setRetentionPolicy] = useState<string>('7 days');
   const [alertChannels, setAlertChannels] = useState({
     email: false,
@@ -2519,8 +2519,8 @@ function App() {
                               onChange={(e) => setDefaultModel(e.target.value)}
                               className="settings-select"
                             >
-                              <option value="Gemini 2.5 Pro">Gemini 2.5 Pro (Recommended)</option>
-                              <option value="Gemini 2.5 Flash">Gemini 2.5 Flash</option>
+                              <option value="Gemini 3.6 Flash">Gemini 3.6 Flash (Recommended)</option>
+                              <option value="Gemini 3.6 Pro">Gemini 3.6 Pro</option>
                               <option value="Gemini 1.5 Pro">Gemini 1.5 Pro</option>
                             </select>
                           </div>
