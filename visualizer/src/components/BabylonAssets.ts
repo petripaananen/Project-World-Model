@@ -71,6 +71,15 @@ export function instantiateGLBModel(
       });
     });
 
+    // Compute hierarchy bounds to align bottom-most vertex flush to position.y (soil surface)
+    root.computeWorldMatrix(true);
+    const bounds = root.getHierarchyBoundingVectors(true);
+    const minY = bounds.min.y;
+    const targetY = position.y;
+    if (Number.isFinite(minY)) {
+      root.position.y += (targetY - minY);
+    }
+
     return root;
   } catch (err) {
     console.error(`[instantiateGLBModel error for ${filename}]:`, err);
