@@ -1,5 +1,69 @@
 import * as BABYLON from '@babylonjs/core';
 
+// ─── GLB ASSET CONTAINER CACHE & PRELOADER ─────────────────────────
+const assetContainerCache: Record<string, BABYLON.AssetContainer> = {};
+
+export async function preloadGLBAssets(scene: BABYLON.Scene, filenames: string[]): Promise<void> {
+  await Promise.all(
+    filenames.map(async (filename) => {
+      if (assetContainerCache[filename]) return;
+      try {
+        const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(
+          "/Low Poly Outdoor Decorations/",
+          filename,
+          scene
+        );
+        assetContainerCache[filename] = container;
+      } catch (err) {
+        console.warn(`Could not preload GLB container ${filename}:`, err);
+      }
+    })
+  );
+}
+
+export function instantiateGLBModel(
+  scene: BABYLON.Scene,
+  filename: string,
+  parent: BABYLON.Node | null,
+  position: BABYLON.Vector3,
+  scale: number = 1.0,
+  rotationY: number = 0,
+  metadata?: any,
+  shadowGenerator?: BABYLON.ShadowGenerator | BABYLON.CascadedShadowGenerator
+): BABYLON.TransformNode | null {
+  const container = assetContainerCache[filename];
+  if (!container) return null;
+
+  const root = new BABYLON.TransformNode(`inst_${filename}_${Math.random().toString(36).substring(2, 7)}`, scene);
+  if (parent) {
+    root.parent = parent;
+  }
+  root.position = position.clone();
+  root.rotation.y = rotationY;
+
+  const entries = container.instantiateModelsToScene(name => `${name}_${Math.random().toString(36).substring(2, 7)}`);
+  entries.rootNodes.forEach(rNode => {
+    rNode.parent = root;
+    if (rNode instanceof BABYLON.TransformNode) {
+      rNode.scaling.set(scale, scale, scale);
+    }
+    
+    const childMeshes = rNode.getChildMeshes();
+    childMeshes.forEach(m => {
+      m.isPickable = true;
+      if (metadata) {
+        m.metadata = metadata;
+      }
+      m.receiveShadows = true;
+      if (shadowGenerator) {
+        shadowGenerator.addShadowCaster(m, true);
+      }
+    });
+  });
+
+  return root;
+}
+
 // ─── PROCEDURAL TEXTURE GENERATORS ───────────────────────────────────
 
 export function createGrassTexture(scene: BABYLON.Scene): BABYLON.DynamicTexture {
@@ -169,19 +233,26 @@ export function buildTerrain(scene: BABYLON.Scene, theme: string, grassColorHex:
   return terrainGroup;
 }
 
-export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: number, projectName?: string) {
+export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: number = 1.25, projectName: string = '') {
+  const details = {
+    id: 'well-core',
+    title: `${projectName ? `${projectName} ` : ''}Well Core`,
+    elementType: 'Stone Well',
+    description: `Represents the main repository branch. Well water health reflects the integration stability and build success of the workspace (${crr < 1.0 ? 'BLUE means healthy' : 'RED indicates warning state'}).`,
+    crr: crr,
+    status: crr < 1.0 ? 'Optimal' : 'Debt Warning'
+  };
+
+  // 1. Attempt GLB model instantiation (Water Fountain.glb)
+  const glbRoot = instantiateGLBModel(scene, 'Water Fountain.glb', null, position, 0.7, 0, details);
+  if (glbRoot) {
+    glbRoot.metadata = { type: 'well', details };
+    return glbRoot;
+  }
+
   const well = new BABYLON.TransformNode("well", scene);
   well.position = position;
-  const details = { 
-    id: 'well-core', 
-    title: projectName ? `${projectName} Well Core` : `CRR Core Well`, 
-    elementType: 'Stone Well',
-    description: "Represents the main repository branch. Well water health reflects the integration stability and build success of the workspace: BLUE means healthy (high CRR / stable build), whereas RED indicates a warning state (low CRR / integration debt detected)."
-  };
-  well.metadata = { 
-    type: 'well', 
-    details
-  };
+  well.metadata = { type: 'well', details };
 
   const stoneTexture = createStoneTexture(scene);
   const woodTexture = createWoodTexture(scene);
@@ -292,8 +363,22 @@ export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: 
 }
 
 export function buildFence(scene: BABYLON.Scene, position: BABYLON.Vector3) {
+  const details = {
+    id: `pillar-${Math.random().toString(36).substring(2, 7)}`,
+    title: 'Garden Pillar (Sprint Boundary)',
+    elementType: 'Garden Pillar',
+    description: 'Boundary pillar representing workspace sprint and scope limits.'
+  };
+
+  const glbRoot = instantiateGLBModel(scene, 'Pillar.glb', null, position, 0.45, 0, details);
+  if (glbRoot) {
+    glbRoot.metadata = { type: 'border', details };
+    return glbRoot;
+  }
+
   const fenceNode = new BABYLON.TransformNode("fence", scene);
   fenceNode.position = position;
+  fenceNode.metadata = { type: 'border', details };
 
   const woodTexture = createWoodTexture(scene);
   const woodMat = new BABYLON.PBRMaterial("fenceWoodMat", scene);
@@ -353,8 +438,27 @@ export function buildFence(scene: BABYLON.Scene, position: BABYLON.Vector3) {
 }
 
 export function buildLantern(scene: BABYLON.Scene, position: BABYLON.Vector3) {
+  const details = {
+    id: `lamp-${Math.random().toString(36).substring(2, 7)}`,
+    title: 'Active Work Lamp Post',
+    elementType: 'Active Lamp',
+    description: 'Active lamp post glowing with emissive light representing in-progress task execution.'
+  };
+
+  const glbRoot = instantiateGLBModel(scene, 'Garden Lamp.glb', null, position, 0.45, 0, details);
+  if (glbRoot) {
+    glbRoot.metadata = { type: 'lamp', details };
+    const light = new BABYLON.PointLight(`lampLight_${Math.random()}`, new BABYLON.Vector3(0, 0.8, 0), scene);
+    light.parent = glbRoot;
+    light.diffuse = new BABYLON.Color3(1, 0.82, 0.4);
+    light.intensity = 1.0;
+    light.range = 6;
+    return glbRoot;
+  }
+
   const lantern = new BABYLON.TransformNode("lantern", scene);
   lantern.position = position;
+  lantern.metadata = { type: 'lamp', details };
 
   const metalMat = new BABYLON.PBRMaterial("lanternMetal", scene);
   metalMat.albedoColor = new BABYLON.Color3(0.18, 0.22, 0.25);
@@ -464,10 +568,6 @@ export function buildCropCrate(scene: BABYLON.Scene, position: BABYLON.Vector3) 
 }
 
 export function buildWildflower(scene: BABYLON.Scene, position: BABYLON.Vector3, colorHex: string, scale: number) {
-  const flower = new BABYLON.TransformNode("wildflower", scene);
-  flower.position = position;
-  flower.scaling.set(scale * 0.15, scale * 0.15, scale * 0.15);
-
   const details = {
     id: `wildflower-${Math.random().toString(36).substring(2, 8)}`,
     title: 'Wildflower (Dependency)',
@@ -477,6 +577,17 @@ export function buildWildflower(scene: BABYLON.Scene, position: BABYLON.Vector3,
     complexity: 0.1,
     risk: 0.05
   };
+
+  const flowerFile = Math.random() > 0.4 ? 'Flowers.glb' : 'Flower Pot.glb';
+  const glbRoot = instantiateGLBModel(scene, flowerFile, null, position, scale * 0.12, 0, details);
+  if (glbRoot) {
+    glbRoot.metadata = { type: 'wildflower', details };
+    return glbRoot;
+  }
+
+  const flower = new BABYLON.TransformNode("wildflower", scene);
+  flower.position = position;
+  flower.scaling.set(scale * 0.15, scale * 0.15, scale * 0.15);
   flower.metadata = { type: 'wildflower', details };
 
   const centerMat = new BABYLON.PBRMaterial("flowerCenter", scene);
@@ -545,20 +656,27 @@ export function buildWildflower(scene: BABYLON.Scene, position: BABYLON.Vector3,
 }
 
 // ─── 4. HIGH-FIDELITY ORGANIC GEOMETRY CREATORS ──────────────────────
-
 export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatColorHex: string, name: string, role: string) {
+  const details = {
+    id: `gnome-${name.toLowerCase().replace(/\s+/g, '-')}`,
+    title: name,
+    elementType: 'Garden Gnome',
+    description: role,
+    status: 'Active Pathfinding',
+    role
+  };
+
+  // 1. Attempt GLB model instantiation (Statue.glb / Statue-0Mkdl3SJDT.glb)
+  const statueFile = role.includes('Worker') ? 'Statue.glb' : role.includes('Critic') ? 'Statue-0Mkdl3SJDT.glb' : 'Statue-JXmywADgSk.glb';
+  const glbRoot = instantiateGLBModel(scene, statueFile, null, position, 0.4, 0, details);
+  if (glbRoot) {
+    glbRoot.metadata = { type: 'gnome', details };
+    return glbRoot;
+  }
+
   const gnome = new BABYLON.TransformNode("gnome", scene);
   gnome.position = position;
   gnome.scaling.set(1.3, 1.3, 1.3);
-  const details = { 
-    id: `gnome-${name.toLowerCase().replace(/\s+/g, '-')}`, 
-    title: name, 
-    progress: 1.0, 
-    complexity: 0.5, 
-    risk: 0.1, 
-    description: role, 
-    elementType: 'Garden Gnome' 
-  };
   gnome.metadata = { type: 'gnome', details };
 
   // Material setup
@@ -653,9 +771,21 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
 }
 
 export function buildRoseBush(scene: BABYLON.Scene, position: BABYLON.Vector3, status: string, node?: any) {
+  const details = node;
+  const flowerBedFile = status.toLowerCase() === 'approved' || status.toLowerCase() === 'done'
+    ? 'Flower Bed.glb'
+    : status.toLowerCase() === 'under review' || status.toLowerCase() === 'pending'
+      ? 'Flower Bed-dM9hXXth1I.glb'
+      : 'Flower Bed-eUCvK3Oq9z.glb';
+
+  const glbRoot = instantiateGLBModel(scene, flowerBedFile, null, position, 0.4, 0, details);
+  if (glbRoot) {
+    glbRoot.metadata = { type: 'pr', details };
+    return glbRoot;
+  }
+
   const bushNode = new BABYLON.TransformNode("roseBush", scene);
   bushNode.position = position;
-  const details = node;
   bushNode.metadata = { type: 'pr', details };
 
   // Determine colors based on PR status
@@ -759,9 +889,21 @@ export function buildRoseBush(scene: BABYLON.Scene, position: BABYLON.Vector3, s
 }
 
 export function buildWeed(scene: BABYLON.Scene, position: BABYLON.Vector3, status: string, node?: any) {
+  const details = node;
+  const rockFile = status.toLowerCase() === 'backlog'
+    ? 'Rock-UkxWNmiFFj.glb'
+    : status.toLowerCase() === 'blocked'
+      ? 'Japanese Sedge.glb'
+      : 'Rock.glb';
+
+  const glbRoot = instantiateGLBModel(scene, rockFile, null, position, 0.45, 0, details);
+  if (glbRoot) {
+    glbRoot.metadata = { type: 'issue', details };
+    return glbRoot;
+  }
+
   const weedNode = new BABYLON.TransformNode("weed", scene);
   weedNode.position = position;
-  const details = node;
   weedNode.metadata = { type: 'issue', details };
 
   const s = status.toLowerCase();
@@ -914,9 +1056,48 @@ export function buildDewdrop(scene: BABYLON.Scene, parent: BABYLON.Node, positio
 }
 
 export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node: any, _theme?: string) {
+  const details = node;
+  const treeFile = node.title && node.title.toLowerCase().includes('pr') ? 'Bonsai.glb' : 'Tree.glb';
+
+  const glbRoot = instantiateGLBModel(scene, treeFile, null, position, 0.7, 0, details);
+  if (glbRoot) {
+    glbRoot.metadata = { type: 'epic', details };
+
+    // Attach subtask child sockets to glbRoot
+    const subtasks: any[] = node.subtasks || [];
+    subtasks.forEach((subtask: any, idx: number) => {
+      const angle = (idx / Math.max(subtasks.length, 3)) * Math.PI * 2;
+      const socketPos = new BABYLON.Vector3(Math.cos(angle) * 1.2, 1.4 + idx * 0.3, Math.sin(angle) * 1.2);
+      const subtaskDetails = {
+        ...subtask,
+        title: `${subtask.title || subtask.name || 'Child Issue'} (Epic Subtask)`,
+        description: `Issue within epic ${node.title}. Status: ${subtask.status || 'Active'}. Progress: ${Math.round((subtask.progress || 0.5) * 100)}%`,
+      };
+
+      const socketFile = (subtask.progress || 0.5) > 0.7 ? 'Flower Bed.glb' : 'Rock.glb';
+      const socketMesh = instantiateGLBModel(scene, socketFile, glbRoot, socketPos, 0.35, angle, subtaskDetails);
+      if (socketMesh) {
+        socketMesh.metadata = { type: 'issue', details: subtaskDetails };
+
+        // Scale pop-in animation for dynamic child sockets
+        BABYLON.Animation.CreateAndStartAnimation(
+          `popIn_${idx}`,
+          socketMesh,
+          "scaling",
+          30,
+          20,
+          new BABYLON.Vector3(0.01, 0.01, 0.01),
+          new BABYLON.Vector3(0.35, 0.35, 0.35),
+          BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+        );
+      }
+    });
+
+    return glbRoot;
+  }
+
   const tree = new BABYLON.TransformNode("tree", scene);
   tree.position = position;
-  const details = node;
   tree.metadata = { type: 'epic', details };
 
   const trunkMat = new BABYLON.PBRMaterial("trunkMat", scene);

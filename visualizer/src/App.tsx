@@ -689,15 +689,19 @@ function App() {
   const [pipelineState, setPipelineState] = useState<PipelineState | null>(null);
   const [dtoSimActive, setDtoSimActive] = useState(false);
   const [selectedGardenNode, setSelectedGardenNode] = useState<FusedNode | null>(null);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Record<string, boolean>>({
     showEpics: true,
-    showBees: true,
+    showPRs: true,
     showSubtasks: true,
-    showWebs: true,
+    showLamps: true,
     showDewdrops: true,
-    showVines: true,
-    showWeather: true,
     showAgents: true,
+    showFlowers: true,
+    showBorders: true,
+    showWeather: true,
+    showBees: true,
+    showWebs: true,
+    showVines: true,
   });
   const [uiVisible, setUiVisible] = useState(true);
   const [selectedProject, setSelectedProject] = useState<string>('');
@@ -2834,63 +2838,63 @@ function App() {
                       <span>Garden Filters</span>
                     </div>
                     <div className="filter-slots-container">
-                      {/* Slot 1: Epics */}
+                      {/* Slot 1: Epic Trees */}
                       <button 
                         className={`filter-slot-btn ${filters.showEpics ? 'active' : 'inactive'}`}
                         onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showEpics: !prev.showEpics })); }}
                       >
-                        <span className="material-symbols-outlined">grid_on</span>
+                        <span className="material-symbols-outlined">park</span>
                         <div className="filter-led"></div>
                         <div className="filter-tooltip-card">
                           <div className="tooltip-shortcut">Hotkey [E]</div>
-                          <div className="tooltip-title">Epic Beds</div>
-                          <p className="tooltip-desc">Shows raised wooden plots dividing different project epics.</p>
+                          <div className="tooltip-title">Epic Trees</div>
+                          <p className="tooltip-desc">Shows 3D low-poly Trees representing project epics.</p>
                         </div>
                       </button>
 
-                      {/* Slot 2: Assignees */}
+                      {/* Slot 2: PR Flower Beds */}
                       <button 
-                        className={`filter-slot-btn ${filters.showBees ? 'active' : 'inactive'}`}
-                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showBees: !prev.showBees })); }}
+                        className={`filter-slot-btn ${filters.showPRs !== false ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showPRs: prev.showPRs === false ? true : false })); }}
                       >
-                        <span className="material-symbols-outlined">pest_control</span>
+                        <span className="material-symbols-outlined">local_florist</span>
                         <div className="filter-led"></div>
                         <div className="filter-tooltip-card">
-                          <div className="tooltip-shortcut">Hotkey [B]</div>
-                          <div className="tooltip-title">Assignee Bees</div>
-                          <p className="tooltip-desc">Shows orbiting bees representing team members working on tasks.</p>
+                          <div className="tooltip-shortcut">Hotkey [P]</div>
+                          <div className="tooltip-title">PR Flower Beds</div>
+                          <p className="tooltip-desc">Shows flower bed props representing PRs (Green=Merged, Yellow=Review).</p>
                         </div>
                       </button>
 
-                      {/* Slot 3: Sub-tasks */}
+                      {/* Slot 3: Tech Debt Rocks */}
                       <button 
                         className={`filter-slot-btn ${filters.showSubtasks ? 'active' : 'inactive'}`}
                         onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showSubtasks: !prev.showSubtasks })); }}
                       >
-                        <span className="material-symbols-outlined">spa</span>
+                        <span className="material-symbols-outlined">landscape</span>
                         <div className="filter-led"></div>
                         <div className="filter-tooltip-card">
-                          <div className="tooltip-shortcut">Hotkey [S]</div>
-                          <div className="tooltip-title">Sub-tasks Mushrooms</div>
-                          <p className="tooltip-desc">Shows mushrooms representing sub-tasks (resolved bloom into flowers).</p>
+                          <div className="tooltip-shortcut">Hotkey [R]</div>
+                          <div className="tooltip-title">Tech Debt Rocks</div>
+                          <p className="tooltip-desc">Shows rock and sedge clutter representing active or blocked issue bugs.</p>
                         </div>
                       </button>
 
-                      {/* Slot 4: Blocked Webs */}
+                      {/* Slot 4: Active Work Lamps */}
                       <button 
-                        className={`filter-slot-btn ${filters.showWebs ? 'active' : 'inactive'}`}
-                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showWebs: !prev.showWebs })); }}
+                        className={`filter-slot-btn ${filters.showLamps !== false ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showLamps: prev.showLamps === false ? true : false })); }}
                       >
-                        <span className="material-symbols-outlined">emergency_home</span>
+                        <span className="material-symbols-outlined">light</span>
                         <div className="filter-led"></div>
                         <div className="filter-tooltip-card">
-                          <div className="tooltip-shortcut">Hotkey [W]</div>
-                          <div className="tooltip-title">Blocked Webs</div>
-                          <p className="tooltip-desc">Envelops issues in spiderwebs to highlight blocked/flagged tasks.</p>
+                          <div className="tooltip-shortcut">Hotkey [L]</div>
+                          <div className="tooltip-title">Active Lamps</div>
+                          <p className="tooltip-desc">Shows glowing lamp posts for active in-progress work.</p>
                         </div>
                       </button>
 
-                      {/* Slot 5: Comment Dewdrops */}
+                      {/* Slot 5: Dewdrops */}
                       <button 
                         className={`filter-slot-btn ${filters.showDewdrops ? 'active' : 'inactive'}`}
                         onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showDewdrops: !prev.showDewdrops })); }}
@@ -2900,25 +2904,53 @@ function App() {
                         <div className="filter-tooltip-card">
                           <div className="tooltip-shortcut">Hotkey [D]</div>
                           <div className="tooltip-title">Dewdrops</div>
-                          <p className="tooltip-desc">Shows shiny water droplets on leaves indicating fresh comment activity.</p>
+                          <p className="tooltip-desc">Shows shiny water droplets resting on tree foliage and leaves.</p>
                         </div>
                       </button>
 
-                      {/* Slot 6: Dependency Vines */}
+                      {/* Slot 6: Agent Statues */}
                       <button 
-                        className={`filter-slot-btn ${filters.showVines ? 'active' : 'inactive'}`}
-                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showVines: !prev.showVines })); }}
+                        className={`filter-slot-btn ${filters.showAgents ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showAgents: !prev.showAgents })); }}
                       >
-                        <span className="material-symbols-outlined">schema</span>
+                        <span className="material-symbols-outlined">smart_toy</span>
                         <div className="filter-led"></div>
                         <div className="filter-tooltip-card">
-                          <div className="tooltip-shortcut">Hotkey [V]</div>
-                          <div className="tooltip-title">Dependency Vines</div>
-                          <p className="tooltip-desc">Shows crawling leafy or thorny vines connecting related PRs and issues.</p>
+                          <div className="tooltip-shortcut">Hotkey [A]</div>
+                          <div className="tooltip-title">Agent Statues</div>
+                          <p className="tooltip-desc">Animated statues representing Worker, Critic, & Opponent agents.</p>
                         </div>
                       </button>
 
-                      {/* Slot 7: Sprint Weather */}
+                      {/* Slot 7: Scatter Flowers */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showFlowers !== false ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showFlowers: prev.showFlowers === false ? true : false })); }}
+                      >
+                        <span className="material-symbols-outlined">filter_vintage</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [F]</div>
+                          <div className="tooltip-title">Scatter Flowers</div>
+                          <p className="tooltip-desc">Shows scattered flower pots and wildflowers for 3rd-party dependencies.</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 8: Garden Pillars */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showBorders !== false ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showBorders: prev.showBorders === false ? true : false })); }}
+                      >
+                        <span className="material-symbols-outlined">fence</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [B]</div>
+                          <div className="tooltip-title">Garden Pillars</div>
+                          <p className="tooltip-desc">Shows boundary pillars surrounding the garden workspace.</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 9: Weather */}
                       <button 
                         className={`filter-slot-btn ${filters.showWeather ? 'active' : 'inactive'}`}
                         onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showWeather: !prev.showWeather })); }}
@@ -2926,23 +2958,9 @@ function App() {
                         <span className="material-symbols-outlined">cloudy_snowing</span>
                         <div className="filter-led"></div>
                         <div className="filter-tooltip-card">
-                          <div className="tooltip-shortcut">Hotkey [T]</div>
-                          <div className="tooltip-title">Sprint Weather</div>
-                          <p className="tooltip-desc">Displays rain (high velocity) or dry drought haze (low velocity).</p>
-                        </div>
-                      </button>
-
-                      {/* Slot 8: Bees (agents) */}
-                      <button 
-                        className={`filter-slot-btn ${filters.showAgents ? 'active' : 'inactive'}`}
-                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showAgents: !prev.showAgents })); }}
-                      >
-                        <span className="material-symbols-outlined">flutter_dash</span>
-                        <div className="filter-led"></div>
-                        <div className="filter-tooltip-card">
-                          <div className="tooltip-shortcut">Hotkey [A]</div>
-                          <div className="tooltip-title">Bee Agents</div>
-                          <p className="tooltip-desc">Animated bees representing Worker, Critic and Opponent agents orbiting the garden well.</p>
+                          <div className="tooltip-shortcut">Hotkey [W]</div>
+                          <div className="tooltip-title">Weather</div>
+                          <p className="tooltip-desc">Toggles sunny daylight or rainy fog weather based on debt risk.</p>
                         </div>
                       </button>
                     </div>

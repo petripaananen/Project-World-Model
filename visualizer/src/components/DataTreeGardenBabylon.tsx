@@ -3,6 +3,7 @@ import * as BABYLON from '@babylonjs/core';
 import '@babylonjs/loaders'; // Enable loader plugins just in case
 import type { TaskNode, HoveredData } from './DataTree';
 import {
+  preloadGLBAssets,
   buildTerrain,
   buildWell,
   buildGnome,
@@ -298,10 +299,42 @@ export function DataTreeGardenBabylon({
     dirLight.diffuse = themeColors.lightColor;
     dirLight.intensity = 3.2; // Increased sun light intensity for fully sunlit look
 
-    // 4. Shadow Setup
-    const shadowGenerator = new BABYLON.ShadowGenerator(2048, dirLight);
-    shadowGenerator.useBlurExponentialShadowMap = true;
-    shadowGenerator.blurKernel = 32;
+    // 4. Cascaded Shadow Generator & PBR DefaultRenderingPipeline
+    const shadowGenerator = new BABYLON.CascadedShadowGenerator(2048, dirLight);
+    shadowGenerator.usePercentageCloserFiltering = true;
+
+    // DefaultRenderingPipeline: ACES Tone Mapping, Bloom, Anti-aliasing
+    const pipeline = new BABYLON.DefaultRenderingPipeline("defaultPipeline", true, scene, [camera]);
+    pipeline.samples = 4;
+    pipeline.imageProcessingEnabled = true;
+    if (pipeline.imageProcessing) {
+      pipeline.imageProcessing.toneMappingEnabled = true;
+      pipeline.imageProcessing.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+      pipeline.imageProcessing.exposure = 1.2;
+    }
+    pipeline.bloomEnabled = true;
+    pipeline.bloomThreshold = 0.8;
+    pipeline.bloomWeight = 0.3;
+
+    try {
+      const ssao = new BABYLON.SSAO2RenderingPipeline("ssao", scene, 0.75, [camera]);
+      ssao.radius = 2.0;
+      ssao.totalStrength = 1.0;
+    } catch (e) {
+      // Graceful fallback for SSAO depth texture support
+    }
+
+    // Preload GLB models in parallel
+    const glbList = [
+      "Water Fountain.glb", "Gazebo.glb", "Tree.glb", "Bonsai.glb",
+      "Flower Bed.glb", "Flower Bed-dM9hXXth1I.glb", "Flower Bed-eUCvK3Oq9z.glb",
+      "Rock.glb", "Rock-UkxWNmiFFj.glb", "Japanese Sedge.glb",
+      "Statue.glb", "Statue-0Mkdl3SJDT.glb", "Statue-JXmywADgSk.glb", "Statue-NZo0rzQExF.glb",
+      "Flowers.glb", "Flower Pot.glb", "Flower Pot-F8zLx6wGG8.glb",
+      "Garden Lamp.glb", "Lamp.glb", "Pillar.glb",
+      "Bench.glb", "Table.glb", "Bird House.glb", "Chiminea.glb", "Fire Place.glb"
+    ];
+    preloadGLBAssets(scene, glbList);
 
     // 5. Build Environment Base
     buildTerrain(scene, theme, themeColors.grassColorHex);

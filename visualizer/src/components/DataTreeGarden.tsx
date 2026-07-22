@@ -215,44 +215,36 @@ export function DataTreeGarden({
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px', fontSize: 11, lineHeight: '1.3' }}>
             <div>
-              <strong style={{ color: '#e67e22', display: 'block' }}>🌳 Epic Trees</strong>
-              <span style={{ color: '#bbb' }}>Branches represent epic subtask issues.</span>
-            </div>
-            <div>
-              <strong style={{ color: '#2ecc71', display: 'block' }}>🌹 Rose Bushes</strong>
-              <span style={{ color: '#bbb' }}>Pull requests (Green/Yellow/Grey).</span>
-            </div>
-            <div>
-              <strong style={{ color: '#e74c3c', display: 'block' }}>🌿 Leafy Weeds</strong>
-              <span style={{ color: '#bbb' }}>Jira/Linear active issue bugs.</span>
-            </div>
-            <div>
               <strong style={{ color: '#f1c40f', display: 'block' }}>💧 Stone Well</strong>
-              <span style={{ color: '#bbb' }}>Main repository branch health.</span>
+              <span style={{ color: '#bbb' }}>Repository core & main branch.</span>
             </div>
             <div>
-              <strong style={{ color: '#3498db', display: 'block' }}>🧙 Garden Gnomes</strong>
+              <strong style={{ color: '#2ecc71', display: 'block' }}>🌳 Epic Trees</strong>
+              <span style={{ color: '#bbb' }}>Low-poly trees with subtask sockets.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#e67e22', display: 'block' }}>🌹 PR Flower Beds</strong>
+              <span style={{ color: '#bbb' }}>PR status (Green=Merged, Yellow=Review).</span>
+            </div>
+            <div>
+              <strong style={{ color: '#e74c3c', display: 'block' }}>🪨 Tech Debt Rocks</strong>
+              <span style={{ color: '#bbb' }}>Active or blocked issue bugs.</span>
+            </div>
+            <div>
+              <strong style={{ color: '#3498db', display: 'block' }}>🧙 Agent Statues</strong>
               <span style={{ color: '#bbb' }}>Worker, Critic & Opponent agents.</span>
             </div>
             <div>
-              <strong style={{ color: '#e67e22', display: 'block' }}>📦 Crop Crates</strong>
-              <span style={{ color: '#bbb' }}>Completed milestone packages.</span>
+              <strong style={{ color: '#f39c12', display: 'block' }}>💡 Active Lamps</strong>
+              <span style={{ color: '#bbb' }}>In-progress active work glow.</span>
             </div>
             <div>
-              <strong style={{ color: '#95a5a6', display: 'block' }}>🛢️ Wooden Barrels</strong>
-              <span style={{ color: '#bbb' }}>CI build container artifacts.</span>
+              <strong style={{ color: '#9b59b6', display: 'block' }}>💮 Scatter Flowers</strong>
+              <span style={{ color: '#bbb' }}>Pots & flowers for dependencies.</span>
             </div>
             <div>
-              <strong style={{ color: '#948c82', display: 'block' }}>🛤️ Stepping Stones</strong>
-              <span style={{ color: '#bbb' }}>CI/CD commit path history.</span>
-            </div>
-            <div>
-              <strong style={{ color: '#8e4a23', display: 'block' }}>💮 Wildflowers</strong>
-              <span style={{ color: '#bbb' }}>External 3rd-party dependencies.</span>
-            </div>
-            <div>
-              <strong style={{ color: '#7cd936', display: 'block' }}>🚧 Fences</strong>
-              <span style={{ color: '#bbb' }}>Workspace branch scope limits.</span>
+              <strong style={{ color: '#95a5a6', display: 'block' }}>🪵 Garden Pillars</strong>
+              <span style={{ color: '#bbb' }}>Sprint boundary perimeter.</span>
             </div>
             <div style={{ gridColumn: 'span 2' }}>
               <strong style={{ color: '#34495e', display: 'inline', marginRight: 4 }}>⛈️ Weather:</strong>
