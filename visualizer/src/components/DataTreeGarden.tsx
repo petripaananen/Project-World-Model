@@ -50,6 +50,7 @@ export function DataTreeGarden({
     >
       {/* 3D Babylon.js Viewport */}
       <DataTreeGardenBabylon
+        key={projectName}
         graph={graph}
         crr={currentCrr}
         projectName={projectName}

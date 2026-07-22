@@ -333,12 +333,14 @@ export function DataTreeGardenBabylon({
 
     let cancelled = false;
 
-    preloadGLBAssets(scene, glbList).then(() => {
-      if (cancelled) return;
+    preloadGLBAssets(scene, glbList)
+      .catch((err) => console.warn("GLB preloader catch:", err))
+      .finally(() => {
+        if (cancelled) return;
 
-      // 5. Build Environment Base
-      buildTerrain(scene, theme, themeColors.grassColorHex);
-      buildWell(scene, new BABYLON.Vector3(0, 0, 0), crr, projectName);
+        // 5. Build Environment Base
+        buildTerrain(scene, theme, themeColors.grassColorHex);
+        buildWell(scene, new BABYLON.Vector3(0, 0, 0), crr, projectName);
 
     // 6. Build Gnomes (AI Agents)
     const workerGnome = buildGnome(scene, new BABYLON.Vector3(-1.4, 0.01, -1.8), '#2575fc', "Worker Agent Gnome", "Executes tasks, generates branches, refactors code, and runs system tests.");

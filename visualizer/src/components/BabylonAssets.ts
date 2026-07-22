@@ -1,21 +1,29 @@
 import * as BABYLON from '@babylonjs/core';
+import '@babylonjs/loaders/glTF';
 
 // ─── GLB ASSET CONTAINER CACHE & PRELOADER ─────────────────────────
-const assetContainerCache: Record<string, BABYLON.AssetContainer> = {};
+const sceneAssetCache = new WeakMap<BABYLON.Scene, Record<string, BABYLON.AssetContainer>>();
 
 export async function preloadGLBAssets(scene: BABYLON.Scene, filenames: string[]): Promise<void> {
+  let cache = sceneAssetCache.get(scene);
+  if (!cache) {
+    cache = {};
+    sceneAssetCache.set(scene, cache);
+  }
+  const currentCache = cache;
+
   await Promise.all(
     filenames.map(async (filename) => {
-      if (assetContainerCache[filename]) return;
+      if (currentCache[filename]) return;
       try {
         const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(
-          "/Low Poly Outdoor Decorations/",
+          "/decorations/",
           filename,
           scene
         );
-        assetContainerCache[filename] = container;
+        currentCache[filename] = container;
       } catch (err) {
-        console.warn(`Could not preload GLB container ${filename}:`, err);
+        console.warn(`[GLB Loader Warning] Could not preload /decorations/${filename}:`, err);
       }
     })
   );
@@ -31,37 +39,43 @@ export function instantiateGLBModel(
   metadata?: any,
   shadowGenerator?: BABYLON.ShadowGenerator | BABYLON.CascadedShadowGenerator
 ): BABYLON.TransformNode | null {
-  const container = assetContainerCache[filename];
+  const cache = sceneAssetCache.get(scene);
+  const container = cache ? cache[filename] : null;
   if (!container) return null;
 
-  const root = new BABYLON.TransformNode(`inst_${filename}_${Math.random().toString(36).substring(2, 7)}`, scene);
-  if (parent) {
-    root.parent = parent;
-  }
-  root.position = position.clone();
-  root.rotation.y = rotationY;
-
-  const entries = container.instantiateModelsToScene(name => `${name}_${Math.random().toString(36).substring(2, 7)}`);
-  entries.rootNodes.forEach(rNode => {
-    rNode.parent = root;
-    if (rNode instanceof BABYLON.TransformNode) {
-      rNode.scaling.set(scale, scale, scale);
+  try {
+    const root = new BABYLON.TransformNode(`inst_${filename}_${Math.random().toString(36).substring(2, 7)}`, scene);
+    if (parent) {
+      root.parent = parent;
     }
-    
-    const childMeshes = rNode.getChildMeshes();
-    childMeshes.forEach(m => {
-      m.isPickable = true;
-      if (metadata) {
-        m.metadata = metadata;
-      }
-      m.receiveShadows = true;
-      if (shadowGenerator) {
-        shadowGenerator.addShadowCaster(m, true);
-      }
-    });
-  });
+    root.position = position.clone();
+    root.rotation.y = rotationY;
 
-  return root;
+    const entries = container.instantiateModelsToScene(name => `${name}_${Math.random().toString(36).substring(2, 7)}`);
+    entries.rootNodes.forEach(rNode => {
+      rNode.parent = root;
+      if (rNode instanceof BABYLON.TransformNode) {
+        rNode.scaling.set(scale, scale, scale);
+      }
+      
+      const childMeshes = rNode.getChildMeshes();
+      childMeshes.forEach(m => {
+        m.isPickable = true;
+        if (metadata) {
+          m.metadata = metadata;
+        }
+        m.receiveShadows = true;
+        if (shadowGenerator) {
+          shadowGenerator.addShadowCaster(m, true);
+        }
+      });
+    });
+
+    return root;
+  } catch (err) {
+    console.error(`[instantiateGLBModel error for ${filename}]:`, err);
+    return null;
+  }
 }
 
 // ─── PROCEDURAL TEXTURE GENERATORS ───────────────────────────────────
