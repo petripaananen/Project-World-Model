@@ -21,6 +21,7 @@ interface DataTreeGardenBabylonProps {
   graph: any;
   crr?: number;
   projectName?: string;
+  filters?: Record<string, boolean>;
   onHover: (data: HoveredData | null) => void;
   [key: string]: any;
 }
@@ -29,6 +30,7 @@ export function DataTreeGardenBabylon({
   graph,
   crr = 1.25,
   projectName = '',
+  filters,
   onHover,
 }: DataTreeGardenBabylonProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -671,6 +673,34 @@ export function DataTreeGardenBabylon({
       });
     });
 
+    // 14b. Garden Filters visibility observable pass
+    const filterObs = scene.onBeforeRenderObservable.add(() => {
+      if (!filters) return;
+
+      scene.meshes.forEach(m => {
+        // Dewdrops Filter
+        if (m.name === "dewdropMesh" || m.name === "dewdrop") {
+          m.isVisible = filters.showDewdrops !== false;
+        }
+
+        // Epics / Trees Filter & Gnomes Filter
+        let p: BABYLON.Node | null = m;
+        let isTreeMesh = false;
+        let isGnomeMesh = false;
+        while (p) {
+          if (p.name === "tree") isTreeMesh = true;
+          if (p.name === "gnome") isGnomeMesh = true;
+          p = p.parent;
+        }
+        if (isTreeMesh) {
+          m.isVisible = filters.showEpics !== false;
+        }
+        if (isGnomeMesh) {
+          m.isVisible = filters.showAgents !== false && filters.showBees !== false;
+        }
+      });
+    });
+
     // 15. Render Loop
     engine.runRenderLoop(() => {
       scene.render();
@@ -686,10 +716,11 @@ export function DataTreeGardenBabylon({
       window.removeEventListener("resize", handleResize);
       scene.onPointerObservable.remove(pointerObs);
       scene.onBeforeRenderObservable.remove(gnomeRenderObs);
+      scene.onBeforeRenderObservable.remove(filterObs);
       scene.dispose();
       engine.dispose();
     };
-  }, [graph, theme, crr, projectName, themeColors, isRainy, onHover, gardenElements]);
+  }, [graph, theme, crr, projectName, themeColors, isRainy, onHover, gardenElements, filters]);
 
   return (
     <canvas

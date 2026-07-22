@@ -468,31 +468,77 @@ export function buildWildflower(scene: BABYLON.Scene, position: BABYLON.Vector3,
   flower.position = position;
   flower.scaling.set(scale * 0.15, scale * 0.15, scale * 0.15);
 
+  const details = {
+    id: `wildflower-${Math.random().toString(36).substring(2, 8)}`,
+    title: 'Wildflower (Dependency)',
+    elementType: 'Wildflower',
+    description: 'Represents external open-source dependencies and package imports powering this project.',
+    progress: 1.0,
+    complexity: 0.1,
+    risk: 0.05
+  };
+  flower.metadata = { type: 'wildflower', details };
+
   const centerMat = new BABYLON.PBRMaterial("flowerCenter", scene);
   centerMat.albedoColor = new BABYLON.Color3(1, 0.78, 0.12);
   centerMat.roughness = 0.6;
 
   const petalMat = new BABYLON.PBRMaterial("flowerPetals", scene);
   petalMat.albedoColor = BABYLON.Color3.FromHexString(colorHex);
-  petalMat.roughness = 0.9;
+  petalMat.roughness = 0.85;
 
-  // Center sphere
+  const stemMat = new BABYLON.PBRMaterial("flowerStemMat", scene);
+  stemMat.albedoColor = new BABYLON.Color3(0.2, 0.6, 0.25);
+  stemMat.roughness = 0.9;
+
+  // 1. 3D Vertical Green Stem
+  const stem = BABYLON.MeshBuilder.CreateCylinder("fStem", { diameter: 0.03, height: 0.25 }, scene);
+  stem.position.y = 0.125;
+  stem.material = stemMat;
+  stem.parent = flower;
+  stem.metadata = { type: 'wildflower', details };
+  stem.isPickable = true;
+
+  // Small Green Leaves on Stem
+  for (let l = 0; l < 2; l++) {
+    const leaf = BABYLON.MeshBuilder.CreateBox(`fStemLeaf_${l}`, { width: 0.02, height: 0.08, depth: 0.04 }, scene);
+    leaf.position.set(l === 0 ? 0.03 : -0.03, 0.1 + l * 0.05, 0);
+    leaf.rotation.z = l === 0 ? -0.5 : 0.5;
+    leaf.material = stemMat;
+    leaf.parent = flower;
+    leaf.metadata = { type: 'wildflower', details };
+    leaf.isPickable = true;
+  }
+
+  // 2. Sepal Base Cup
+  const sepal = BABYLON.MeshBuilder.CreateCylinder("fSepal", { diameterTop: 0.08, diameterBottom: 0.03, height: 0.04 }, scene);
+  sepal.position.y = 0.24;
+  sepal.material = stemMat;
+  sepal.parent = flower;
+  sepal.metadata = { type: 'wildflower', details };
+  sepal.isPickable = true;
+
+  // 3. Center sphere
   const center = BABYLON.MeshBuilder.CreateSphere("fCenter", { diameter: 0.15 }, scene);
-  center.position.y = 0.08;
+  center.position.y = 0.28;
   center.material = centerMat;
   center.parent = flower;
+  center.metadata = { type: 'wildflower', details };
+  center.isPickable = true;
 
-  // 5 Petals arranged in circle
+  // 4. 5 Petals arranged in circle
   for (let i = 0; i < 5; i++) {
     const angle = (i * Math.PI * 2) / 5;
     const x = Math.sin(angle) * 0.12;
     const z = Math.cos(angle) * 0.12;
 
     const petal = BABYLON.MeshBuilder.CreateSphere(`petal_${i}`, { diameter: 0.15 }, scene);
-    petal.position.set(x, 0.07, z);
+    petal.position.set(x, 0.27, z);
     petal.scaling.set(1.4, 0.4, 1.4);
     petal.material = petalMat;
     petal.parent = flower;
+    petal.metadata = { type: 'wildflower', details };
+    petal.isPickable = true;
   }
 
   return flower;
@@ -504,7 +550,15 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   const gnome = new BABYLON.TransformNode("gnome", scene);
   gnome.position = position;
   gnome.scaling.set(1.3, 1.3, 1.3);
-  const details = { id: `gnome-${name.toLowerCase().replace(/\s+/g, '-')}`, title: name, progress: 1.0, complexity: 0.5, risk: 0.1, description: role, elementType: 'Garden Gnome' };
+  const details = { 
+    id: `gnome-${name.toLowerCase().replace(/\s+/g, '-')}`, 
+    title: name, 
+    progress: 1.0, 
+    complexity: 0.5, 
+    risk: 0.1, 
+    description: role, 
+    elementType: 'Garden Gnome' 
+  };
   gnome.metadata = { type: 'gnome', details };
 
   // Material setup
@@ -555,7 +609,8 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   // 4. Beard (Compound fluffy sphere cluster instead of a flat shape)
   const beardRoot = new BABYLON.TransformNode("beardRoot", scene);
   beardRoot.parent = gnome;
-  
+  beardRoot.metadata = { type: 'gnome', details };
+
   const beardPoints = [
     [0.0, 0.18, 0.05, 0.06],
     [-0.04, 0.19, 0.04, 0.045], [0.04, 0.19, 0.04, 0.045],
@@ -653,6 +708,11 @@ export function buildRoseBush(scene: BABYLON.Scene, position: BABYLON.Vector3, s
     sphere.receiveShadows = true;
     sphere.parent = canopy;
     sphere.metadata = { type: 'pr', details };
+
+    // Add 3D Dewdrop Glass Droplet on bush foliage leaves
+    if (idx < 3) {
+      buildDewdrop(scene, sphere, new BABYLON.Vector3(0, c.scale * 0.9, 0), 0.85);
+    }
 
     // Apply simple vertex noise for organic roughness
     const positions = sphere.getVerticesData(BABYLON.VertexBuffer.PositionKind);
@@ -836,148 +896,174 @@ export function buildCrop(scene: BABYLON.Scene, position: BABYLON.Vector3, type:
   return crop;
 }
 
-export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node: any, theme: string) {
+export function buildDewdrop(scene: BABYLON.Scene, parent: BABYLON.Node, position: BABYLON.Vector3, scale = 1.0) {
+  const dewdrop = BABYLON.MeshBuilder.CreateSphere("dewdrop", { diameter: 0.09 * scale, segments: 12 }, scene);
+  dewdrop.position = position;
+  dewdrop.scaling.set(1.0, 0.65, 1.0);
+  dewdrop.parent = parent;
+  
+  const glassMat = new BABYLON.PBRMaterial("dewdropGlassMat", scene);
+  glassMat.albedoColor = new BABYLON.Color3(0.9, 0.96, 1.0);
+  glassMat.emissiveColor = new BABYLON.Color3(0.4, 0.75, 1.0);
+  glassMat.emissiveIntensity = 0.5;
+  glassMat.roughness = 0.05;
+  glassMat.metallic = 0.95;
+  dewdrop.material = glassMat;
+  dewdrop.name = "dewdropMesh";
+  return dewdrop;
+}
+
+export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node: any, _theme?: string) {
   const tree = new BABYLON.TransformNode("tree", scene);
   tree.position = position;
   const details = node;
   tree.metadata = { type: 'epic', details };
 
-  const branchMat = new BABYLON.PBRMaterial("branchMat", scene);
-  branchMat.albedoColor = new BABYLON.Color3(0.26, 0.18, 0.12);
-  branchMat.roughness = 0.98;
+  const trunkMat = new BABYLON.PBRMaterial("trunkMat", scene);
+  trunkMat.albedoColor = new BABYLON.Color3(0.28, 0.18, 0.12);
+  trunkMat.roughness = 0.95;
 
-  // Theme-aware foliage color PBR material
-  let baseColor = new BABYLON.Color3(0.15, 0.6, 0.25); // healthy green
-  if (theme === 'alpha') {
-    baseColor = BABYLON.Color3.Lerp(new BABYLON.Color3(0.8, 0.3, 0.1), new BABYLON.Color3(0.7, 0.15, 0.1), node.progress);
-  } else if (theme === 'beta') {
-    baseColor = BABYLON.Color3.Lerp(new BABYLON.Color3(0.98, 0.88, 0.88), new BABYLON.Color3(0.98, 0.72, 0.9), node.progress);
-  } else if (theme === 'gamma') {
-    baseColor = BABYLON.Color3.Lerp(new BABYLON.Color3(0.18, 0.35, 0.15), new BABYLON.Color3(0.08, 0.22, 0.08), 1 - node.progress);
-  } else {
-    baseColor = BABYLON.Color3.Lerp(new BABYLON.Color3(0.9, 0.5, 0.15), new BABYLON.Color3(0.15, 0.65, 0.32), node.progress);
+  // 1. Central Trunk Base
+  const trunkHeight = 1.8;
+  const trunkRadius = 0.22;
+  const trunk = BABYLON.MeshBuilder.CreateCylinder("treeTrunk", { 
+    diameterTop: trunkRadius * 0.75 * 2, 
+    diameterBottom: trunkRadius * 2, 
+    height: trunkHeight, 
+    tessellation: 12 
+  }, scene);
+  trunk.position.y = trunkHeight / 2;
+  trunk.material = trunkMat;
+  trunk.receiveShadows = true;
+  trunk.parent = tree;
+  trunk.metadata = { type: 'epic', details };
+  trunk.isPickable = true;
+
+  // Organic gnarled deformation on trunk
+  const trunkPos = trunk.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+  if (trunkPos) {
+    for (let p = 0; p < trunkPos.length; p += 3) {
+      const y = trunkPos[p + 1];
+      const offset = Math.sin(y * 6) * 0.025;
+      trunkPos[p] += offset;
+    }
+    trunk.setVerticesData(BABYLON.VertexBuffer.PositionKind, trunkPos);
   }
 
-  const leafMat = new BABYLON.PBRMaterial("treeLeafMat", scene);
-  leafMat.albedoColor = baseColor;
-  leafMat.roughness = 0.85;
-  leafMat.emissiveColor = baseColor;
-  leafMat.emissiveIntensity = node.progress * 0.08;
+  // 2. Child Issues as Dedicated Branches
+  const subtasks: any[] = node.subtasks || [];
+  const branchCount = Math.max(subtasks.length, 3);
+  const mainTipNode = new BABYLON.TransformNode("mainTipNode", scene);
+  mainTipNode.position.y = trunkHeight;
+  mainTipNode.parent = tree;
 
-  // Recursive Branch generator for high-fidelity L-system procedural trees
-  function createBranch(parentNode: BABYLON.Node, length: number, radius: number, depth: number, maxDepth: number) {
-    if (depth > maxDepth) return;
+  subtasks.forEach((subtask: any, idx: number) => {
+    const angle = (idx / branchCount) * Math.PI * 2 + (idx * 0.4);
+    const zRot = 0.45 + (idx % 2 === 0 ? 0.1 : -0.1);
+    const branchLength = 1.1 + (subtask.complexity || 2) * 0.15;
+    const branchRadius = 0.08;
 
-    // Create branch cylinder
-    const branch = BABYLON.MeshBuilder.CreateCylinder(`branch_${depth}`, { diameterTop: radius * 0.68, diameterBottom: radius, height: length, tessellation: 8 }, scene);
-    branch.position.y = length / 2;
-    branch.material = branchMat;
+    const bNode = new BABYLON.TransformNode(`issueBranch_${idx}`, scene);
+    bNode.parent = mainTipNode;
+    bNode.rotation.y = angle;
+    bNode.rotation.z = zRot;
+
+    // Issue / Subtask Details for Mouseover
+    const branchDetails = {
+      ...subtask,
+      title: `${subtask.title || subtask.name || 'Child Issue'} (Epic Subtask)`,
+      description: `Issue within epic ${node.title}. Status: ${subtask.status || 'Active'}. Progress: ${Math.round((subtask.progress || 0.5) * 100)}%`,
+    };
+
+    // Branch cylinder representing issue
+    const branch = BABYLON.MeshBuilder.CreateCylinder(`subtaskBranchMesh_${idx}`, {
+      diameterTop: branchRadius * 0.5,
+      diameterBottom: branchRadius,
+      height: branchLength,
+      tessellation: 8
+    }, scene);
+    branch.position.y = branchLength / 2;
+    branch.material = trunkMat;
     branch.receiveShadows = true;
-    branch.parent = parentNode;
+    branch.parent = bNode;
     branch.isPickable = true;
-    branch.metadata = { type: 'epic', details };
+    branch.metadata = { type: 'issue', details: branchDetails };
 
-    // Taper/deform slightly for organic look
-    const pos = branch.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-    if (pos) {
-      for (let p = 0; p < pos.length; p += 3) {
-        const offset = Math.sin(pos[p + 1] * 8) * 0.015;
-        pos[p] += offset;
+    // Branch Tip Foliage Cluster
+    const tipNode = new BABYLON.TransformNode(`branchTip_${idx}`, scene);
+    tipNode.position.y = branchLength;
+    tipNode.parent = bNode;
+
+    // Foliage Color based on child issue progress & status
+    const prog = subtask.progress ?? 0.5;
+    let leafColor = new BABYLON.Color3(0.18, 0.72, 0.28); // healthy vibrant green
+    if (prog < 0.4) leafColor = new BABYLON.Color3(0.85, 0.25, 0.18); // active bug/risk red
+    else if (prog < 0.8) leafColor = new BABYLON.Color3(0.9, 0.7, 0.15); // amber in-progress
+
+    const branchLeafMat = new BABYLON.PBRMaterial(`branchLeafMat_${idx}`, scene);
+    branchLeafMat.albedoColor = leafColor;
+    branchLeafMat.roughness = 0.65;
+    branchLeafMat.emissiveColor = leafColor;
+    branchLeafMat.emissiveIntensity = 0.06;
+
+    const foliageScale = 0.45 + prog * 0.35;
+    const puffCount = 3;
+    for (let pf = 0; pf < puffCount; pf++) {
+      const pAngle = (pf / puffCount) * Math.PI * 2;
+      const puff = BABYLON.MeshBuilder.CreateSphere(`canopy_puff_${idx}_${pf}`, { diameter: foliageScale, segments: 12 }, scene);
+      puff.position.set(Math.sin(pAngle) * 0.12, pf * 0.1, Math.cos(pAngle) * 0.12);
+      puff.material = branchLeafMat;
+      puff.receiveShadows = true;
+      puff.parent = tipNode;
+      puff.metadata = { type: 'issue', details: branchDetails };
+      puff.isPickable = true;
+
+      // 3D Leaf shapes around canopy puff
+      for (let lf = 0; lf < 4; lf++) {
+        const lAngle = (lf / 4) * Math.PI * 2;
+        const leafBlade = BABYLON.MeshBuilder.CreateSphere(`leafBlade_${idx}_${pf}_${lf}`, { diameter: 0.1 }, scene);
+        leafBlade.position.set(Math.sin(lAngle) * (foliageScale * 0.55), 0, Math.cos(lAngle) * (foliageScale * 0.55));
+        leafBlade.scaling.set(1.4, 0.2, 0.6);
+        leafBlade.rotation.set(0.3, lAngle, 0.2);
+        leafBlade.material = branchLeafMat;
+        leafBlade.parent = puff;
+        leafBlade.metadata = { type: 'issue', details: branchDetails };
+        leafBlade.isPickable = true;
       }
-      branch.setVerticesData(BABYLON.VertexBuffer.PositionKind, pos);
+
+      // Add 3D Dewdrop Glass Water Droplet resting on leaves
+      buildDewdrop(scene, puff, new BABYLON.Vector3(0.05, foliageScale * 0.45, 0.05), 1.0);
     }
 
-    const tipNode = new BABYLON.TransformNode("branchTip", scene);
-    tipNode.position.y = length;
-    tipNode.parent = parentNode;
+    // Deliverable Fruit on resolved branches
+    if (prog > 0.7) {
+      const fruitMat = new BABYLON.PBRMaterial(`branchFruitMat_${idx}`, scene);
+      fruitMat.albedoColor = new BABYLON.Color3(0.95, 0.3, 0.15);
+      fruitMat.roughness = 0.2;
 
-    const childrenCount = (node.subtasks || []).length || 2;
-    if (depth === maxDepth || childrenCount === 0) {
-      // Leaf canopy cluster - 3D Organic compound foliage mesh
-      const foliageGroup = new BABYLON.TransformNode("foliageGroup", scene);
-      foliageGroup.parent = tipNode;
-
-      const scaleFactor = radius * 4.2 * (node.progress + 0.5);
-
-      const leafClusters = [
-        { pos: [0, 0, 0], scale: 1.0 },
-        { pos: [0, scaleFactor * 0.45, 0], scale: 0.72 },
-        { pos: [-scaleFactor * 0.4, 0, 0], scale: 0.65 },
-        { pos: [0, -scaleFactor * 0.1, -scaleFactor * 0.36], scale: 0.62 }
-      ];
-
-      leafClusters.forEach((c, cIdx) => {
-        const s = BABYLON.MeshBuilder.CreateSphere(`canopy_puff_${cIdx}`, { diameter: scaleFactor * 2 * c.scale, segments: 16 }, scene);
-        s.position.set(c.pos[0], c.pos[1], c.pos[2]);
-        s.material = leafMat;
-        s.receiveShadows = true;
-        s.parent = foliageGroup;
-        s.metadata = { type: 'epic', details };
-
-        // Apply noise vertex offset to canopy puffs
-        const spos = s.getVerticesData(BABYLON.VertexBuffer.PositionKind);
-        if (spos) {
-          for (let p = 0; p < spos.length; p += 3) {
-            const x = spos[p];
-            const y = spos[p+1];
-            const z = spos[p+2];
-            const off = Math.sin(x * 12 + y * 9 + z * 15) * 0.04 * scaleFactor;
-            spos[p] += x * off;
-            spos[p+1] += y * off;
-            spos[p+2] += z * off;
-          }
-          s.setVerticesData(BABYLON.VertexBuffer.PositionKind, spos);
-          // Normals recalculation
-          const idxs = s.getIndices();
-          const nrms: number[] = [];
-          BABYLON.VertexData.ComputeNormals(spos, idxs, nrms);
-          s.setVerticesData(BABYLON.VertexBuffer.NormalKind, nrms);
-        }
-      });
-
-      // Render hanging fruits
-      const fruitMat = new BABYLON.PBRMaterial("treeFruit", scene);
-      let fruitColor = new BABYLON.Color3(0.9, 0.15, 0.1);
-      if (theme === 'beta') fruitColor = new BABYLON.Color3(0.95, 0.78, 0.1); // yellow
-      else if (theme === 'gamma') fruitColor = new BABYLON.Color3(0.92, 0.5, 0.1); // orange
-      
-      fruitMat.albedoColor = fruitColor;
-      fruitMat.roughness = 0.25;
-
-      const fruitOffsets = [
-        [0.2, -0.1, 0.2], [-0.2, -0.15, 0.2], [0.25, -0.22, -0.2], [-0.25, 0.1, -0.22]
-      ];
-      fruitOffsets.forEach((fo, idx) => {
-        const fruit = BABYLON.MeshBuilder.CreateSphere(`tFruit_${idx}`, { diameter: radius * 0.45 * (node.progress + 0.5) }, scene);
-        fruit.position.set(fo[0] * scaleFactor, fo[1] * scaleFactor - 0.1, fo[2] * scaleFactor);
-        fruit.material = fruitMat;
-        fruit.parent = foliageGroup;
-        fruit.metadata = { type: 'epic', details };
-      });
-
-      return;
+      const fruit = BABYLON.MeshBuilder.CreateSphere(`branchFruit_${idx}`, { diameter: 0.12 }, scene);
+      fruit.position.set(0, -0.15, 0.1);
+      fruit.material = fruitMat;
+      fruit.parent = tipNode;
+      fruit.metadata = { type: 'issue', details: branchDetails };
+      fruit.isPickable = true;
     }
+  });
 
-    // Reduce spread slightly to avoid overlapping branches between trees
-    const angleSpread = 0.28 + (node.risk * 0.1);
-    const numBranches = 2; // split in 2 branches
-    for (let i = 0; i < numBranches; i++) {
-      const zRot = (i - 0.5) * angleSpread * 2;
-      const bNode = new BABYLON.TransformNode(`branchNode_${depth}_${i}`, scene);
-      bNode.parent = tipNode;
-      bNode.rotation.z = zRot;
-      bNode.rotation.y = (depth * Math.PI) / 3; // swirl spiral distribution
-      
-      // Reduce branch length scaling factor from 0.76 to 0.68 for more compact trees
-      createBranch(bNode, length * 0.68, radius * 0.7, depth + 1, maxDepth);
-    }
-  }
+  // Central Top Canopy Puff
+  const centralCanopy = BABYLON.MeshBuilder.CreateSphere("centralCanopy", { diameter: 0.95, segments: 16 }, scene);
+  centralCanopy.position.y = trunkHeight + 0.3;
+  const centralLeafMat = new BABYLON.PBRMaterial("centralLeafMat", scene);
+  centralLeafMat.albedoColor = new BABYLON.Color3(0.16, 0.65, 0.26); // rich green
+  centralLeafMat.roughness = 0.65;
+  centralCanopy.material = centralLeafMat;
+  centralCanopy.parent = tree;
+  centralCanopy.metadata = { type: 'epic', details };
+  centralCanopy.isPickable = true;
 
-  const maxDepth = Math.min(Math.max(node.complexity || 2, 1), 4);
-  const rootNode = new BABYLON.TransformNode("treeRoot", scene);
-  rootNode.parent = tree;
-  
-  createBranch(rootNode, 1.8, 0.22, 1, maxDepth);
+  // Add dewdrops to central canopy
+  buildDewdrop(scene, centralCanopy, new BABYLON.Vector3(0.15, 0.42, 0.1), 1.2);
+  buildDewdrop(scene, centralCanopy, new BABYLON.Vector3(-0.2, 0.38, -0.15), 1.0);
 
   return tree;
 }

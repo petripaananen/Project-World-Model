@@ -1495,7 +1495,7 @@ function App() {
             )}
 
             {/* DTO Simulation: R3F L-System Data Tree Garden */}
-            {dtoSimActive && (
+            {dtoSimActive && activeProjectData && (
               <DataTreeGarden
                 active={dtoSimActive}
                 crr={activeProjectData?.telemetry?.crr}
@@ -1505,6 +1505,7 @@ function App() {
                 eventCount={selectedProject ? (ingestionEvents[selectedProject]?.length || 0) : 0}
                 onSelectNode={setSelectedGardenNode}
                 sprintVelocity={activeProjectData?.telemetry?.sprintVelocity}
+                filters={filters}
                 uiVisible={uiVisible}
               />
             )}

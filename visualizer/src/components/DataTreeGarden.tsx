@@ -6,6 +6,7 @@ interface DataTreeGardenProps {
   graph: any;
   crr?: number;
   projectName?: string;
+  filters?: Record<string, boolean>;
   uiVisible?: boolean;
   [key: string]: any;
 }
@@ -14,10 +15,11 @@ export function DataTreeGarden({
   graph,
   crr,
   projectName,
+  filters,
   uiVisible = true,
 }: DataTreeGardenProps) {
   const [hoveredInfo, setHoveredInfo] = useState<HoveredData | null>(null);
-  const [showLegend, setShowLegend] = useState(false);
+  const [showLegend, setShowLegend] = useState(true);
 
   const currentCrr = crr ?? 1.25;
 
@@ -51,6 +53,7 @@ export function DataTreeGarden({
         graph={graph}
         crr={currentCrr}
         projectName={projectName}
+        filters={filters}
         onHover={setHoveredInfo}
       />
 
@@ -158,8 +161,8 @@ export function DataTreeGarden({
         </div>
       )}
 
-      {/* 📖 DTO Garden Legend Panel */}
-      {showLegend && (
+      {/* 📖 DTO Garden Legend Panel (Always Open, Scroll-Free Grid) */}
+      {showLegend && uiVisible && (
         <div
           className="glass-card legend-panel"
           onPointerDown={(e) => e.stopPropagation()}
@@ -167,28 +170,28 @@ export function DataTreeGarden({
           style={{
             position: 'absolute',
             left: 20,
-            bottom: 20, // Sit at bottom left to avoid overlap with HUD cards
-            width: 320,
-            maxHeight: '340px',
-            overflowY: 'auto',
+            bottom: 20,
+            width: 380,
             zIndex: 1001,
             pointerEvents: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: 12,
-            padding: 16,
-            background: 'rgba(23, 28, 41, 0.9)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            gap: 8,
+            padding: '12px 14px',
+            background: 'rgba(18, 22, 34, 0.92)',
+            border: '1px solid rgba(255, 255, 255, 0.18)',
             borderRadius: 12,
-            backdropFilter: 'blur(10px)',
+            backdropFilter: 'blur(12px)',
             color: '#fff',
             fontFamily: 'system-ui, -apple-system, sans-serif',
-            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.45)',
             textAlign: 'left',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: 8 }}>
-            <h3 style={{ margin: 0, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>📖 DTO Garden Legend</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.12)', paddingBottom: 6 }}>
+            <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, letterSpacing: '0.4px', color: '#e0e6ed' }}>
+              📖 DTO GARDEN LEGEND
+            </h3>
             <button
               onClick={(e) => { e.stopPropagation(); setShowLegend(false); }}
               onPointerDown={(e) => e.stopPropagation()}
@@ -196,66 +199,62 @@ export function DataTreeGarden({
                 background: 'none',
                 border: 'none',
                 color: 'rgba(255, 255, 255, 0.6)',
-                fontSize: 18,
+                fontSize: 16,
                 cursor: 'pointer',
-                padding: '4px 8px',
+                padding: '2px 6px',
                 lineHeight: 1,
                 borderRadius: 4,
-                transition: 'background 0.15s, color 0.15s',
-                zIndex: 1,
               }}
-              onMouseEnter={(e) => { (e.target as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; (e.target as HTMLElement).style.color = '#fff'; }}
-              onMouseLeave={(e) => { (e.target as HTMLElement).style.background = 'none'; (e.target as HTMLElement).style.color = 'rgba(255,255,255,0.6)'; }}
-              title="Close DTO Glossary"
+              title="Hide Legend"
             >
               &times;
             </button>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontSize: 13, lineHeight: '1.4' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px', fontSize: 11, lineHeight: '1.3' }}>
             <div>
-              <strong style={{ color: '#e67e22', display: 'block', marginBottom: 2 }}>🌳 Epic Trees (Epics)</strong>
-              <span>Represents Project Epics. Height and leaf growth reflect progress. Gnarled trunk rotation reflects risk/complexity. Fruits are deliverables.</span>
+              <strong style={{ color: '#e67e22', display: 'block' }}>🌳 Epic Trees</strong>
+              <span style={{ color: '#bbb' }}>Branches represent epic subtask issues.</span>
             </div>
             <div>
-              <strong style={{ color: '#2ecc71', display: 'block', marginBottom: 2 }}>🌹 Rose Bushes (Pull Requests)</strong>
-              <span>Represents Pull Requests (PRs). Green for Completed, Yellow for Under Review, Grey for Draft. Active PRs sprout flowers.</span>
+              <strong style={{ color: '#2ecc71', display: 'block' }}>🌹 Rose Bushes</strong>
+              <span style={{ color: '#bbb' }}>Pull requests (Green/Yellow/Grey).</span>
             </div>
             <div>
-              <strong style={{ color: '#e74c3c', display: 'block', marginBottom: 2 }}>🌿 Leafy Weeds (Issues/Bugs)</strong>
-              <span>Represents Jira/Linear Issues. Red clumps are active high-priority bugs/tasks; dry grey clumps reside in the backlog.</span>
+              <strong style={{ color: '#e74c3c', display: 'block' }}>🌿 Leafy Weeds</strong>
+              <span style={{ color: '#bbb' }}>Jira/Linear active issue bugs.</span>
             </div>
             <div>
-              <strong style={{ color: '#f1c40f', display: 'block', marginBottom: 2 }}>💧 Stone Well (Main Repository)</strong>
-              <span>Represents the central repo & main branch. The well water's health reflects the overall workspace code integration stability.</span>
+              <strong style={{ color: '#f1c40f', display: 'block' }}>💧 Stone Well</strong>
+              <span style={{ color: '#bbb' }}>Main repository branch health.</span>
             </div>
             <div>
-              <strong style={{ color: '#3498db', display: 'block', marginBottom: 2 }}>🧙 Garden Gnomes (AI Agents)</strong>
-              <span>Operational AI Agents (Worker, Critic, Opponent) executing tasks, running pipeline checks, and testing system stability.</span>
+              <strong style={{ color: '#3498db', display: 'block' }}>🧙 Garden Gnomes</strong>
+              <span style={{ color: '#bbb' }}>Worker, Critic & Opponent agents.</span>
             </div>
             <div>
-              <strong style={{ color: '#e67e22', display: 'block', marginBottom: 2 }}>📦 Crop Crates (Deliverables)</strong>
-              <span>Represents completed milestones or merged packages ready for deployment.</span>
+              <strong style={{ color: '#e67e22', display: 'block' }}>📦 Crop Crates</strong>
+              <span style={{ color: '#bbb' }}>Completed milestone packages.</span>
             </div>
             <div>
-              <strong style={{ color: '#95a5a6', display: 'block', marginBottom: 2 }}>🛢️ Wooden Barrels (Builds)</strong>
-              <span>Represents generated build artifacts, packages, or container images in the CI pipeline.</span>
+              <strong style={{ color: '#95a5a6', display: 'block' }}>🛢️ Wooden Barrels</strong>
+              <span style={{ color: '#bbb' }}>CI build container artifacts.</span>
             </div>
             <div>
-              <strong style={{ color: '#948c82', display: 'block', marginBottom: 2 }}>🛤️ Stepping Stones (CI/CD Path)</strong>
-              <span>Represents the commit history path and CI/CD stages leading into the central branch.</span>
+              <strong style={{ color: '#948c82', display: 'block' }}>🛤️ Stepping Stones</strong>
+              <span style={{ color: '#bbb' }}>CI/CD commit path history.</span>
             </div>
             <div>
-              <strong style={{ color: '#8e4a23', display: 'block', marginBottom: 2 }}>💮 Wildflowers (Dependencies)</strong>
-              <span>The 5-circle objects scattered outside the fence represent external open-source libraries and package imports.</span>
+              <strong style={{ color: '#8e4a23', display: 'block' }}>💮 Wildflowers</strong>
+              <span style={{ color: '#bbb' }}>External 3rd-party dependencies.</span>
             </div>
             <div>
-              <strong style={{ color: '#7cd936', display: 'block', marginBottom: 2 }}>🚧 Fences (Workspace Scope)</strong>
-              <span>Fences define active branch boundaries. Grass outside represents untracked files or third-party scopes.</span>
+              <strong style={{ color: '#7cd936', display: 'block' }}>🚧 Fences</strong>
+              <span style={{ color: '#bbb' }}>Workspace branch scope limits.</span>
             </div>
-            <div>
-              <strong style={{ color: '#34495e', display: 'block', marginBottom: 2 }}>⛈️ Weather (Pipeline Load)</strong>
-              <span>Sunny weather represents clean integration. High technical debt or failing tests trigger overcast skies and rain.</span>
+            <div style={{ gridColumn: 'span 2' }}>
+              <strong style={{ color: '#34495e', display: 'inline', marginRight: 4 }}>⛈️ Weather:</strong>
+              <span style={{ color: '#bbb' }}>Sunny = clean integration; Rain/fog = debt load warning.</span>
             </div>
           </div>
         </div>
