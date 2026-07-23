@@ -90,12 +90,12 @@ export function DataTreeGardenBabylon({
     const issues: any[] = [];
 
     const exclusions = [
-      { x: 0, z: 0, r: 2.2 },          // Central Stone Well Core (Water Fountain GLB footprint)
-      { x: -1.4, z: -1.8, r: 0.7 },    // Worker Agent Gnome (Statue GLB, scale 0.8)
-      { x: 1.4, z: -1.8, r: 0.7 },     // Critic Agent Gnome (Statue GLB, scale 0.8)
-      { x: 0.0, z: 1.8, r: 0.7 },      // Opponent Agent Gnome (Statue GLB, scale 0.8)
-      { x: -3.6, z: -1.8, r: 2.5 },    // Epic Tree Left (Tree/Bonsai GLB canopy)
-      { x: 3.6, z: -1.8, r: 2.5 },     // Epic Tree Right (Tree/Bonsai GLB canopy)
+      { x: 0, z: 0, r: 2.4 },          // Central Stone Well Core (Water Fountain GLB footprint)
+      { x: -1.4, z: -1.8, r: 1.0 },    // Worker Agent Gnome (Statue GLB, scale 0.8)
+      { x: 1.4, z: -1.8, r: 1.0 },     // Critic Agent Gnome (Statue GLB, scale 0.8)
+      { x: 0.0, z: 1.8, r: 1.0 },      // Opponent Agent Gnome (Statue GLB, scale 0.8)
+      { x: -3.6, z: -1.8, r: 3.0 },    // Epic Tree Left (Tree/Bonsai GLB canopy + ground ring)
+      { x: 3.6, z: -1.8, r: 3.0 },     // Epic Tree Right (Tree/Bonsai GLB canopy + ground ring)
       // Fence pillars along back/front boundaries
       { x: -4.5, z: -6.5, r: 0.6 }, { x: -3, z: -6.5, r: 0.6 }, { x: -1.5, z: -6.5, r: 0.6 },
       { x: 0, z: -6.5, r: 0.6 }, { x: 1.5, z: -6.5, r: 0.6 }, { x: 3, z: -6.5, r: 0.6 }, { x: 4.5, z: -6.5, r: 0.6 },
@@ -109,9 +109,9 @@ export function DataTreeGardenBabylon({
       let x = proposedX;
       let z = proposedZ;
       let angle = 0;
-      const step = 0.45;
+      const step = 0.7; // Larger steps to escape exclusion zones faster
 
-      for (let attempt = 0; attempt < 120; attempt++) {
+      for (let attempt = 0; attempt < 200; attempt++) {
         let collides = false;
         for (const esc of exclusions) {
           if (Math.hypot(x - esc.x, z - esc.z) < (itemRadius + esc.r)) {
@@ -127,42 +127,60 @@ export function DataTreeGardenBabylon({
             }
           }
         }
-        if (!collides && x >= -5.6 && x <= 5.6 && z >= -5.4 && z <= 5.4) {
+        if (!collides && x >= -6.8 && x <= 6.8 && z >= -6.4 && z <= 6.4) {
           return [x, 0, z];
         }
-        angle += 0.6;
+        angle += 0.5;
         const r = step * Math.sqrt(attempt + 1);
         x = proposedX + r * Math.cos(angle);
         z = proposedZ + r * Math.sin(angle);
       }
-      return [proposedX, 0, proposedZ];
+      // Robust fallback: clamp to garden perimeter instead of overlapping
+      const fallbackX = Math.max(-6.4, Math.min(6.4, proposedX + (Math.random() - 0.5) * 2));
+      const fallbackZ = Math.max(-6.0, Math.min(6.0, proposedZ + (Math.random() - 0.5) * 2));
+      console.warn(`[Collision Solver] Failed to find collision-free position for (${proposedX.toFixed(1)}, ${proposedZ.toFixed(1)}), using fallback (${fallbackX.toFixed(1)}, ${fallbackZ.toFixed(1)})`);
+      return [fallbackX, 0, fallbackZ];
     };
 
     // Hand-curated non-overlapping spatial anchors on left quadrant (PR Flower Beds)
     // Wider spacing to accommodate GLB Flower Bed models at scale 0.4
+    // Extended to 12 anchors with ~2.8 unit minimum spacing between any two anchors
     const leftAnchors = [
-      [-4.5,  3.8],
-      [-2.2,  4.0],
-      [-4.8,  0.6],
-      [-2.4,  1.6],
-      [-4.5, -4.2],
-      [-2.2, -4.5],
+      [-5.4,  5.4],
+      [-2.6,  5.6],
+      [-5.6,  3.0],
+      [-2.8,  3.2],
+      [-5.4,  0.8],
+      [-2.6,  0.6],
+      [-5.6, -1.4],
+      [-2.8, -1.6],
+      [-5.4, -3.6],
+      [-2.6, -3.8],
+      [-5.6, -5.6],
+      [-2.8, -5.8],
     ];
 
     // Hand-curated non-overlapping spatial anchors on right quadrant (Tech Debt Rocks)
     // Wider spacing to accommodate GLB Rock models at scale 0.45
+    // Extended to 12 anchors with ~2.8 unit minimum spacing between any two anchors
     const rightAnchors = [
-      [ 4.5,  3.8],
-      [ 2.2,  4.0],
-      [ 4.8,  0.6],
-      [ 2.4,  1.6],
-      [ 4.5, -4.2],
-      [ 2.2, -4.5],
+      [ 5.4,  5.4],
+      [ 2.6,  5.6],
+      [ 5.6,  3.0],
+      [ 2.8,  3.2],
+      [ 5.4,  0.8],
+      [ 2.6,  0.6],
+      [ 5.6, -1.4],
+      [ 2.8, -1.6],
+      [ 5.4, -3.6],
+      [ 2.6, -3.8],
+      [ 5.6, -5.6],
+      [ 2.8, -5.8],
     ];
 
     const getPlotPosition = (index: number, _total: number, offsetSide: 'left' | 'right') => {
       const anchors = offsetSide === 'left' ? leftAnchors : rightAnchors;
-      const itemRadius = offsetSide === 'left' ? 1.4 : 1.2;
+      const itemRadius = offsetSide === 'left' ? 1.5 : 1.5;
       const anchor = anchors[index % anchors.length];
       const proposedX = anchor[0];
       const proposedZ = anchor[1];
@@ -462,11 +480,16 @@ export function DataTreeGardenBabylon({
     });
 
     // 14. Gnome Movement & Interaction loop
+    // CRITICAL: Capture auto-grounded Y position from instantiateGLBModel's bounding box
+    // calculation. Different GLB assets have different origin points — the auto-grounding
+    // code (BabylonAssets.ts) compensates for this via hierarchy bounding box math.
+    // We must preserve that computed Y and use it as the animation base, NOT hardcode 0.01.
     const gnomesList = [
       {
         node: workerGnome,
         home: new BABYLON.Vector3(-1.4, 0, -1.8),
         role: 'worker',
+        groundY: workerGnome ? workerGnome.position.y : 0.01,
         target: null as BABYLON.Vector3 | null,
         targetNodeId: null as string | null,
         state: 'idle', // 'idle', 'walking', 'working'
@@ -477,6 +500,7 @@ export function DataTreeGardenBabylon({
         node: criticGnome,
         home: new BABYLON.Vector3(1.4, 0, -1.8),
         role: 'critic',
+        groundY: criticGnome ? criticGnome.position.y : 0.01,
         target: null as BABYLON.Vector3 | null,
         targetNodeId: null as string | null,
         state: 'idle',
@@ -487,6 +511,7 @@ export function DataTreeGardenBabylon({
         node: opponentGnome,
         home: new BABYLON.Vector3(0.0, 0, 1.8),
         role: 'opponent',
+        groundY: opponentGnome ? opponentGnome.position.y : 0.01,
         target: null as BABYLON.Vector3 | null,
         targetNodeId: null as string | null,
         state: 'idle',
@@ -494,6 +519,13 @@ export function DataTreeGardenBabylon({
         angleOffset: Math.PI * 4 / 3,
       }
     ];
+
+    // Debug: log auto-grounded Y for each gnome statue so we can verify origin offsets
+    gnomesList.forEach(g => {
+      if (g.node) {
+        console.log(`[Gardener] ${g.role} statue groundY=${g.groundY.toFixed(4)} (GLB origin offset preserved)`);
+      }
+    });
 
     let animationTime = 0;
     const movementSpeed = 0.015; // Cozy walking speed
@@ -585,13 +617,14 @@ export function DataTreeGardenBabylon({
             g.node.rotation.y += diff * 0.1;
 
             // Cozy bouncing hop animation during walk
-            g.node.position.y = 0.01 + Math.abs(Math.sin(animationTime * 12)) * 0.08;
+            // Use auto-grounded Y (g.groundY) as base — NOT hardcoded 0.01
+            g.node.position.y = g.groundY + Math.abs(Math.sin(animationTime * 12)) * 0.08;
             g.node.rotation.x = 0.12; // lean forward slightly
           } else {
             // Arrived at target!
             g.state = 'working';
             g.timer = 6 + Math.random() * 8; // work for 6-14 seconds
-            g.node.position.y = 0.01;
+            g.node.position.y = g.groundY;
             g.node.rotation.x = 0; // stand straight
           }
         }
@@ -600,8 +633,8 @@ export function DataTreeGardenBabylon({
         if (g.state === 'working') {
           g.timer -= dt;
 
-          // Gentle breathing bobbing animation
-          g.node.position.y = 0.01 + Math.sin(animationTime * 3) * 0.015;
+          // Gentle breathing bobbing animation — use preserved groundY
+          g.node.position.y = g.groundY + Math.sin(animationTime * 3) * 0.015;
 
           // Face the target element while working on it
           let lookTarget = g.home;

@@ -288,29 +288,6 @@ export function DataTreeGarden({
           📖 DTO Glossary
         </button>
       )}
-
-      {/* 🏷️ Asset Attribution Badge */}
-      {uiVisible && (
-        <div
-          style={{
-            position: 'absolute',
-            right: 16,
-            bottom: 16,
-            zIndex: 1000,
-            fontSize: '11px',
-            color: 'rgba(255, 255, 255, 0.65)',
-            background: 'rgba(18, 22, 34, 0.75)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            padding: '4px 10px',
-            borderRadius: '6px',
-            backdropFilter: 'blur(4px)',
-            pointerEvents: 'auto',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-          }}
-        >
-          Low Poly Outdoor Decorations by Zsky [CC-BY] via Poly Pizza
-        </div>
-      )}
     </div>
   );
 }

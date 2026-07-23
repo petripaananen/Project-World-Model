@@ -91,7 +91,10 @@ export function instantiateGLBModel(
 
       if (Number.isFinite(localMinY) && localMinY !== Infinity) {
         const targetY = position.y;
-        root.position.y += (targetY - localMinY);
+        const offset = targetY - localMinY;
+        root.position.y += offset;
+        // Debug: report GLB origin offset for verification of different model origins
+        console.log(`[GLB Ground] ${filename}: localMinY=${localMinY.toFixed(4)}, targetY=${targetY.toFixed(4)}, offset=${offset.toFixed(4)}, finalY=${root.position.y.toFixed(4)}`);
       }
     }
 
@@ -1103,35 +1106,12 @@ export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node:
   if (glbRoot) {
     glbRoot.metadata = { type: 'epic', details };
 
-    // Attach subtask child sockets to glbRoot
-    const subtasks: any[] = node.subtasks || [];
-    subtasks.forEach((subtask: any, idx: number) => {
-      const angle = (idx / Math.max(subtasks.length, 3)) * Math.PI * 2;
-      const socketPos = new BABYLON.Vector3(Math.cos(angle) * 1.2, 1.4 + idx * 0.3, Math.sin(angle) * 1.2);
-      const subtaskDetails = {
-        ...subtask,
-        title: `${subtask.title || subtask.name || 'Child Issue'} (Epic Subtask)`,
-        description: `Issue within epic ${node.title}. Status: ${subtask.status || 'Active'}. Progress: ${Math.round((subtask.progress || 0.5) * 100)}%`,
-      };
-
-      const socketFile = (subtask.progress || 0.5) > 0.7 ? 'Flower Bed.glb' : 'Rock.glb';
-      const socketMesh = instantiateGLBModel(scene, socketFile, glbRoot, socketPos, 0.35, angle, subtaskDetails);
-      if (socketMesh) {
-        socketMesh.metadata = { type: 'issue', details: subtaskDetails };
-
-        // Scale pop-in animation for dynamic child sockets
-        BABYLON.Animation.CreateAndStartAnimation(
-          `popIn_${idx}`,
-          socketMesh,
-          "scaling",
-          30,
-          20,
-          new BABYLON.Vector3(0.01, 0.01, 0.01),
-          new BABYLON.Vector3(0.35, 0.35, 0.35),
-          BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-        );
-      }
-    });
+    // NOTE: Subtask child sockets (Rock.glb / Flower Bed.glb) are NOT instantiated here
+    // on the tree canopy, because:
+    // 1. They were parented at canopy height (y=1.4+), creating 'floating rocks'
+    // 2. The same subtask data is already represented at ground level as PR flower beds
+    //    and issue rocks by the main gardenElements layout in DataTreeGardenBabylon.tsx
+    // 3. Parented GLB models skip auto-grounding, and bought assets have varying origins
 
     return glbRoot;
   }
