@@ -45,3 +45,30 @@ Use this skill whenever generating, updating, or refactoring the 3D Babylon.js D
 1. **Socket Attachment:** Create dynamic child `BABYLON.TransformNode` sockets for each DAG child node and assign imported meshes to `mesh.parent = socketNode`.
 2. **Pop-in Animations:** When spawning a new asset into the garden on a live event, animate its scale from `(0,0,0)` to `(1,1,1)` over 15–30 frames using `BABYLON.Animation.CreateAndStartAnimation`.
 3. **Performance Optimization:** For scatter items (grass, small ground pebbles, flowers), use `ThinInstances` (`mesh.thinInstanceSetBuffer`) or asset container cloning to minimize draw calls.
+
+---
+
+## 4. Collision System (MANDATORY — no physics engine required)
+
+Babylon's built-in legacy collision system prevents the camera and gnome agents from clipping through scene assets.
+
+**Scene & Camera setup (required):**
+```ts
+scene.collisionsEnabled = true;
+camera.checkCollisions = true;
+camera.collisionRadius = new BABYLON.Vector3(0.5, 0.5, 0.5);
+camera.lowerRadiusLimit = 5; // keep camera outside collision boxes
+```
+
+**Per-asset collision boxes:** After every GLB instantiation, call `addCollisionBox()` from `BabylonAssets.ts`. The box is invisible (`isVisible = false`), non-pickable, and uses `checkCollisions = true`.
+
+| Asset | GLB | radius | height |
+|---|---|---|---|
+| Stone Well | `Water Fountain.glb` | `1.0` | `1.8` |
+| Agent Statues | `Statue*.glb` | `0.35` | `1.4` |
+| PR Flower Beds | `Flower Bed*.glb` | `0.70` | `0.6` |
+| Tech Debt Rocks | `Rock*.glb` / `Japanese Sedge.glb` | `0.55` | `0.5` |
+| Epic Trees | `Tree.glb` / `Bonsai.glb` | `0.30` | `3.5` |
+| Boundary Pillars | `Pillar.glb` | `0.22` | `1.8` |
+
+**Gnome pathfinding:** Use ray-cast lookahead (`scene.pickWithRay`) before every move step. On hit, attempt X-axis slide, then Z-axis slide. Self-exclusion: walk the hit mesh's parent chain to confirm it isn't the gnome's own TransformNode.

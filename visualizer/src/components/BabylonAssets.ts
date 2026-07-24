@@ -105,6 +105,31 @@ export function instantiateGLBModel(
   }
 }
 
+// ─── COLLISION BOX HELPER ─────────────────────────────────────────────
+// Creates an invisible AABB proxy mesh parented to any TransformNode.
+// Uses Babylon's built-in legacy collision system (no physics engine needed).
+// Every major scene asset should call this after GLB instantiation.
+export function addCollisionBox(
+  scene: BABYLON.Scene,
+  parent: BABYLON.TransformNode,
+  radius: number,
+  height: number,
+  yOffset: number = 0
+): BABYLON.Mesh {
+  const box = BABYLON.MeshBuilder.CreateBox(
+    `col_${parent.name}`,
+    { width: radius * 2, depth: radius * 2, height },
+    scene
+  );
+  box.parent = parent;
+  box.position.y = yOffset + height / 2;
+  box.isVisible = false;
+  box.checkCollisions = true;
+  box.isPickable = false;
+  box.receiveShadows = false;
+  return box;
+}
+
 // ─── PROCEDURAL TEXTURE GENERATORS ───────────────────────────────────
 
 export function createGrassTexture(scene: BABYLON.Scene): BABYLON.DynamicTexture {
@@ -288,6 +313,7 @@ export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: 
   const glbRoot = instantiateGLBModel(scene, 'Water Fountain.glb', null, position, 0.7, 0, details);
   if (glbRoot) {
     glbRoot.metadata = { type: 'well', details };
+    addCollisionBox(scene, glbRoot, 1.0, 1.8, 0); // fountain base + bowl
     return glbRoot;
   }
 
@@ -414,6 +440,7 @@ export function buildFence(scene: BABYLON.Scene, position: BABYLON.Vector3) {
   const glbRoot = instantiateGLBModel(scene, 'Pillar.glb', null, position, 0.45, 0, details);
   if (glbRoot) {
     glbRoot.metadata = { type: 'border', details };
+    addCollisionBox(scene, glbRoot, 0.22, 1.8, 0); // pillar shaft
     return glbRoot;
   }
 
@@ -712,6 +739,8 @@ export function buildGnome(scene: BABYLON.Scene, position: BABYLON.Vector3, hatC
   const glbRoot = instantiateGLBModel(scene, statueFile, null, position, 0.8, 0, details);
   if (glbRoot) {
     glbRoot.metadata = { type: 'gnome', details };
+    // Narrow cylinder-like collision box — gnomes are ~0.35 wide and ~1.4 tall
+    addCollisionBox(scene, glbRoot, 0.35, 1.4, 0);
     // Auto-grounding in instantiateGLBModel handles bottom alignment — no extra offset needed
     return glbRoot;
   }
@@ -824,6 +853,7 @@ export function buildRoseBush(scene: BABYLON.Scene, position: BABYLON.Vector3, s
   const glbRoot = instantiateGLBModel(scene, flowerBedFile, null, position, 0.4, 0, details);
   if (glbRoot) {
     glbRoot.metadata = { type: 'pr', details };
+    addCollisionBox(scene, glbRoot, 0.7, 0.6, 0); // flower bed footprint
     return glbRoot;
   }
 
@@ -942,6 +972,7 @@ export function buildWeed(scene: BABYLON.Scene, position: BABYLON.Vector3, statu
   const glbRoot = instantiateGLBModel(scene, rockFile, null, position, 0.45, 0, details);
   if (glbRoot) {
     glbRoot.metadata = { type: 'issue', details };
+    addCollisionBox(scene, glbRoot, 0.55, 0.5, 0); // rock/sedge footprint
     return glbRoot;
   }
 
@@ -1105,6 +1136,7 @@ export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node:
   const glbRoot = instantiateGLBModel(scene, treeFile, null, position, 0.7, 0, details);
   if (glbRoot) {
     glbRoot.metadata = { type: 'epic', details };
+    addCollisionBox(scene, glbRoot, 0.3, 3.5, 0); // trunk collision — stops camera/gnomes walking through trunk
 
     // NOTE: Subtask child sockets (Rock.glb / Flower Bed.glb) are NOT instantiated here
     // on the tree canopy, because:

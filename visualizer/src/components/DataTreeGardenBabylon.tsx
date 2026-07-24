@@ -283,6 +283,10 @@ export function DataTreeGardenBabylon({
     scene.fogColor = themeColors.fogColor;
     scene.fogDensity = themeColors.fogDensity;
 
+    // Enable Babylon's built-in legacy collision system (no physics engine required).
+    // Asset builders attach invisible addCollisionBox() proxies that use checkCollisions = true.
+    scene.collisionsEnabled = true;
+
     // 2. Camera Setup
     const camera = new BABYLON.ArcRotateCamera(
       "camera",
@@ -293,9 +297,12 @@ export function DataTreeGardenBabylon({
       scene
     );
     camera.attachControl(canvasRef.current, true);
-    camera.lowerRadiusLimit = 4;
+    camera.lowerRadiusLimit = 5;       // raised from 4 — keeps camera outside collision boxes
     camera.upperRadiusLimit = 22;
     camera.upperBetaLimit = Math.PI / 2 - 0.05; // Prevent camera going below ground level
+    // Camera mesh collision — stops camera passing through asset collision boxes
+    camera.checkCollisions = true;
+    camera.collisionRadius = new BABYLON.Vector3(0.5, 0.5, 0.5);
 
     // 3. Lighting — brightened with warm sun and sky-ambient fill
     const light = new BABYLON.HemisphericLight("ambientLight", new BABYLON.Vector3(0, 1, 0), scene);
@@ -619,7 +626,45 @@ export function DataTreeGardenBabylon({
 
           if (dist > 0.05) {
             dir.normalize();
-            g.node.position.addInPlace(dir.scale(movementSpeed));
+
+            // Ray-cast ahead before moving — slide around any mesh with checkCollisions = true.
+            // Self-exclusion: walk the hit mesh's parent chain to confirm it isn't this gnome's own node.
+            const gnomeRoot = g.node;
+            const isSelf = (m: BABYLON.AbstractMesh): boolean => {
+              let p: BABYLON.Node | null = m;
+              while (p) { if (p === gnomeRoot) return true; p = p.parent; }
+              return false;
+            };
+            const isCollidable = (m: BABYLON.AbstractMesh) => m.checkCollisions && !isSelf(m);
+
+            const rayOrigin = g.node.position.add(new BABYLON.Vector3(0, 0.5, 0));
+            const lookahead = movementSpeed * 10;
+            const ray = new BABYLON.Ray(rayOrigin, dir, lookahead);
+            const hit = scene.pickWithRay(ray, isCollidable);
+
+            if (!hit || !hit.hit) {
+              // Clear path — move straight ahead
+              g.node.position.addInPlace(dir.scale(movementSpeed));
+            } else {
+              // Obstacle detected — try sliding along X, then Z
+              const slideX = new BABYLON.Vector3(dir.x, 0, 0);
+              if (slideX.length() > 0.001) slideX.normalize();
+              const slideZ = new BABYLON.Vector3(0, 0, dir.z);
+              if (slideZ.length() > 0.001) slideZ.normalize();
+
+              const rayX = new BABYLON.Ray(rayOrigin, slideX, lookahead);
+              const hitX = scene.pickWithRay(rayX, isCollidable);
+              if (slideX.length() > 0.001 && (!hitX || !hitX.hit)) {
+                g.node.position.addInPlace(slideX.scale(movementSpeed));
+              } else if (slideZ.length() > 0.001) {
+                const rayZ = new BABYLON.Ray(rayOrigin, slideZ, lookahead);
+                const hitZ = scene.pickWithRay(rayZ, isCollidable);
+                if (!hitZ || !hitZ.hit) {
+                  g.node.position.addInPlace(slideZ.scale(movementSpeed));
+                }
+                // else: fully blocked — skip this frame (gnome pauses briefly, then picks a new target)
+              }
+            }
 
             // Smoothly rotate to face target heading direction
             const targetRotation = Math.atan2(dir.x, dir.z);
