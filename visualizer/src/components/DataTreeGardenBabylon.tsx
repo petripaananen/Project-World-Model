@@ -513,6 +513,8 @@ export function DataTreeGardenBabylon({
         targetNodeId: null as string | null,
         state: 'idle', // 'idle', 'walking', 'working'
         timer: 0,
+        stuckTimer: 0,
+        lastPos: null as BABYLON.Vector3 | null,
         angleOffset: 0,
       },
       {
@@ -524,6 +526,8 @@ export function DataTreeGardenBabylon({
         targetNodeId: null as string | null,
         state: 'idle',
         timer: 0,
+        stuckTimer: 0,
+        lastPos: null as BABYLON.Vector3 | null,
         angleOffset: Math.PI * 2 / 3,
       },
       {
@@ -535,6 +539,8 @@ export function DataTreeGardenBabylon({
         targetNodeId: null as string | null,
         state: 'idle',
         timer: 0,
+        stuckTimer: 0,
+        lastPos: null as BABYLON.Vector3 | null,
         angleOffset: Math.PI * 4 / 3,
       }
     ];
@@ -553,12 +559,37 @@ export function DataTreeGardenBabylon({
       const dt = engine.getDeltaTime() / 1000;
       animationTime += dt;
 
+      // Soft Agent-to-Agent Steering Separation (prevents gnomes from walking into/overlapping each other)
+      for (let i = 0; i < gnomesList.length; i++) {
+        for (let j = i + 1; j < gnomesList.length; j++) {
+          const gA = gnomesList[i];
+          const gB = gnomesList[j];
+          if (!gA.node || !gB.node) continue;
+
+          const posA = gA.node.position;
+          const posB = gB.node.position;
+          const diff = posA.subtract(posB);
+          diff.y = 0;
+          const dist = diff.length();
+          const minSeparation = 0.8;
+
+          if (dist < minSeparation && dist > 0.001) {
+            const pushFactor = (minSeparation - dist) * 0.02;
+            const pushVec = diff.normalize().scale(pushFactor);
+            if (gA.state === 'walking') gA.node.position.addInPlace(pushVec);
+            if (gB.state === 'walking') gB.node.position.subtractInPlace(pushVec);
+          }
+        }
+      }
+
       gnomesList.forEach(g => {
         if (!g.node) return;
 
         // 1. Target Selection (Idle State)
         if (g.state === 'idle') {
           let targetSelected = false;
+          g.stuckTimer = 0;
+          g.lastPos = null;
 
           if (g.role === 'worker') {
             const weeds = gardenElements.issues;
@@ -566,9 +597,9 @@ export function DataTreeGardenBabylon({
               const weed = weeds[Math.floor(Math.random() * weeds.length)];
               const issuePos = weed.position;
               g.target = new BABYLON.Vector3(
-                issuePos.x + Math.cos(g.angleOffset) * 0.45,
+                issuePos.x + Math.cos(g.angleOffset) * 0.85,
                 0.01,
-                issuePos.z + Math.sin(g.angleOffset) * 0.45
+                issuePos.z + Math.sin(g.angleOffset) * 0.85
               );
               g.targetNodeId = weed.node.id;
               targetSelected = true;
@@ -579,9 +610,9 @@ export function DataTreeGardenBabylon({
               const bush = bushes[Math.floor(Math.random() * bushes.length)];
               const prPos = bush.position;
               g.target = new BABYLON.Vector3(
-                prPos.x + Math.cos(g.angleOffset) * 0.45,
+                prPos.x + Math.cos(g.angleOffset) * 0.85,
                 0.01,
-                prPos.z + Math.sin(g.angleOffset) * 0.45
+                prPos.z + Math.sin(g.angleOffset) * 0.85
               );
               g.targetNodeId = bush.node.id;
               targetSelected = true;
@@ -591,9 +622,9 @@ export function DataTreeGardenBabylon({
             // Opponent targets either the Central Well or active issues
             if (Math.random() > 0.4 || weeds.length === 0) {
               g.target = new BABYLON.Vector3(
-                Math.cos(g.angleOffset) * 1.1,
+                Math.cos(g.angleOffset) * 1.35,
                 0.01,
-                Math.sin(g.angleOffset) * 1.1
+                Math.sin(g.angleOffset) * 1.35
               );
               g.targetNodeId = 'well';
               targetSelected = true;
@@ -601,9 +632,9 @@ export function DataTreeGardenBabylon({
               const weed = weeds[Math.floor(Math.random() * weeds.length)];
               const issuePos = weed.position;
               g.target = new BABYLON.Vector3(
-                issuePos.x + Math.cos(g.angleOffset) * 0.45,
+                issuePos.x + Math.cos(g.angleOffset) * 0.85,
                 0.01,
-                issuePos.z + Math.sin(g.angleOffset) * 0.45
+                issuePos.z + Math.sin(g.angleOffset) * 0.85
               );
               g.targetNodeId = weed.node.id;
               targetSelected = true;
@@ -624,18 +655,41 @@ export function DataTreeGardenBabylon({
           dir.y = 0; // Keep on ground plane
           const dist = dir.length();
 
-          if (dist > 0.05) {
+          // Stuck Detection Recovery Logic
+          if (!g.lastPos) {
+            g.lastPos = g.node.position.clone();
+            g.stuckTimer = 0;
+          } else {
+            const movedDist = BABYLON.Vector3.Distance(g.node.position, g.lastPos);
+            if (movedDist < 0.005) {
+              g.stuckTimer += dt;
+              if (g.stuckTimer > 1.5) {
+                // Stuck against obstacle/corner — abort walk and re-roll target
+                g.state = 'idle';
+                g.stuckTimer = 0;
+                g.lastPos = null;
+                return;
+              }
+            } else {
+              g.lastPos.copyFrom(g.node.position);
+              g.stuckTimer = 0;
+            }
+          }
+
+          if (dist > 0.35) {
             dir.normalize();
 
-            // Ray-cast ahead before moving — slide around any mesh with checkCollisions = true.
-            // Self-exclusion: walk the hit mesh's parent chain to confirm it isn't this gnome's own node.
-            const gnomeRoot = g.node;
-            const isSelf = (m: BABYLON.AbstractMesh): boolean => {
+            // Ray-cast ahead before moving — slide around static scene meshes with checkCollisions = true.
+            // Ignore other dynamic gnomes in static raycast to avoid ray-locking deadlocks.
+            const isCollidable = (m: BABYLON.AbstractMesh) => {
+              if (!m.checkCollisions) return false;
               let p: BABYLON.Node | null = m;
-              while (p) { if (p === gnomeRoot) return true; p = p.parent; }
-              return false;
+              while (p) {
+                if (p.name.includes("gnome")) return false; // handled by soft separation steering
+                p = p.parent;
+              }
+              return true;
             };
-            const isCollidable = (m: BABYLON.AbstractMesh) => m.checkCollisions && !isSelf(m);
 
             const rayOrigin = g.node.position.add(new BABYLON.Vector3(0, 0.5, 0));
             const lookahead = movementSpeed * 10;
@@ -662,7 +716,6 @@ export function DataTreeGardenBabylon({
                 if (!hitZ || !hitZ.hit) {
                   g.node.position.addInPlace(slideZ.scale(movementSpeed));
                 }
-                // else: fully blocked — skip this frame (gnome pauses briefly, then picks a new target)
               }
             }
 
@@ -683,6 +736,8 @@ export function DataTreeGardenBabylon({
             g.timer = 6 + Math.random() * 8; // work for 6-14 seconds
             g.node.position.y = g.groundY;
             g.node.rotation.x = 0; // stand straight
+            g.stuckTimer = 0;
+            g.lastPos = null;
           }
         }
 
