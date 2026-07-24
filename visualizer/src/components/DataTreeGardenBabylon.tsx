@@ -297,20 +297,32 @@ export function DataTreeGardenBabylon({
     camera.upperRadiusLimit = 22;
     camera.upperBetaLimit = Math.PI / 2 - 0.05; // Prevent camera going below ground level
 
-    // 3. Lighting (Brightened up with higher fill/sun intensities and warmer bounce)
+    // 3. Lighting — brightened with warm sun and sky-ambient fill
     const light = new BABYLON.HemisphericLight("ambientLight", new BABYLON.Vector3(0, 1, 0), scene);
     light.diffuse = themeColors.ambientColor;
-    light.groundColor = new BABYLON.Color3(0.35, 0.45, 0.25); // bright grass reflection bounce
-    light.intensity = 1.25; // Increased ambient fill intensity
+    light.groundColor = new BABYLON.Color3(0.55, 0.62, 0.35); // brighter warm grass-bounce fill for statue undersides
+    light.intensity = 1.4;
 
     const dirLight = new BABYLON.DirectionalLight("sunLight", new BABYLON.Vector3(-0.5, -0.85, -0.45), scene);
     dirLight.position = new BABYLON.Vector3(12, 20, 8);
     dirLight.diffuse = themeColors.lightColor;
-    dirLight.intensity = 3.2; // Increased sun light intensity for fully sunlit look
+    dirLight.intensity = 2.2; // Reduced from 3.2 — prevents PBR metallic highlights blowing out under ACES
 
     // 4. Cascaded Shadow Generator & PBR DefaultRenderingPipeline
     const shadowGenerator = new BABYLON.CascadedShadowGenerator(2048, dirLight);
     shadowGenerator.usePercentageCloserFiltering = true;
+
+    // ─── ENVIRONMENT IBL (CRITICAL for PBR GLB materials) ───────────────
+    // Without this, all imported GLB assets (statues, rocks, flower beds) that use
+    // PBR materials receive zero ambient IBL and their unlit faces appear pure black.
+    // scene.createDefaultEnvironment handles the env texture + optional skybox in one call.
+    scene.createDefaultEnvironment({
+      createGround: false,          // We manage our own grass/soil planes
+      createSkybox: false,          // Fog colour + clearColor already sets the horizon look
+      environmentTexture: "https://assets.babylonjs.com/environments/environmentSpecular.env",
+    });
+    scene.environmentIntensity = isRainy ? 0.55 : 0.85; // Reduce IBL on rainy/overcast themes
+    // ────────────────────────────────────────────────────────────────────
 
     // DefaultRenderingPipeline: ACES Tone Mapping, Bloom, Anti-aliasing
     const pipeline = new BABYLON.DefaultRenderingPipeline("defaultPipeline", true, scene, [camera]);

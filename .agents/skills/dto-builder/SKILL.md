@@ -12,7 +12,16 @@ Use this skill whenever generating, updating, or refactoring the 3D Babylon.js D
 ## 1. Scene Setup & Visual Guardrails
 
 - **Pipeline Mandate:** ALWAYS initialize `BABYLON.DefaultRenderingPipeline` with ACES Tone Mapping (`TONEMAPPING_ACES`), Bloom (`bloomEnabled = true`), and anti-aliasing enabled.
-- **Lighting:** Load an HDRI environment map via `scene.environmentTexture` and configure `BABYLON.CascadedShadowGenerator` with Percentage-Closer Filtering (`usePercentageCloserFiltering = true`) for directional shadows.
+- **Environment IBL (MANDATORY — do NOT skip):** ALWAYS call `scene.createDefaultEnvironment()` immediately after creating the scene and shadow generator. Omitting this causes **all imported GLB/PBR assets (statues, rocks, flower beds) to appear pure black** because PBR materials rely on IBL for their ambient contribution. Use:
+  ```ts
+  scene.createDefaultEnvironment({
+    createGround: false,   // garden manages its own terrain planes
+    createSkybox: false,   // fog + clearColor handles the horizon
+    environmentTexture: "https://assets.babylonjs.com/environments/environmentSpecular.env",
+  });
+  scene.environmentIntensity = 0.85; // lower to 0.55 for rainy/overcast themes
+  ```
+- **Lighting:** Use `BABYLON.HemisphericLight` for ambient fill (`groundColor` must be a **bright** warm tone, e.g. `Color3(0.55, 0.62, 0.35)`) PLUS a `BABYLON.DirectionalLight` for sun at intensity ≤ 2.5 (high values blow out PBR metallic highlights under ACES). Configure `BABYLON.CascadedShadowGenerator` with `usePercentageCloserFiltering = true`.
 - **Post-Processing:** Include `SSAORenderingPipeline` or `SSAO2RenderingPipeline` to generate contact shadows beneath ground props and foliage.
 - **No Raw Primitives:** NEVER generate basic code primitives (e.g., `BABYLON.MeshBuilder.CreateSphere` or `CreateCylinder`) to represent foliage, trees, or structural elements.
 

@@ -6,8 +6,17 @@ To move away from raw, greybox primitives and achieve an atmospheric, polished l
 
 ### **1\. PBR Lighting & Environment**
 
-* **HDR Environment Maps:** Instead of basic directional/ambient lights, use BABYLON.CubeTexture.CreateFromPrefilteredData to load an HDRI skybox. This supplies realistic ambient reflections and fills soft shadows naturally.  
-* **Cascaded Shadow Maps:** Enable BABYLON.CascadedShadowGenerator on the main directional light with Percentage Closer Filtering (usePercentageCloserFiltering \= true) for crisp, soft-edged shadows across foliage and ground elements.  
+* **HDR Environment Maps (MANDATORY):** Instead of basic directional/ambient lights, set `scene.environmentTexture` to supply realistic ambient IBL reflections. **⚠️ WARNING: If you omit this step entirely, all imported GLB assets using PBR materials (statues, rocks, flower beds, trees) will appear pure black — they receive zero ambient light without IBL.** When no local `.env` HDRI file is bundled, use the built-in Babylon.js helper as the correct fallback:
+  ```ts
+  scene.createDefaultEnvironment({
+    createGround: false,  // manage your own terrain
+    createSkybox: false,  // fog/clearColor handles horizon
+    environmentTexture: "https://assets.babylonjs.com/environments/environmentSpecular.env",
+  });
+  scene.environmentIntensity = 0.85;
+  ```
+  Alternatively, load a bundled `.env` file via `BABYLON.CubeTexture.CreateFromPrefilteredData('/env/myScene.env', scene)` and assign it to `scene.environmentTexture`.
+* **Cascaded Shadow Maps:** Enable BABYLON.CascadedShadowGenerator on the main directional light with Percentage Closer Filtering (usePercentageCloserFiltering = true) for crisp, soft-edged shadows across foliage and ground elements.  
 * **Atmospheric Skybox & Fog:** Blend the terrain edges into the horizon using exponential fog to prevent sharp plane cutoffs.
 
 ### **2\. Post-Processing Pipeline (DefaultRenderingPipeline)**
