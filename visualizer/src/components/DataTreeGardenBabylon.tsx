@@ -461,16 +461,22 @@ export function DataTreeGardenBabylon({
         const pickResult = scene.pick(scene.pointerX, scene.pointerY);
         if (pickResult && pickResult.hit && pickResult.pickedMesh) {
           let targetNode: BABYLON.Node | null = pickResult.pickedMesh;
-          let details = null;
+          let details: any = null;
           let foundMesh: BABYLON.AbstractMesh | null = null;
 
           while (targetNode) {
-            if (targetNode.metadata && targetNode.metadata.details) {
-              details = targetNode.metadata.details;
-              if (targetNode instanceof BABYLON.AbstractMesh) {
-                foundMesh = targetNode;
+            if (targetNode.metadata) {
+              if (targetNode.metadata.details) {
+                details = targetNode.metadata.details;
+              } else if (targetNode.metadata.title || targetNode.metadata.elementType) {
+                details = targetNode.metadata;
               }
-              break;
+              if (details) {
+                if (targetNode instanceof BABYLON.AbstractMesh) {
+                  foundMesh = targetNode;
+                }
+                break;
+              }
             }
             targetNode = targetNode.parent;
           }
@@ -545,9 +551,96 @@ export function DataTreeGardenBabylon({
       }
     ];
 
-    // Debug: log auto-grounded Y for each gnome statue so we can verify origin offsets
+    // Helper to dynamically update Gnome metadata details & child mesh metadata on state/target changes
+    const updateGnomeDetails = (g: any) => {
+      if (!g.node) return;
+
+      let targetTitle = 'Workspace';
+      let targetType = 'Task';
+      if (g.targetNodeId === 'well') {
+        targetTitle = 'Central Repository Well';
+        targetType = 'Well Core';
+      } else if (g.targetNodeId && g.targetNodeId !== 'home') {
+        const weed = gardenElements.issues.find((i: any) => i.node.id === g.targetNodeId);
+        const bush = gardenElements.prs.find((p: any) => p.node.id === g.targetNodeId);
+        if (weed) {
+          targetTitle = weed.node.title || weed.node.id;
+          targetType = 'Issue';
+        } else if (bush) {
+          targetTitle = bush.node.title || bush.node.id;
+          targetType = 'Pull Request';
+        }
+      }
+
+      let statusStr = '';
+      let descStr = '';
+
+      if (g.role === 'worker') {
+        if (g.state === 'walking') {
+          statusStr = `Pathfinding to ${targetType}`;
+          descStr = `Worker Agent Gnome is navigating to ${targetType}: "${targetTitle}" to apply code changes and refactor.`;
+        } else if (g.state === 'working') {
+          statusStr = `Executing Code Fixes`;
+          descStr = `Worker Agent Gnome is actively applying bug fixes and executing system tests on ${targetType}: "${targetTitle}".`;
+        } else {
+          statusStr = `Idle / Evaluating Backlog`;
+          descStr = `Worker Agent Gnome is scanning the workspace DAG backlog for unassigned issues.`;
+        }
+      } else if (g.role === 'critic') {
+        if (g.state === 'walking') {
+          statusStr = `Pathfinding to PR Review`;
+          descStr = `Critic Agent Gnome is navigating to Pull Request: "${targetTitle}" to inspect diffs and style compliance.`;
+        } else if (g.state === 'working') {
+          statusStr = `Code Review In-Progress`;
+          descStr = `Critic Agent Gnome is reviewing code changes, linter results, and security checks on Pull Request: "${targetTitle}".`;
+        } else {
+          statusStr = `Idle / Awaiting Submissions`;
+          descStr = `Critic Agent Gnome is waiting for new pull requests to be opened or updated.`;
+        }
+      } else if (g.role === 'opponent') {
+        if (g.state === 'walking') {
+          statusStr = `Pathfinding to Target`;
+          descStr = `Opponent Agent Gnome is navigating to ${targetType}: "${targetTitle}" to simulate chaos and test resilience.`;
+        } else if (g.state === 'working') {
+          statusStr = `Simulating Failure Scenario`;
+          descStr = `Opponent Agent Gnome is injecting synthetic latency and testing system recovery on ${targetType}: "${targetTitle}".`;
+        } else {
+          statusStr = `Idle / Planning Chaos`;
+          descStr = `Opponent Agent Gnome is formulating failure injection scenarios for the workspace.`;
+        }
+      }
+
+      const gnomeName = g.role === 'worker' ? 'Worker Agent Gnome' : g.role === 'critic' ? 'Critic Agent Gnome' : 'Opponent Agent Gnome';
+
+      const detailsObj = {
+        id: `gnome-${g.role}`,
+        title: gnomeName,
+        elementType: 'AI Agent Gnome',
+        status: statusStr,
+        description: descStr,
+        role: g.role,
+        state: g.state,
+        targetNodeId: g.targetNodeId
+      };
+
+      if (!g.node.metadata) {
+        g.node.metadata = { type: 'gnome', details: detailsObj };
+      } else {
+        g.node.metadata.details = detailsObj;
+      }
+
+      // Propagate live details to all child meshes so picking any mesh component yields the active tooltip
+      const childMeshes = g.node.getChildMeshes(false);
+      childMeshes.forEach((m: BABYLON.AbstractMesh) => {
+        m.metadata = detailsObj;
+        m.isPickable = true;
+      });
+    };
+
+    // Initial metadata setup
     gnomesList.forEach(g => {
       if (g.node) {
+        updateGnomeDetails(g);
         console.log(`[Gardener] ${g.role} statue groundY=${g.groundY.toFixed(4)} (GLB origin offset preserved)`);
       }
     });
@@ -647,6 +740,7 @@ export function DataTreeGardenBabylon({
           }
 
           g.state = 'walking';
+          updateGnomeDetails(g);
         }
 
         // 2. Walking State
@@ -668,6 +762,7 @@ export function DataTreeGardenBabylon({
                 g.state = 'idle';
                 g.stuckTimer = 0;
                 g.lastPos = null;
+                updateGnomeDetails(g);
                 return;
               }
             } else {
@@ -738,6 +833,7 @@ export function DataTreeGardenBabylon({
             g.node.rotation.x = 0; // stand straight
             g.stuckTimer = 0;
             g.lastPos = null;
+            updateGnomeDetails(g);
           }
         }
 
@@ -753,8 +849,8 @@ export function DataTreeGardenBabylon({
           if (g.targetNodeId === 'well') {
             lookTarget = new BABYLON.Vector3(0, 0, 0);
           } else if (g.targetNodeId && g.targetNodeId !== 'home') {
-            const weed = gardenElements.issues.find(i => i.node.id === g.targetNodeId);
-            const bush = gardenElements.prs.find(p => p.node.id === g.targetNodeId);
+            const weed = gardenElements.issues.find((i: any) => i.node.id === g.targetNodeId);
+            const bush = gardenElements.prs.find((p: any) => p.node.id === g.targetNodeId);
             if (weed) lookTarget = weed.position;
             else if (bush) lookTarget = bush.position;
           }
@@ -767,6 +863,7 @@ export function DataTreeGardenBabylon({
 
           if (g.timer <= 0) {
             g.state = 'idle'; // select new target on next frame
+            updateGnomeDetails(g);
           }
         }
       });
