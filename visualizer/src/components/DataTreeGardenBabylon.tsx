@@ -85,7 +85,7 @@ export function DataTreeGardenBabylon({
 
   // Extract PR and Issue nodes from flat graph (Identical layout algorithm logic as DataTreeGarden)
   const gardenElements = useMemo(() => {
-    if (!graph || !graph.nodes) return { prs: [], issues: [], epicPRs: null, epicIssues: null };
+    if (!graph || !graph.nodes) return { prs: [], issues: [], epicPRs: null, epicIssues: null, exclusions: [] as { x: number; z: number; r: number }[], placedItems: [] as { x: number; z: number; r: number }[] };
 
     const prs: any[] = [];
     const issues: any[] = [];
@@ -263,7 +263,7 @@ export function DataTreeGardenBabylon({
       subtasks: issues.map(i => i.node),
     };
 
-    return { prs, issues, epicPRs, epicIssues };
+    return { prs, issues, epicPRs, epicIssues, exclusions, placedItems };
   }, [graph, theme]);
 
   useEffect(() => {
@@ -420,7 +420,8 @@ export function DataTreeGardenBabylon({
     });
 
     // 12. Decorative Scatter Foliage (bamboo, sedge, flower pots, beds)
-    buildScatterFoliage(scene);
+    // Pass exclusions + placedItems so foliage avoids overlapping data elements
+    buildScatterFoliage(scene, gardenElements.exclusions, [...gardenElements.placedItems]);
 
     // 11. Shadow Assignment Pass
     scene.meshes.forEach(m => {

@@ -1304,7 +1304,15 @@ export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node:
 // ─── DECORATIVE SCATTER FOLIAGE ──────────────────────────────────────
 // Adds green foliage props around the garden to make it feel lush and alive.
 // Uses Bamboo, Japanese Sedge, and extra Flower Pot/Bed GLBs from the asset pack.
-export function buildScatterFoliage(scene: BABYLON.Scene) {
+//
+// GARDENER SKILL: This function accepts the scene's existing exclusion zones
+// and placedItems tracker so every foliage piece is placed collision-free.
+// DTO-BUILDER SKILL: Every GLB instance gets an addCollisionBox() call.
+export function buildScatterFoliage(
+  scene: BABYLON.Scene,
+  exclusions: { x: number; z: number; r: number }[],
+  placedItems: { x: number; z: number; r: number }[]
+) {
   const foliageGroup = new BABYLON.TransformNode("scatterFoliage", scene);
 
   const foliageDetails = (name: string, desc: string) => ({
@@ -1314,88 +1322,145 @@ export function buildScatterFoliage(scene: BABYLON.Scene) {
     description: desc,
   });
 
-  // ── Corner Bamboo Clusters (4 corners, inside fence line) ──
-  const bambooPositions: [number, number, number][] = [
-    [-6.0, 0, -5.8],
-    [ 6.0, 0, -5.8],
-    [-6.0, 0,  5.8],
-    [ 6.0, 0,  5.8],
+  // ── Collision-free position solver (same algorithm as gardenElements) ──
+  const getCollisionFreePosition = (
+    proposedX: number,
+    proposedZ: number,
+    itemRadius: number,
+    boundsX: number = 7.2,
+    boundsZ: number = 6.8
+  ): [number, number, number] | null => {
+    let x = proposedX;
+    let z = proposedZ;
+    let angle = 0;
+    const step = 0.6;
+
+    for (let attempt = 0; attempt < 150; attempt++) {
+      let collides = false;
+      for (const esc of exclusions) {
+        if (Math.hypot(x - esc.x, z - esc.z) < (itemRadius + esc.r)) {
+          collides = true;
+          break;
+        }
+      }
+      if (!collides) {
+        for (const item of placedItems) {
+          if (Math.hypot(x - item.x, z - item.z) < (itemRadius + item.r)) {
+            collides = true;
+            break;
+          }
+        }
+      }
+      if (!collides && x >= -boundsX && x <= boundsX && z >= -boundsZ && z <= boundsZ) {
+        return [x, 0, z];
+      }
+      angle += 0.5;
+      const r = step * Math.sqrt(attempt + 1);
+      x = proposedX + r * Math.cos(angle);
+      z = proposedZ + r * Math.sin(angle);
+    }
+    // If no valid position found after 150 attempts, skip this piece
+    console.warn(`[Scatter Foliage] Could not place item near (${proposedX.toFixed(1)}, ${proposedZ.toFixed(1)}), skipping.`);
+    return null;
+  };
+
+  // ── Corner Bamboo Clusters (4 corners, OUTSIDE soil bed on grass) ──
+  // Placed outside the garden soil boundary to avoid crowding data elements.
+  // Collision radius: 0.8 (bamboo spread at scale 0.3)
+  const bambooAnchors: [number, number][] = [
+    [-7.5, -7.5],
+    [ 7.5, -7.5],
+    [-7.5,  7.5],
+    [ 7.5,  7.5],
   ];
-  bambooPositions.forEach((pos, i) => {
+  bambooAnchors.forEach((anchor, i) => {
+    const itemRadius = 0.8;
+    const pos = getCollisionFreePosition(anchor[0], anchor[1], itemRadius, 9.0, 9.0);
+    if (!pos) return;
     const details = foliageDetails('Bamboo Cluster', 'Decorative bamboo adding lush greenery to the garden boundary.');
-    const node = instantiateGLBModel(scene, 'Bamboo.glb', foliageGroup, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.35, (i * 1.2), details);
+    const node = instantiateGLBModel(scene, 'Bamboo.glb', null, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.3, (i * 1.2), details);
     if (node) {
       node.metadata = { type: 'foliage', details };
+      addCollisionBox(scene, node, 0.6, 2.0, 0);
+      placedItems.push({ x: pos[0], z: pos[2], r: itemRadius });
     }
   });
 
-  // ── Edge Sedge Patches (along fence midpoints and inner edges) ──
-  const sedgePositions: [number, number, number, number][] = [
-    // [x, y, z, rotationY]
-    [-3.0, 0, -6.0, 0.3],
-    [ 0.0, 0, -6.0, 1.1],
-    [ 3.0, 0, -6.0, 2.0],
-    [-3.0, 0,  6.0, 0.8],
-    [ 0.0, 0,  6.0, 1.6],
-    [ 3.0, 0,  6.0, 2.4],
-    // Inner edge accent patches
-    [-6.2, 0, -3.0, 0.5],
-    [-6.2, 0,  0.0, 1.0],
-    [-6.2, 0,  3.0, 1.8],
-    [ 6.2, 0, -3.0, 0.7],
-    [ 6.2, 0,  0.0, 1.4],
-    [ 6.2, 0,  3.0, 2.2],
+  // ── Edge Sedge Patches (OUTSIDE fence line on grass perimeter) ──
+  // Collision radius: 0.5 (sedge at scale 0.2)
+  const sedgeAnchors: [number, number][] = [
+    [-2.0, -7.8],
+    [ 2.0, -7.8],
+    [-2.0,  7.8],
+    [ 2.0,  7.8],
+    [-7.8, -2.0],
+    [-7.8,  2.0],
+    [ 7.8, -2.0],
+    [ 7.8,  2.0],
   ];
-  sedgePositions.forEach((pos) => {
-    const details = foliageDetails('Ornamental Sedge', 'Decorative grass adding natural green texture to the garden floor.');
-    const node = instantiateGLBModel(scene, 'Japanese Sedge.glb', foliageGroup, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.25, pos[3], details);
+  sedgeAnchors.forEach((anchor, i) => {
+    const itemRadius = 0.5;
+    const pos = getCollisionFreePosition(anchor[0], anchor[1], itemRadius, 9.0, 9.0);
+    if (!pos) return;
+    const details = foliageDetails('Ornamental Sedge', 'Decorative grass adding natural green texture to the garden perimeter.');
+    const node = instantiateGLBModel(scene, 'Japanese Sedge.glb', null, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.2, (i * 0.7), details);
     if (node) {
       node.metadata = { type: 'foliage', details };
+      addCollisionBox(scene, node, 0.35, 0.8, 0);
+      placedItems.push({ x: pos[0], z: pos[2], r: itemRadius });
     }
   });
 
-  // ── Mid-zone Flower Pot Accents ──
+  // ── Mid-zone Flower Pot Accents (inside garden, away from data elements) ──
+  // Collision radius: 0.5 (small pots at scale 0.18)
   const potVariants = [
     'Flower Pot-FNqGPLKY0V.glb',
     'Flower Pot-Kgt363WkKd.glb',
     'Flower Pot-k1FsCQTgWu.glb',
   ];
-  const potPositions: [number, number, number][] = [
-    [-1.0, 0,  4.8],
-    [ 1.0, 0,  4.8],
-    [-4.8, 0,  1.5],
-    [ 4.8, 0,  1.5],
-    [ 0.0, 0, -4.8],
-    [-1.5, 0,  2.8],
-    [ 1.5, 0,  2.8],
+  const potAnchors: [number, number][] = [
+    [-1.0,  5.0],
+    [ 1.0,  5.0],
+    [ 0.0, -4.5],
+    [-1.5,  3.5],
+    [ 1.5,  3.5],
   ];
-  potPositions.forEach((pos, i) => {
+  potAnchors.forEach((anchor, i) => {
+    const itemRadius = 0.5;
+    const pos = getCollisionFreePosition(anchor[0], anchor[1], itemRadius);
+    if (!pos) return;
     const glbFile = potVariants[i % potVariants.length];
     const details = foliageDetails('Flower Pot', 'Decorative potted flowers adorning the garden pathways.');
-    const node = instantiateGLBModel(scene, glbFile, foliageGroup, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.18, (i * 0.9), details);
+    const node = instantiateGLBModel(scene, glbFile, null, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.18, (i * 0.9), details);
     if (node) {
       node.metadata = { type: 'foliage', details };
+      addCollisionBox(scene, node, 0.3, 0.5, 0);
+      placedItems.push({ x: pos[0], z: pos[2], r: itemRadius });
     }
   });
 
-  // ── Extra Flower Bed Accents (non-data-driven decorative beds) ──
+  // ── Extra Flower Bed Accents (front zone, z > 3) ──
+  // Collision radius: 0.7 (flower bed at scale 0.3)
   const bedVariants = [
     'Flower Bed-kxvm53IIIU.glb',
     'Flower Bed-wibWtE6p8L.glb',
   ];
-  const bedPositions: [number, number, number][] = [
-    [-4.5, 0,  3.8],
-    [ 4.5, 0,  3.8],
-    [ 0.0, 0,  3.5],
-    [-3.5, 0,  5.5],
-    [ 3.5, 0,  5.5],
+  const bedAnchors: [number, number][] = [
+    [-4.0,  4.5],
+    [ 4.0,  4.5],
+    [ 0.0,  4.0],
   ];
-  bedPositions.forEach((pos, i) => {
+  bedAnchors.forEach((anchor, i) => {
+    const itemRadius = 0.7;
+    const pos = getCollisionFreePosition(anchor[0], anchor[1], itemRadius);
+    if (!pos) return;
     const glbFile = bedVariants[i % bedVariants.length];
     const details = foliageDetails('Flower Bed', 'Ornamental flower bed bringing colour and life to the garden.');
-    const node = instantiateGLBModel(scene, glbFile, foliageGroup, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.3, (i * 1.4), details);
+    const node = instantiateGLBModel(scene, glbFile, null, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.3, (i * 1.4), details);
     if (node) {
       node.metadata = { type: 'foliage', details };
+      addCollisionBox(scene, node, 0.5, 0.4, 0);
+      placedItems.push({ x: pos[0], z: pos[2], r: itemRadius });
     }
   });
 
