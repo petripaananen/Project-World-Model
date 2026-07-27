@@ -691,17 +691,14 @@ function App() {
   const [selectedGardenNode, setSelectedGardenNode] = useState<FusedNode | null>(null);
   const [filters, setFilters] = useState<Record<string, boolean>>({
     showEpics: true,
+    showFountain: true,
     showPRs: true,
     showSubtasks: true,
-    showLamps: true,
-    showDewdrops: true,
     showAgents: true,
+    showLamps: true,
     showFlowers: true,
     showBorders: true,
     showWeather: true,
-    showBees: true,
-    showWebs: true,
-    showVines: true,
   });
   const [uiVisible, setUiVisible] = useState(true);
   const [selectedProject, setSelectedProject] = useState<string>('');
@@ -928,27 +925,30 @@ function App() {
       if (key === 'e') {
         playHoverSound();
         setFilters(prev => ({ ...prev, showEpics: !prev.showEpics }));
-      } else if (key === 'b') {
+      } else if (key === 'f') {
         playHoverSound();
-        setFilters(prev => ({ ...prev, showBees: !prev.showBees }));
-      } else if (key === 's') {
+        setFilters(prev => ({ ...prev, showFountain: prev.showFountain === false ? true : false }));
+      } else if (key === 'p') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showPRs: prev.showPRs === false ? true : false }));
+      } else if (key === 'r') {
         playHoverSound();
         setFilters(prev => ({ ...prev, showSubtasks: !prev.showSubtasks }));
-      } else if (key === 'w') {
-        playHoverSound();
-        setFilters(prev => ({ ...prev, showWebs: !prev.showWebs }));
-      } else if (key === 'd') {
-        playHoverSound();
-        setFilters(prev => ({ ...prev, showDewdrops: !prev.showDewdrops }));
-      } else if (key === 'v') {
-        playHoverSound();
-        setFilters(prev => ({ ...prev, showVines: !prev.showVines }));
-      } else if (key === 't') {
-        playHoverSound();
-        setFilters(prev => ({ ...prev, showWeather: !prev.showWeather }));
       } else if (key === 'a') {
         playHoverSound();
         setFilters(prev => ({ ...prev, showAgents: !prev.showAgents }));
+      } else if (key === 'l') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showLamps: prev.showLamps === false ? true : false }));
+      } else if (key === 's') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showFlowers: prev.showFlowers === false ? true : false }));
+      } else if (key === 'b') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showBorders: prev.showBorders === false ? true : false }));
+      } else if (key === 'w') {
+        playHoverSound();
+        setFilters(prev => ({ ...prev, showWeather: !prev.showWeather }));
       } else if (key === 'h' || key === '?') {
         playHoverSound();
         setUiVisible(prev => !prev);
@@ -2852,7 +2852,21 @@ function App() {
                         </div>
                       </button>
 
-                      {/* Slot 2: PR Flower Beds */}
+                      {/* Slot 2: Water Fountain */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showFountain !== false ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showFountain: prev.showFountain === false ? true : false })); }}
+                      >
+                        <span className="material-symbols-outlined">water_drop</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [F]</div>
+                          <div className="tooltip-title">Water Fountain</div>
+                          <p className="tooltip-desc">Shows the central repository water fountain core.</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 3: PR Flower Beds */}
                       <button 
                         className={`filter-slot-btn ${filters.showPRs !== false ? 'active' : 'inactive'}`}
                         onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showPRs: prev.showPRs === false ? true : false })); }}
@@ -2866,7 +2880,7 @@ function App() {
                         </div>
                       </button>
 
-                      {/* Slot 3: Tech Debt Rocks */}
+                      {/* Slot 4: Tech Debt Rocks */}
                       <button 
                         className={`filter-slot-btn ${filters.showSubtasks ? 'active' : 'inactive'}`}
                         onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showSubtasks: !prev.showSubtasks })); }}
@@ -2880,35 +2894,7 @@ function App() {
                         </div>
                       </button>
 
-                      {/* Slot 4: Active Work Lamps */}
-                      <button 
-                        className={`filter-slot-btn ${filters.showLamps !== false ? 'active' : 'inactive'}`}
-                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showLamps: prev.showLamps === false ? true : false })); }}
-                      >
-                        <span className="material-symbols-outlined">light</span>
-                        <div className="filter-led"></div>
-                        <div className="filter-tooltip-card">
-                          <div className="tooltip-shortcut">Hotkey [L]</div>
-                          <div className="tooltip-title">Active Lamps</div>
-                          <p className="tooltip-desc">Shows glowing lamp posts for active in-progress work.</p>
-                        </div>
-                      </button>
-
-                      {/* Slot 5: Dewdrops */}
-                      <button 
-                        className={`filter-slot-btn ${filters.showDewdrops ? 'active' : 'inactive'}`}
-                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showDewdrops: !prev.showDewdrops })); }}
-                      >
-                        <span className="material-symbols-outlined">water_drop</span>
-                        <div className="filter-led"></div>
-                        <div className="filter-tooltip-card">
-                          <div className="tooltip-shortcut">Hotkey [D]</div>
-                          <div className="tooltip-title">Dewdrops</div>
-                          <p className="tooltip-desc">Shows shiny water droplets resting on tree foliage and leaves.</p>
-                        </div>
-                      </button>
-
-                      {/* Slot 6: Agent Statues */}
+                      {/* Slot 5: Agent Statues */}
                       <button 
                         className={`filter-slot-btn ${filters.showAgents ? 'active' : 'inactive'}`}
                         onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showAgents: !prev.showAgents })); }}
@@ -2922,7 +2908,21 @@ function App() {
                         </div>
                       </button>
 
-                      {/* Slot 7: Scatter Flowers */}
+                      {/* Slot 6: Active Lamps */}
+                      <button 
+                        className={`filter-slot-btn ${filters.showLamps !== false ? 'active' : 'inactive'}`}
+                        onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showLamps: prev.showLamps === false ? true : false })); }}
+                      >
+                        <span className="material-symbols-outlined">light</span>
+                        <div className="filter-led"></div>
+                        <div className="filter-tooltip-card">
+                          <div className="tooltip-shortcut">Hotkey [L]</div>
+                          <div className="tooltip-title">Active Lamps</div>
+                          <p className="tooltip-desc">Shows glowing lamp posts for active in-progress work.</p>
+                        </div>
+                      </button>
+
+                      {/* Slot 7: Scatter Foliage */}
                       <button 
                         className={`filter-slot-btn ${filters.showFlowers !== false ? 'active' : 'inactive'}`}
                         onClick={() => { playHoverSound(); setFilters(prev => ({ ...prev, showFlowers: prev.showFlowers === false ? true : false })); }}
@@ -2930,9 +2930,9 @@ function App() {
                         <span className="material-symbols-outlined">filter_vintage</span>
                         <div className="filter-led"></div>
                         <div className="filter-tooltip-card">
-                          <div className="tooltip-shortcut">Hotkey [F]</div>
-                          <div className="tooltip-title">Scatter Flowers</div>
-                          <p className="tooltip-desc">Shows scattered flower pots and wildflowers for 3rd-party dependencies.</p>
+                          <div className="tooltip-shortcut">Hotkey [S]</div>
+                          <div className="tooltip-title">Scatter Foliage</div>
+                          <p className="tooltip-desc">Shows decorative bamboo, sedge, flower pots, and beds.</p>
                         </div>
                       </button>
 

@@ -887,25 +887,44 @@ export function DataTreeGardenBabylon({
       if (!filters) return;
 
       scene.meshes.forEach(m => {
-        // Dewdrops Filter
-        if (m.name === "dewdropMesh" || m.name === "dewdrop") {
-          m.isVisible = filters.showDewdrops !== false;
-        }
-
-        // Epics / Trees Filter & Gnomes Filter
         let p: BABYLON.Node | null = m;
         let isTreeMesh = false;
         let isGnomeMesh = false;
+        let isFountainMesh = false;
+        let isPRMesh = false;
+        let isIssueMesh = false;
+        let isLampMesh = false;
+        let isFoliageMesh = false;
+        let isBorderMesh = false;
+
         while (p) {
-          if (p.name === "tree") isTreeMesh = true;
-          if (p.name === "gnome") isGnomeMesh = true;
+          if (p.name === "tree" || p.name.includes("Tree.glb") || p.name.includes("Bonsai.glb")) isTreeMesh = true;
+          if (p.name === "gnome" || p.name.includes("Statue")) isGnomeMesh = true;
+          if (p.name === "well" || p.name.includes("Water Fountain")) isFountainMesh = true;
+          if (p.name === "roseBush" || p.name.includes("Flower Bed")) isPRMesh = true;
+          if (p.name === "weed" || p.name.includes("Rock")) isIssueMesh = true;
+          if (p.name === "lantern" || p.name.includes("Garden Lamp")) isLampMesh = true;
+          if (p.name === "scatterFoliage" || p.name === "wildflower" || p.name.includes("Bamboo") || p.name.includes("Flower Pot")) isFoliageMesh = true;
+          if (p.name === "fence" || p.name.includes("Pillar")) isBorderMesh = true;
           p = p.parent;
         }
+
         if (isTreeMesh) {
           m.isVisible = filters.showEpics !== false;
-        }
-        if (isGnomeMesh) {
-          m.isVisible = filters.showAgents !== false && filters.showBees !== false;
+        } else if (isGnomeMesh) {
+          m.isVisible = filters.showAgents !== false;
+        } else if (isFountainMesh) {
+          m.isVisible = filters.showFountain !== false;
+        } else if (isPRMesh) {
+          m.isVisible = filters.showPRs !== false;
+        } else if (isIssueMesh) {
+          m.isVisible = filters.showSubtasks !== false;
+        } else if (isLampMesh) {
+          m.isVisible = filters.showLamps !== false;
+        } else if (isFoliageMesh) {
+          m.isVisible = filters.showFlowers !== false;
+        } else if (isBorderMesh) {
+          m.isVisible = filters.showBorders !== false;
         }
       });
     });
