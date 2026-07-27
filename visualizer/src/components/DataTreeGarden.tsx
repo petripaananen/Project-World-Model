@@ -87,7 +87,12 @@ export function DataTreeGarden({
               color: hoveredInfo.node.elementType === 'Leafy Weed' ? '#ff4d4d' :
                      hoveredInfo.node.elementType === 'Rose Bush' ? '#2ecc71' :
                      hoveredInfo.node.elementType === 'Epic Tree' ? '#3498db' :
-                     hoveredInfo.node.elementType === 'Stone Well' ? '#f1c40f' : '#e67e22',
+                     hoveredInfo.node.elementType === 'Stone Well' ? '#f1c40f' :
+                     hoveredInfo.node.elementType === 'Garden Gnome' ? '#9b59b6' :
+                     hoveredInfo.node.elementType === 'AI Agent Gnome' ? '#9b59b6' :
+                     hoveredInfo.node.elementType === 'Garden Pillar' ? '#95a5a6' :
+                     hoveredInfo.node.elementType === 'Active Lamp' ? '#f39c12' :
+                     hoveredInfo.node.elementType === 'Garden Foliage' ? '#27ae60' : '#e67e22',
               fontSize: '11px',
               fontWeight: 700,
               textTransform: 'uppercase',
@@ -102,7 +107,11 @@ export function DataTreeGarden({
              hoveredInfo.node.elementType === 'Rose Bush' ? '🌹 Rose Bush (PR)' :
              hoveredInfo.node.elementType === 'Epic Tree' ? '🌳 Epic Tree (Epic)' :
              hoveredInfo.node.elementType === 'Stone Well' ? '💧 Stone Well (Repository)' :
-             hoveredInfo.node.elementType === 'Garden Gnome' ? '🧙 Garden Gnome (AI Agent)' : '💮 Garden Element'}
+             hoveredInfo.node.elementType === 'Garden Gnome' ? '🧙 Garden Gnome (AI Agent)' :
+             hoveredInfo.node.elementType === 'AI Agent Gnome' ? '🤖 AI Agent' :
+             hoveredInfo.node.elementType === 'Garden Pillar' ? '🪵 Garden Pillar (Sprint Boundary)' :
+             hoveredInfo.node.elementType === 'Active Lamp' ? '💡 Active Lamp (In-Progress Work)' :
+             hoveredInfo.node.elementType === 'Garden Foliage' ? '🌿 Garden Foliage' : '💮 Garden Element'}
           </div>
 
           <div className="hover-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px', marginBottom: '8px' }}>

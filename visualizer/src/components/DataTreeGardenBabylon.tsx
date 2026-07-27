@@ -12,6 +12,7 @@ import {
   buildTree,
   buildFence,
   buildLantern,
+  buildScatterFoliage,
 } from './BabylonAssets';
 
 interface DataTreeGardenBabylonProps {
@@ -356,10 +357,12 @@ export function DataTreeGardenBabylon({
     const glbList = [
       "Water Fountain.glb", "Gazebo.glb", "Tree.glb", "Bonsai.glb",
       "Flower Bed.glb", "Flower Bed-dM9hXXth1I.glb", "Flower Bed-eUCvK3Oq9z.glb",
+      "Flower Bed-kxvm53IIIU.glb", "Flower Bed-wibWtE6p8L.glb",
       "Rock.glb", "Rock-UkxWNmiFFj.glb", "Japanese Sedge.glb",
       "Statue.glb", "Statue-0Mkdl3SJDT.glb", "Statue-JXmywADgSk.glb", "Statue-NZo0rzQExF.glb",
       "Flowers.glb", "Flower Pot.glb", "Flower Pot-F8zLx6wGG8.glb",
-      "Garden Lamp.glb", "Lamp.glb", "Pillar.glb",
+      "Flower Pot-FNqGPLKY0V.glb", "Flower Pot-Kgt363WkKd.glb", "Flower Pot-k1FsCQTgWu.glb",
+      "Garden Lamp.glb", "Lamp.glb", "Pillar.glb", "Bamboo.glb",
       "Bench.glb", "Table.glb", "Bird House.glb", "Chiminea.glb", "Fire Place.glb"
     ];
 
@@ -416,7 +419,8 @@ export function DataTreeGardenBabylon({
       buildLantern(scene, new BABYLON.Vector3(x, 0, z));
     });
 
-
+    // 12. Decorative Scatter Foliage (bamboo, sedge, flower pots, beds)
+    buildScatterFoliage(scene);
 
     // 11. Shadow Assignment Pass
     scene.meshes.forEach(m => {
@@ -487,10 +491,11 @@ export function DataTreeGardenBabylon({
               lastHoveredMesh = picked;
               document.body.style.cursor = 'pointer';
             }
+            const canvasRect = canvasRef.current!.getBoundingClientRect();
             onHover({
               node: details,
-              x: scene.pointerX,
-              y: scene.pointerY
+              x: canvasRect.left + scene.pointerX,
+              y: canvasRect.top + scene.pointerY
             });
             return;
           }
@@ -821,9 +826,8 @@ export function DataTreeGardenBabylon({
             while (diff > Math.PI) diff -= Math.PI * 2;
             g.node.rotation.y += diff * 0.1;
 
-            // Cozy bouncing hop animation during walk
-            // Use auto-grounded Y (g.groundY) as base — NOT hardcoded 0.01
-            g.node.position.y = g.groundY + Math.abs(Math.sin(animationTime * 12)) * 0.08;
+            // Smooth ground-level glide — no vertical bounce
+            g.node.position.y = g.groundY;
             g.node.rotation.x = 0.12; // lean forward slightly
           } else {
             // Arrived at target!
@@ -841,8 +845,8 @@ export function DataTreeGardenBabylon({
         if (g.state === 'working') {
           g.timer -= dt;
 
-          // Gentle breathing bobbing animation — use preserved groundY
-          g.node.position.y = g.groundY + Math.sin(animationTime * 3) * 0.015;
+          // Stand perfectly still at ground level — no breathing bob
+          g.node.position.y = g.groundY;
 
           // Face the target element while working on it
           let lookTarget = g.home;

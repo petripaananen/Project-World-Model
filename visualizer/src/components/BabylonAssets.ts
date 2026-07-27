@@ -1300,3 +1300,104 @@ export function buildTree(scene: BABYLON.Scene, position: BABYLON.Vector3, node:
 
   return tree;
 }
+
+// ─── DECORATIVE SCATTER FOLIAGE ──────────────────────────────────────
+// Adds green foliage props around the garden to make it feel lush and alive.
+// Uses Bamboo, Japanese Sedge, and extra Flower Pot/Bed GLBs from the asset pack.
+export function buildScatterFoliage(scene: BABYLON.Scene) {
+  const foliageGroup = new BABYLON.TransformNode("scatterFoliage", scene);
+
+  const foliageDetails = (name: string, desc: string) => ({
+    id: `foliage-${Math.random().toString(36).substring(2, 7)}`,
+    title: name,
+    elementType: 'Garden Foliage',
+    description: desc,
+  });
+
+  // ── Corner Bamboo Clusters (4 corners, inside fence line) ──
+  const bambooPositions: [number, number, number][] = [
+    [-6.0, 0, -5.8],
+    [ 6.0, 0, -5.8],
+    [-6.0, 0,  5.8],
+    [ 6.0, 0,  5.8],
+  ];
+  bambooPositions.forEach((pos, i) => {
+    const details = foliageDetails('Bamboo Cluster', 'Decorative bamboo adding lush greenery to the garden boundary.');
+    const node = instantiateGLBModel(scene, 'Bamboo.glb', foliageGroup, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.35, (i * 1.2), details);
+    if (node) {
+      node.metadata = { type: 'foliage', details };
+    }
+  });
+
+  // ── Edge Sedge Patches (along fence midpoints and inner edges) ──
+  const sedgePositions: [number, number, number, number][] = [
+    // [x, y, z, rotationY]
+    [-3.0, 0, -6.0, 0.3],
+    [ 0.0, 0, -6.0, 1.1],
+    [ 3.0, 0, -6.0, 2.0],
+    [-3.0, 0,  6.0, 0.8],
+    [ 0.0, 0,  6.0, 1.6],
+    [ 3.0, 0,  6.0, 2.4],
+    // Inner edge accent patches
+    [-6.2, 0, -3.0, 0.5],
+    [-6.2, 0,  0.0, 1.0],
+    [-6.2, 0,  3.0, 1.8],
+    [ 6.2, 0, -3.0, 0.7],
+    [ 6.2, 0,  0.0, 1.4],
+    [ 6.2, 0,  3.0, 2.2],
+  ];
+  sedgePositions.forEach((pos) => {
+    const details = foliageDetails('Ornamental Sedge', 'Decorative grass adding natural green texture to the garden floor.');
+    const node = instantiateGLBModel(scene, 'Japanese Sedge.glb', foliageGroup, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.25, pos[3], details);
+    if (node) {
+      node.metadata = { type: 'foliage', details };
+    }
+  });
+
+  // ── Mid-zone Flower Pot Accents ──
+  const potVariants = [
+    'Flower Pot-FNqGPLKY0V.glb',
+    'Flower Pot-Kgt363WkKd.glb',
+    'Flower Pot-k1FsCQTgWu.glb',
+  ];
+  const potPositions: [number, number, number][] = [
+    [-1.0, 0,  4.8],
+    [ 1.0, 0,  4.8],
+    [-4.8, 0,  1.5],
+    [ 4.8, 0,  1.5],
+    [ 0.0, 0, -4.8],
+    [-1.5, 0,  2.8],
+    [ 1.5, 0,  2.8],
+  ];
+  potPositions.forEach((pos, i) => {
+    const glbFile = potVariants[i % potVariants.length];
+    const details = foliageDetails('Flower Pot', 'Decorative potted flowers adorning the garden pathways.');
+    const node = instantiateGLBModel(scene, glbFile, foliageGroup, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.18, (i * 0.9), details);
+    if (node) {
+      node.metadata = { type: 'foliage', details };
+    }
+  });
+
+  // ── Extra Flower Bed Accents (non-data-driven decorative beds) ──
+  const bedVariants = [
+    'Flower Bed-kxvm53IIIU.glb',
+    'Flower Bed-wibWtE6p8L.glb',
+  ];
+  const bedPositions: [number, number, number][] = [
+    [-4.5, 0,  3.8],
+    [ 4.5, 0,  3.8],
+    [ 0.0, 0,  3.5],
+    [-3.5, 0,  5.5],
+    [ 3.5, 0,  5.5],
+  ];
+  bedPositions.forEach((pos, i) => {
+    const glbFile = bedVariants[i % bedVariants.length];
+    const details = foliageDetails('Flower Bed', 'Ornamental flower bed bringing colour and life to the garden.');
+    const node = instantiateGLBModel(scene, glbFile, foliageGroup, new BABYLON.Vector3(pos[0], pos[1], pos[2]), 0.3, (i * 1.4), details);
+    if (node) {
+      node.metadata = { type: 'foliage', details };
+    }
+  });
+
+  return foliageGroup;
+}
