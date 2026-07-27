@@ -22,19 +22,18 @@ In the Project World Model Causal Digital Twin, every visual element in the gard
   * **Grey Bush without Flowers:** Draft PR.
   * **Location:** Active PR bushes are planted within the active soil bed.
 
-## 🌿 3. Leafy Weeds (Issues & Bugs)
-* **Visual:** Clumps of thick, curved, organic succulent-style leaves (agave/aloe look).
+## 🪨 3. Tech Debt Rocks (Issues & Bugs)
+* **Visual:** Low-poly grey rocks and sedge clutter (`Rock.glb`, `Japanese Sedge.glb`).
 * **DTO Description:** Represents tracked **Jira or Linear Issues/Bugs**.
 * **DTO Function:**
-  * **Red Leafy Clump:** Active, unresolved, high-priority bug/issue.
-  * **Grey Leafy Clump:** Backlog task.
-  * **Location:** Spawns on the soil bed near the Well. Cleared automatically when issues are marked as resolved in Linear/Jira.
+  * **Red/Grey Clumps & Boulders:** Active, unresolved, high-priority bugs or backlog tasks.
+  * **Location:** Spawns on the right quadrant of the soil bed. Cleared automatically when issues are marked as resolved in Linear/Jira.
 
-## 💧 4. Water Well (Central Repository & Main Branch)
-* **Visual:** Stone well with wooden support columns and a bucket.
+## ⛲ 4. Water Fountain (Central Repository & Main Branch)
+* **Visual:** Tiered outdoor water fountain (`Water Fountain.glb`).
 * **DTO Description:** Represents the **Workspace Origin / Main Branch / Central Git Repository**.
 * **DTO Function:**
-  * **Well Water Health:** The water depth and clarity represent code integration stability.
+  * **Fountain Water Health:** The water depth and clarity represent code integration stability.
   * **Location:** Acts as the centerpiece of the garden. All stepping stone pipelines lead directly into it.
 
 ## 🧙 5. Garden Gnomes (AI Agents)

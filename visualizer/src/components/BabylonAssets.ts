@@ -50,6 +50,9 @@ export function instantiateGLBModel(
     }
     root.position = position.clone();
     root.rotation.y = rotationY;
+    if (metadata) {
+      root.metadata = metadata;
+    }
 
     const entries = container.instantiateModelsToScene(name => `${name}_${Math.random().toString(36).substring(2, 7)}`);
     entries.rootNodes.forEach(rNode => {
@@ -60,9 +63,13 @@ export function instantiateGLBModel(
       
       const childMeshes = rNode.getChildMeshes();
       childMeshes.forEach(m => {
-        m.isPickable = true;
-        if (metadata) {
-          m.metadata = metadata;
+        if (!m.name.startsWith("col_")) {
+          m.isPickable = true;
+          if (metadata) {
+            m.metadata = metadata;
+          }
+        } else {
+          m.isPickable = false;
         }
         m.receiveShadows = true;
         if (shadowGenerator) {
@@ -302,9 +309,9 @@ export function buildTerrain(scene: BABYLON.Scene, theme: string, grassColorHex:
 export function buildWell(scene: BABYLON.Scene, position: BABYLON.Vector3, crr: number = 1.25, projectName: string = '') {
   const details = {
     id: 'well-core',
-    title: `${projectName ? `${projectName} ` : ''}Well Core`,
-    elementType: 'Stone Well',
-    description: `Represents the main repository branch. Well water health reflects the integration stability and build success of the workspace (${crr < 1.0 ? 'BLUE means healthy' : 'RED indicates warning state'}).`,
+    title: `${projectName ? `${projectName} ` : ''}Repository Fountain`,
+    elementType: 'Water Fountain',
+    description: `Represents the main repository branch. Fountain water health reflects the integration stability and build success of the workspace (${crr < 1.0 ? 'BLUE means healthy' : 'RED indicates warning state'}).`,
     crr: crr,
     status: crr < 1.0 ? 'Optimal' : 'Debt Warning'
   };

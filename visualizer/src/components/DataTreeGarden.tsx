@@ -84,10 +84,10 @@ export function DataTreeGarden({
           {/* Garden Element Type Tag */}
           <div
             style={{
-              color: hoveredInfo.node.elementType === 'Leafy Weed' ? '#ff4d4d' :
+              color: (hoveredInfo.node.elementType === 'Leafy Weed' || hoveredInfo.node.elementType === 'Tech Debt Rock') ? '#ff4d4d' :
                      hoveredInfo.node.elementType === 'Rose Bush' ? '#2ecc71' :
                      hoveredInfo.node.elementType === 'Epic Tree' ? '#3498db' :
-                     hoveredInfo.node.elementType === 'Stone Well' ? '#f1c40f' :
+                     (hoveredInfo.node.elementType === 'Stone Well' || hoveredInfo.node.elementType === 'Water Fountain') ? '#f1c40f' :
                      hoveredInfo.node.elementType === 'Garden Gnome' ? '#9b59b6' :
                      hoveredInfo.node.elementType === 'AI Agent Gnome' ? '#9b59b6' :
                      hoveredInfo.node.elementType === 'Garden Pillar' ? '#95a5a6' :
@@ -103,10 +103,10 @@ export function DataTreeGarden({
               gap: '4px'
             }}
           >
-            {hoveredInfo.node.elementType === 'Leafy Weed' ? '🌿 Leafy Weed (Issue)' :
+            {(hoveredInfo.node.elementType === 'Leafy Weed' || hoveredInfo.node.elementType === 'Tech Debt Rock') ? '🪨 Tech Debt Rock (Issue)' :
              hoveredInfo.node.elementType === 'Rose Bush' ? '🌹 Rose Bush (PR)' :
              hoveredInfo.node.elementType === 'Epic Tree' ? '🌳 Epic Tree (Epic)' :
-             hoveredInfo.node.elementType === 'Stone Well' ? '💧 Stone Well (Repository)' :
+             (hoveredInfo.node.elementType === 'Stone Well' || hoveredInfo.node.elementType === 'Water Fountain') ? '⛲ Water Fountain (Repository)' :
              hoveredInfo.node.elementType === 'Garden Gnome' ? '🧙 Garden Gnome (AI Agent)' :
              hoveredInfo.node.elementType === 'AI Agent Gnome' ? '🤖 AI Agent' :
              hoveredInfo.node.elementType === 'Garden Pillar' ? '🪵 Garden Pillar (Sprint Boundary)' :
@@ -225,7 +225,7 @@ export function DataTreeGarden({
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 12px', fontSize: 11, lineHeight: '1.3' }}>
             <div>
-              <strong style={{ color: '#f1c40f', display: 'block' }}>💧 Stone Well</strong>
+              <strong style={{ color: '#f1c40f', display: 'block' }}>⛲ Water Fountain</strong>
               <span style={{ color: '#bbb' }}>Repository core & main branch.</span>
             </div>
             <div>

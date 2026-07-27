@@ -222,7 +222,7 @@ export function DataTreeGardenBabylon({
           progress: node.attributes?.completion ?? 0.3,
           complexity: node.attributes?.complexity ?? 2,
           risk: node.attributes?.riskProbability ?? 0.4,
-          elementType: 'Leafy Weed',
+          elementType: 'Tech Debt Rock',
         },
       });
     });
@@ -463,7 +463,11 @@ export function DataTreeGardenBabylon({
 
     scene.onPointerObservable.add((pointerInfo) => {
       if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-        const pickResult = scene.pick(scene.pointerX, scene.pointerY);
+        const pickResult = scene.pick(
+          scene.pointerX,
+          scene.pointerY,
+          (mesh) => mesh.isPickable && mesh.isVisible && !mesh.name.startsWith("col_")
+        );
         if (pickResult && pickResult.hit && pickResult.pickedMesh) {
           let targetNode: BABYLON.Node | null = pickResult.pickedMesh;
           let details: any = null;
@@ -564,8 +568,8 @@ export function DataTreeGardenBabylon({
       let targetTitle = 'Workspace';
       let targetType = 'Task';
       if (g.targetNodeId === 'well') {
-        targetTitle = 'Central Repository Well';
-        targetType = 'Well Core';
+        targetTitle = 'Central Repository Fountain';
+        targetType = 'Water Fountain Core';
       } else if (g.targetNodeId && g.targetNodeId !== 'home') {
         const weed = gardenElements.issues.find((i: any) => i.node.id === g.targetNodeId);
         const bush = gardenElements.prs.find((p: any) => p.node.id === g.targetNodeId);
@@ -638,8 +642,12 @@ export function DataTreeGardenBabylon({
       // Propagate live details to all child meshes so picking any mesh component yields the active tooltip
       const childMeshes = g.node.getChildMeshes(false);
       childMeshes.forEach((m: BABYLON.AbstractMesh) => {
-        m.metadata = detailsObj;
-        m.isPickable = true;
+        if (!m.name.startsWith("col_")) {
+          m.metadata = detailsObj;
+          m.isPickable = true;
+        } else {
+          m.isPickable = false;
+        }
       });
     };
 
