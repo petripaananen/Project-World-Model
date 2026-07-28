@@ -1,6 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import type { HoveredData } from './DataTree';
-import { DataTreeGardenBabylon } from './DataTreeGardenBabylon';
+
+const DataTreeGardenBabylon = lazy(() =>
+  import('./DataTreeGardenBabylon').then((mod) => ({ default: mod.DataTreeGardenBabylon }))
+);
 
 interface DataTreeGardenProps {
   graph: any;
@@ -49,14 +52,20 @@ export function DataTreeGarden({
       }}
     >
       {/* 3D Babylon.js Viewport */}
-      <DataTreeGardenBabylon
-        key={projectName}
-        graph={graph}
-        crr={currentCrr}
-        projectName={projectName}
-        filters={filters}
-        onHover={setHoveredInfo}
-      />
+      <Suspense fallback={
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#445566', fontWeight: 600 }}>
+          Loading 3D DTO Garden...
+        </div>
+      }>
+        <DataTreeGardenBabylon
+          key={projectName}
+          graph={graph}
+          crr={currentCrr}
+          projectName={projectName}
+          filters={filters}
+          onHover={setHoveredInfo}
+        />
+      </Suspense>
 
       {/* Floating Hover Details Card Overlay */}
       {hoveredInfo && uiVisible && (

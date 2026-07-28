@@ -32,8 +32,7 @@ interface StakeholderNode {
   y: number;
 }
 
-export const StakeholderMap: React.FC<StakeholderMapProps> = (props) => {
-  const { projectData } = props;
+export const StakeholderMap: React.FC<StakeholderMapProps> = () => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
   // Ingest or mock stakeholders
@@ -53,7 +52,7 @@ export const StakeholderMap: React.FC<StakeholderMapProps> = (props) => {
 
     // Align coordinates with graph size
     return team;
-  }, [projectData]);
+  }, []);
 
   // Stakeholder communication link definitions
   const links = useMemo(() => {

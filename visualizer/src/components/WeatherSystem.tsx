@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -6,35 +6,37 @@ interface WeatherProps {
   isRainy: boolean;
 }
 
+function createRainData(count: number): [Float32Array, Float32Array] {
+  const pos = new Float32Array(count * 2 * 3); // 2 vertices * 3 coordinates
+  const vel = new Float32Array(count);
+  
+  for (let i = 0; i < count; i++) {
+    const x = (Math.random() - 0.5) * 22;
+    const y = Math.random() * 8 + 2;
+    const z = (Math.random() - 0.5) * 22;
+    const length = 0.4 + Math.random() * 0.3; // Rain streak length
+
+    // Vertex 0 (top of streak)
+    pos[i * 6] = x;
+    pos[i * 6 + 1] = y;
+    pos[i * 6 + 2] = z;
+
+    // Vertex 1 (bottom of streak, slightly tilted for wind effect)
+    pos[i * 6 + 3] = x - 0.05; // slight tilt
+    pos[i * 6 + 4] = y - length;
+    pos[i * 6 + 5] = z;
+
+    vel[i] = Math.random() * 0.12 + 0.15; // falling velocity
+  }
+  return [pos, vel];
+}
+
 export function WeatherSystem({ isRainy }: WeatherProps) {
   const rainCount = 200;
   const rainRef = useRef<THREE.LineSegments>(null);
 
-  // Initialize random positions for rain lines (each line has 2 points -> 6 floats)
-  const [positions, velocities] = useMemo(() => {
-    const pos = new Float32Array(rainCount * 2 * 3); // 2 vertices * 3 coordinates
-    const vel = new Float32Array(rainCount);
-    
-    for (let i = 0; i < rainCount; i++) {
-      const x = (Math.random() - 0.5) * 22;
-      const y = Math.random() * 8 + 2;
-      const z = (Math.random() - 0.5) * 22;
-      const length = 0.4 + Math.random() * 0.3; // Rain streak length
-
-      // Vertex 0 (top of streak)
-      pos[i * 6] = x;
-      pos[i * 6 + 1] = y;
-      pos[i * 6 + 2] = z;
-
-      // Vertex 1 (bottom of streak, slightly tilted for wind effect)
-      pos[i * 6 + 3] = x - 0.05; // slight tilt
-      pos[i * 6 + 4] = y - length;
-      pos[i * 6 + 5] = z;
-
-      vel[i] = Math.random() * 0.12 + 0.15; // falling velocity
-    }
-    return [pos, vel];
-  }, [rainCount]);
+  // Initialize random positions for rain lines once on mount
+  const [[positions, velocities]] = useState(() => createRainData(rainCount));
 
   useFrame(() => {
     if (!rainRef.current || !isRainy) return;
