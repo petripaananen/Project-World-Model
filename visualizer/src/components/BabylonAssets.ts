@@ -131,6 +131,7 @@ export function addCollisionBox(
   box.parent = parent;
   box.position.y = yOffset + height / 2;
   box.isVisible = false;
+  box.visibility = 0;
   box.checkCollisions = true;
   box.isPickable = false;
   box.receiveShadows = false;

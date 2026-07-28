@@ -425,7 +425,7 @@ export function DataTreeGardenBabylon({
 
     // 11. Shadow Assignment Pass
     scene.meshes.forEach(m => {
-      if (m.name !== "grass" && m.name !== "soil" && m.name !== "rainEmitter") {
+      if (m.name !== "grass" && m.name !== "soil" && m.name !== "rainEmitter" && !m.name.startsWith("col_")) {
         shadowGenerator.addShadowCaster(m, true);
       }
     });
@@ -887,6 +887,12 @@ export function DataTreeGardenBabylon({
       if (!filters) return;
 
       scene.meshes.forEach(m => {
+        if (m.name.startsWith("col_")) {
+          m.isVisible = false;
+          m.visibility = 0;
+          return;
+        }
+
         let p: BABYLON.Node | null = m;
         let isTreeMesh = false;
         let isGnomeMesh = false;
