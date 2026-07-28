@@ -30,5 +30,5 @@ COPY --from=frontend-builder /app/visualizer/dist ./visualizer/dist
 ENV PORT=8080
 EXPOSE 8080
 
-# Launch the orchestrator (auto-detects mode based on GOOGLE_API_KEY environment variable)
-CMD python -m pwm.main --ingestion mock --web --loop --no-interactive
+# Launch the web server (executes AI agent analysis on-demand without infinite background token loops)
+CMD python -m pwm.main --ingestion mock --web --no-interactive

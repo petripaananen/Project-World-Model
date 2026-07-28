@@ -30,6 +30,15 @@ GCP_REGION="us-central1"
 SERVICE_NAME="project-world-model"
 REPOSITORY_NAME="pwm-containers"
 
+# --- Pre-flight Local Test Check ---
+echo "=== 0. Running Pre-flight Local Tests ==="
+echo "Running Python pytest suite..."
+python3 -m pytest || python -m pytest
+echo "Running Frontend build check..."
+(cd visualizer && npm run build)
+echo "✅ All pre-flight tests passed successfully!"
+echo ""
+
 echo "=== 1. Setting up GCP Project context ==="
 gcloud config set project "${GCP_PROJECT_ID}" || echo "Warning: Could not set project. Ensure you run gcloud login first."
 
@@ -85,6 +94,7 @@ DEPLOY_ARGS=(
     --region="${GCP_REGION}"
     --platform=managed
     --allow-unauthenticated
+    --min-instances=0
     --set-env-vars="GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_LOCATION=${GCP_REGION},PWM_ISSUE_TRACKER=jira,PWM_JIRA_PROJECT_KEY=PROJ,PWM_JIRA_CLOUD_ID=project-world-model.atlassian.net,PWM_POLL_INTERVAL=1800"
     --description="Project World Model (PWM) Dashboard & Orchestrator"
 )

@@ -13,6 +13,26 @@ $GCP_REGION = "us-central1"
 $SERVICE_NAME = "project-world-model"
 $REPOSITORY_NAME = "pwm-containers"
 
+# --- Pre-flight Local Test Check ---
+Write-Host "=== 0. Running Pre-flight Local Tests ==="
+Write-Host "Running Python pytest suite..."
+& .\.venv\Scripts\python.exe -m pytest
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Pre-flight pytest verification failed! Aborting deployment."
+    exit 1
+}
+
+Write-Host "Running Frontend build check..."
+Push-Location visualizer
+npm run build
+$npmExit = $LASTEXITCODE
+Pop-Location
+if ($npmExit -ne 0) {
+    Write-Error "Pre-flight frontend build verification failed! Aborting deployment."
+    exit 1
+}
+Write-Host "✅ All pre-flight tests passed successfully!`n"
+
 Write-Host "=== 1. Setting up GCP Project context ==="
 gcloud config set project $GCP_PROJECT_ID
 
@@ -74,6 +94,7 @@ $deploy_args = @(
     "--region=$GCP_REGION",
     "--platform=managed",
     "--allow-unauthenticated",
+    "--min-instances=0",
     "--set-env-vars=GCP_PROJECT_ID=${GCP_PROJECT_ID},GCP_LOCATION=${GCP_REGION},PWM_ISSUE_TRACKER=jira,PWM_JIRA_PROJECT_KEY=PROJ,PWM_JIRA_CLOUD_ID=project-world-model.atlassian.net",
     "--description=Project World Model (PWM) Dashboard & Orchestrator"
 )
