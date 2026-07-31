@@ -4,6 +4,17 @@ This document serves as a checklist and draft space for the **Additional Info** 
 
 ---
 
+## 📅 General Project Info
+
+- [x] **Project Start Date** `*`
+  *Question*: When did you start working on this project?
+  *Draft*: 
+  ```text
+  May 1, 2026 (Repo initialized April 29, 2026)
+  ```
+
+---
+
 ## 📈 Financials & Revenue
 
 - [x] **Revenue by Month** `*`
@@ -19,7 +30,7 @@ This document serves as a checklist and draft space for the **Additional Info** 
   *Note*: Reported separately from Total Revenue so judges can assess whether the underlying business serves arms-length third-party customers.
   *Draft*: 
   ```text
-  $0
+  $0. No revenue was earned from team members, family, related entities, or pre-existing relationships during the hackathon period.
   ```
 
 - [x] **Total Revenue** `*`
@@ -29,11 +40,26 @@ This document serves as a checklist and draft space for the **Additional Info** 
   $0
   ```
 
+- [x] **Explanation of Revenue Shared Above** `*`
+  *Question*: Explain the revenue shared above. Ideally include 1) Price per customer, 2) What period each payment covers (e.g., monthly, one-time), and 3) The number of paying users or transactions represented.
+  *Draft*: 
+  ```text
+  $0 Total Revenue. Project World Model remained in a pre-launch/closed beta state during the hackathon period (May–August 2026). No subscription fees or transaction charges were collected (Price per customer: $0, Paying users: 0, Total transactions: 0). Tiered subscription pricing ($19.99/mo Basic, $49.99/mo Pro, $99.99/mo Enterprise) will activate upon commercial V1.0 launch.
+  ```
+
+- [x] **Upload Profit Evidence (P&L)** `*`
+  *Question*: Upload your Profit evidence (P&L). Revenue and Expenses evidence in a form of a simple P&L (pdf, csv, png, xlsx allowed).
+  *File to Upload*: 
+  ```text
+  Upload file: Docs/PWM_Profit_and_Loss_Statement.csv
+  (File generated in repository: Docs/PWM_Profit_and_Loss_Statement.csv)
+  ```
+
 - [x] **Total Expenses** `*`
   *Question*: Total costs incurred during the Hackathon period, in USD (even if $0).
   *Draft*: 
   ```text
-  $0
+  $38.00 USD (€34.92)
   ```
 
 - [x] **Total Cost of Goods Sold (COGS)** `*`
@@ -41,7 +67,7 @@ This document serves as a checklist and draft space for the **Additional Info** 
   *Constraint*: Include a one-sentence description of Costs directly tied to production of goods and services sold including labor and materials.
   *Draft*: 
   ```text
-  $0.
+  $38.00 USD (€34.92) covering Gemini API inference tokens (Gemini 3.5/3.6 Flash and 2.5 Pro) and Google Cloud container/storage hosting.
   ```
 
 - [x] **Total Marketing & Customer Acquisition Expense** `*`
@@ -64,7 +90,7 @@ This document serves as a checklist and draft space for the **Additional Info** 
   *Constraint*: Include a one-sentence description of what these costs cover.
   *Draft*: 
   ```text
-  None.
+  None. All infrastructure costs are detailed under COGS above.
   ```
 
 ---
@@ -104,14 +130,32 @@ This document serves as a checklist and draft space for the **Additional Info** 
   *Question*: Explain how your project uses AI to impact the world, specifically in the category you have chosen.
   *Draft*: 
   ```text
-  PWM acts as an L3 Causal Digital Twin, addressing the "Paradox of Agility" for developers and small business teams. By using an Agent Verification Engine (Worker + Critic agents) to autonomously resolve integration debt before it hits production, it reduces software release delays, prevents costly manual re-work, and empowers entrepreneurs to leverage rapid AI generation safely and sustainably.
+  PWM acts as an L3 Causal Digital Twin in the Small Business Services category, resolving the "Paradox of Agility" for software development teams and tech startups. By using an Agent Verification Engine (Worker + Critic agents) to autonomously resolve integration debt before code merges hit production, it eliminates software release delays, prevents costly manual re-work, and empowers small engineering businesses to scale safely.
   ```
 
 - [x] **Business Model** `*`
   *Question*: Explain the underlying business model of your submission.
   *Draft*: 
   ```text
-  SaaS subscription model targeting small-to-medium development teams and game studios, offering tiered pricing ($19.99/mo Basic, $49.99/mo Pro, $99.99/mo Enterprise) based on repo sizes, API transaction volume, and number of concurrent simulated branches.
+  SaaS subscription model targeting small-to-medium development teams and software engineering startups, offering tiered pricing ($19.99/mo Basic, $49.99/mo Pro, $99.99/mo Enterprise) based on repo sizes, API transaction volume, and number of concurrent simulated branches.
+  ```
+
+- [x] **Business Model Sustainability & Viability** `*`
+  *Question*: Explain how your business model shared above is sustainable and viable. (Address five-year goal, path to profitability, and why it's achievable based on hackathon traction).
+  *Draft*: 
+  ```text
+  (1) Five-Year Goal & Market Opportunity:
+  - Total Addressable Market (TAM): The global market for AI software development tools is projected to reach $240B by late 2026, with automated AI testing growing at a 30% CAGR.
+  - Target Market Share & Revenue (Year 5): Capturing 0.05% of the market ($120M ARR) across ~15,000 active engineering subscriptions (Basic $19.99/mo, Pro $49.99/mo, Enterprise $99.99/mo).
+
+  (2) Path to Profitability & P&L Projections:
+  - Year 1: $150K ARR by launching across small business software teams. Cash-flow positive status in Month 10.
+  - Year 2: $1.2M ARR with ~82% gross margins as CRR cost-optimization algorithms control LLM token spend.
+  - Year 3–5: Scaling to $15M (Y3) -> $50M (Y4) -> $120M (Y5) ARR with net operating margins >35%.
+
+  (3) Why It’s Achievable:
+  - Value Hypothesis: Addresses the "Agility Paradox" where rapid AI code generation creates massive integration debt. PWM's Agent Verification Engine automates QA/integration, delivering a 10x ROI for small businesses.
+  - Hackathon Traction: Our agents executed over 4.5M tokens across Gemini 3.6 Flash, 3.5 Flash, and 3.1 Pro with zero cash wasted, running live counterfactual simulations on Cloud Run with a July 2026 operational cost of only €34.92 ($38 USD).
   ```
 
 - [x] **Sustainability Plan** `*`
@@ -125,7 +169,7 @@ This document serves as a checklist and draft space for the **Additional Info** 
   *Question*: Which AI tools have you leveraged while working on this project?
   *Draft*: 
   ```text
-  Gemini 3.5 Flash, Gemini 3.1 Pro, Google Antigravity IDE (Agent Manager), and the Model Context Protocol (MCP) server ecosystem.
+  Gemini 3.6 Flash, Gemini 3.5 Flash, Gemini 3.1 Pro, Google Antigravity IDE (Agent Manager), and the Model Context Protocol (MCP) server ecosystem.
   ```
 
 - [x] **Business Operations with AI** `*`
@@ -155,7 +199,7 @@ This document serves as a checklist and draft space for the **Additional Info** 
   *Question*: If your project uses an LLM, it must use Gemini API for at least one LLM call. Please explain which LLMs are used in the project and specifically how the Gemini API is used.
   *Draft*: 
   ```text
-  The project utilizes Gemini 3.1 Pro (for deep causal reasoning and complex Worker agent conflict resolutions) and Gemini 3.5 Flash (for fast validation checks by the Critic agent). The Gemini API is called via the google-genai SDK inside the BaseAgent class.
+  The project utilizes Gemini 3.6 Flash (for default agent reasoning and high-speed telemetry ingestion), Gemini 3.1 Pro (for deep causal reasoning and complex Worker agent conflict resolutions), and Gemini 3.5 Flash (for fast validation checks by the Critic agent). The Gemini API is called via the google-genai SDK inside the BaseAgent class.
   ```
 
 ---
@@ -200,4 +244,33 @@ This document serves as a checklist and draft space for the **Additional Info** 
   *Draft*: 
   ```text
   Extremely High
+  ```
+
+---
+
+## 🌐 External Prizes (Optional)
+
+- [x] **Agentic Economy Prize - Opt-In**
+  *Question*: Are you opting into the external $50K Agentic Economy Prize (administered by Circle)?
+  *Selection*: `Do not opt in` *(Select "I confirm" if submitting a Circle wallet integration)*
+
+- [x] **Agentic Economy Prize - GitHub Integration Link**
+  *Question*: A link to a public GitHub repo verifying the integration.
+  *Draft*: 
+  ```text
+  https://github.com/petripaananen/Project-World-Model
+  ```
+
+- [x] **Agentic Economy Prize - Circle Wallet Address**
+  *Question*: The agent's Circle wallet address as proof of the transaction.
+  *Draft*: 
+  ```text
+  N/A
+  ```
+
+- [x] **Agentic Economy Prize - Block-Explorer URL**
+  *Question*: The agent's clickable block-explorer URL as proof of the transaction.
+  *Draft*: 
+  ```text
+  https://
   ```

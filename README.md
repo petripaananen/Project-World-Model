@@ -23,15 +23,22 @@ The framework is conceptually validated by Petri Paananen's Master's Thesis: *"I
 ---
 
 ## 🚀 Gemini XPRIZE Hackathon Submission
-This project is entered in the **Build with Gemini XPRIZE Hackathon** under the **Small Business Services** and **Entrepreneurship & Job Creation** categories.
+This project is entered in the **Build with Gemini XPRIZE Hackathon** under the **Small Business Services** category.
 
-*   **The Mission**: Empower software development teams by automating complex code integration, QA verification, and risk simulation.
+### 📋 Submission Deliverables Package
+*   📄 **Written Narrative (500–1,000 words)**: [Docs/XPRIZE_NARRATIVE.md](./Docs/XPRIZE_NARRATIVE.md)
+*   📹 **3-Minute Demo Video Blueprint & Script**: [Docs/XPRIZE_DEMO_SCRIPT.md](./Docs/XPRIZE_DEMO_SCRIPT.md)
+*   📝 **Devpost Submission Checklist & Responses**: [Docs/xprize_additional_info.md](./Docs/xprize_additional_info.md)
+*   💰 **Financial Disclosures & Expense Evidence**: [Docs/evidence_of_profit.md](./Docs/evidence_of_profit.md)
+*   ⚙️ **Product Operations & Execution Proof**: [walkthrough.md](./walkthrough.md)
+
+### 🎯 Key Alignment Highlights
+*   **The Mission**: Empower small software development businesses and tech startups by automating complex code integration, QA verification, and risk simulation.
 *   **AI-Native Operations**: Employs an autopilot 24-hour asynchronous cycle. Worker and Critic agents resolve code errors "in committee" overnight, generating a causal proof of verification with minimal human intervention.
 *   **Business Viability (CRR Economics)**: Guided by the **Compute-to-Rework Ratio (CRR)**:
     $$\text{CRR} = \frac{\text{Simulation Inference Cost } (€)}{\text{Value of Avoided Rework } (€)}$$
     This mathematically and economically justifies agent compute costs against developer hourly rates, preventing Jevons Paradox cost runaways.
-*   **Small Business Services**: Democratizes AAA-level QA and integration capabilities, allowing small teams and indie game studios to scale and compete without massive QA departments.
-*   **Entrepreneurship & Job Creation**: Enables micro-founders and freelancers to launch software without drowning in integration debt. Creates the new, high-skilled career category of the **Scenario Strategist**.
+*   **Small Business Services**: Democratizes enterprise-level QA and integration capabilities, allowing small software businesses, tech startups, and engineering teams to scale and compete without massive QA departments.
 *   **GCP & Gemini Stack**: Deployed on Google Cloud (Cloud Run, Firestore, Compute Engine) and powered by the **Gemini API (via Vertex AI)** for multi-agent reasoning, latent-space causal simulation, and secure critiques.
 
 ---

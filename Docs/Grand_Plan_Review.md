@@ -30,7 +30,7 @@ The system targets **Causal Counterfactual Reasoning** (Thesis §2.2), enabling 
 | **4** | Security & Compliance (SAIF) | ✅ **DONE** | NVIDIA NemoClaw sandbox checks and Merkle-chained event logs implemented (Thesis §6.3.2). |
 | **5** | Simulation Sandbox & Visualization | ✅ **DONE** | Dashboard shows CRR, What-If Sandbox, conflict cards, debate logs, 24h cycle tracker, and interactive 3D Classical Garden visualizer. |
 | **6** | MVP & GCP Deployment | ✅ **DONE** | Cloud Run deployed, GCE GPU vm lifecycle controls and setup templates operationalized. |
-| **7** | Commercial V1.0 & XPRIZE | ⏳ **PENDING** | Demo video and written narrative pending. Rebranding complete. Deadline: August 17, 2026. |
+| **7** | Commercial V1.0 & XPRIZE | ⏳ **IN PROGRESS** | Hackathon submission deliverables (video & narrative) required by Aug 17, 2026. Commercial launch/GTM tasks marked optional & deferred post-hackathon. |
 
 ---
 
@@ -142,7 +142,7 @@ Project World Model/
 - **Layer 2 Simulation**: LeWM connector for action-conditioned simulation, CRR token/GPU/electricity cost tracking, and local/Gemini fallbacks.
 - **Layer 3 Orchestration**: Specialized Worker agents (QA, Build, Art Integration), WorkerAgentFactory, and LMMs-Engine visual context parsing.
 - **Layer 4 Validation**: NVIDIA NemoClaw sandbox connector, safety/critique filters, adversarial test suite, and loop-detection.
-- **Layer 5**: FastAPI glassmorphic web dashboard, What-If Sandbox, WebSocket telemetry, day/night cycle phases, CRR cost gauges, and interactive 3D Classical Garden digital twin visualization (mapping metrics to organic 3D elements like flowering bushes, wilted weeds, well water colors, stepping stone dependency paths, and butterfly agents; featuring dynamic seasons, water ripples, custom animations, a detailed collapsible map legend, and flexbox layout stacking).
+- **Layer 5**: FastAPI glassmorphic web dashboard, What-If Sandbox, WebSocket telemetry, day/night cycle phases, CRR cost gauges, and interactive 3D Classical Garden digital twin visualization (mapping metrics to organic 3D elements like flowering bushes, wilted weeds, Stone Well water core health, and AI Agent statues; featuring dynamic seasons, water ripples, custom animations, a detailed collapsible map legend, and flexbox layout stacking).
 - **GCP deployment**: Cloud Run + Firestore + Vertex AI endpoints deployed, and resilient Firestore exponential backoffs.
 - **VM Lifecycle & Setup**: GCE GPU driver and mock service configuration setup script template, with automated `gcloud` lifecycle commands in `run_gpu_pipeline.py`.
 - **SAIF compliance**: Safety filters, input sanitizer, sandbox instructions, red-team tests.

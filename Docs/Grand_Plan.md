@@ -185,7 +185,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 | 5.3 | Develop telemetry visualizers for agent negotiation trees | ✅ Done |
 | 5.4 | Use Stitch MCP for design system consistency | ✅ Done |
 | 5.5 | Iterate UI/UX for full 5-layer architecture with causal evidence, debate logs, CRR gauges | ✅ Done |
-| 5.6 | Implement 3D Classical Garden Simulation (DTO Simulation) mapping code integration metrics to 3D elements (PR bushes, Issue weeds, Well health, Butterfly agents, seasons) with an interactive details HUD and collapsible map legend | ✅ Done |
+| 5.6 | Implement 3D Classical Garden Simulation (DTO Simulation) mapping code integration metrics to 3D elements (PR bushes, Issue weeds, Stone Well core health, AI Agent statues, seasons) with an interactive details HUD and collapsible map legend | ✅ Done |
 
 ---
 
@@ -205,16 +205,16 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 
 ### ⏳ Phase 7 — Commercial V1.0, XPRIZE Submission & Go-to-Market
 
-- **Objective**: XPRIZE submission and commercial launch (Thesis §6.5).
+- **Objective**: XPRIZE submission deliverables (Required) and post-hackathon commercial launch (Optional/Deferred) (Thesis §6.5).
 
-| Task | Description | Status |
-|------|-------------|--------|
-| 7.1 | Finalize XPRIZE Demo Video showcasing all 5 layers | ❌ Not started |
-| 7.2 | Finalize XPRIZE Written Narrative (500–1000 words) | ❌ Not started |
-| 7.3 | Launch Scenario Strategist marketing campaign (§5.3) | ❌ Not started |
-| 7.4 | Establish Subscription Pricing Tiers: Basic ($19.99), Pro ($49.99), Enterprise ($99.99) | ❌ Not started |
-| 7.5 | Execute localized Finnish game dev ecosystem launch (§6.5) | ❌ Not started |
-| 7.6 | De-academicization & Commercial Rebranding: Remove thesis academicisms (Pearl L3, Jevons Paradox) from UI/UX and documentation to prepare the product for commercial launch. | ✅ Done |
+| Task | Description | Status | Scope |
+|------|-------------|--------|-------|
+| 7.1 | Finalize XPRIZE Demo Video showcasing all 5 layers | ❌ Not started | **Required for Hackathon** |
+| 7.2 | Finalize XPRIZE Written Narrative (500–1000 words) | ❌ Not started | **Required for Hackathon** |
+| 7.3 | Launch Scenario Strategist marketing campaign (§5.3) | ⏸️ Deferred | *Optional (Post-Hackathon)* |
+| 7.4 | Establish Subscription Pricing Tiers: Basic ($19.99), Pro ($49.99), Enterprise ($99.99) | ⏸️ Deferred | *Optional (Post-Hackathon)* |
+| 7.5 | Execute localized Finnish game dev ecosystem launch (§6.5) | ⏸️ Deferred | *Optional (Post-Hackathon)* |
+| 7.6 | De-academicization & Commercial Rebranding: Remove thesis academicisms (Pearl L3, Jevons Paradox) from UI/UX and documentation to prepare the product for commercial launch. | ✅ Done | Completed |
 
 ---
 

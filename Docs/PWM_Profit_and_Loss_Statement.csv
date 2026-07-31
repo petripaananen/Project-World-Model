@@ -1,0 +1,27 @@
+Project World Model (PWM) — Profit & Loss Statement (May 1 2026 - August 31 2026)
+Reporting Currency,USD ($) / EUR (€)
+Status,Pre-Launch / Closed Beta
+
+Category,May 2026,June 2026,July 2026,August 2026,Total
+Gross Revenue,$0.00,$0.00,$0.00,$0.00,$0.00
+- Related-Party Revenue,$0.00,$0.00,$0.00,$0.00,$0.00
+- Third-Party Customer Revenue,$0.00,$0.00,$0.00,$0.00,$0.00
+
+Infrastructure & API Expenses (COGS),$0.00,$0.00,€34.92 (~$38.00),$0.00,€34.92 (~$38.00)
+- Gemini API Token Costs (Gemini 3.6/3.5 Flash & 3.1 Pro),$0.00,$0.00,€33.01 ($36.00),$0.00,€33.01 ($36.00)
+- Artifact Registry Container Storage & GCS Data Transfer,$0.00,$0.00,€1.83 ($2.00),$0.00,€1.83 ($2.00)
+- Google Cloud Run Compute (Offset by Free Tier Credits),$0.00,$0.00,€0.08 (€0.00 Net),$0.00,€0.08 (€0.00 Net)
+
+Gross Profit / (Loss),$0.00,$0.00,-€34.92 (-$38.00),$0.00,-€34.92 (-$38.00)
+
+Operating Expenses (OpEx),$0.00,$0.00,$0.00,$0.00,$0.00
+- Marketing & Customer Acquisition (CAC),$0.00,$0.00,$0.00,$0.00,$0.00
+- Software Tools & Licensing,$0.00,$0.00,$0.00,$0.00,$0.00
+
+Net Income (Profit / Loss),$0.00,$0.00,-€34.92 (-$38.00),$0.00,-€34.92 (-$38.00)
+
+Disclosures & Notes:
+1. Revenue: PWM remained in closed beta/pre-launch status during the hackathon period. $0 revenue collected.
+2. COGS: Real infrastructure expenses incurred during July 2026 development total €34.92 ($38.00 USD) across Gemini API token usage and Google Cloud hosting.
+3. CAC: $0 marketing expenses. Growth pursued via direct community engagement and open-source documentation.
+4. Certification: Certified accurate by Petri Paananen (Founder Project World Model).
