@@ -21,7 +21,7 @@ Project World Model acts as an autonomous operational co-pilot for small softwar
 
 1. **Continuous Telemetry Observation (Layer 1)**: Ingests version control events (GitHub MCP), task state changes (Linear MCP), and team communications, utilizing a **V-JEPA 2.1** connector to encode project telemetry into latent spatial embeddings stored in a cryptographically chained, immutable JSON Lines event log.
 2. **Counterfactual Risk Forecasting (Layer 2)**: Driven by **LeWM (Latent World Model)** action-conditioned simulation engines, PWM predicts "what-if" branch merge scenarios in latent space before code is merged, calculating causal risk probabilities.
-3. **Agent Verification Engine (Layer 3 & 4)**: When conflicts arise, specialized Worker agents (QA, Build, Pipeline Integration) powered by **Gemini 3.6 Flash** and **Gemini 3.1 Pro** draft solutions. Critic agents powered by **Gemini 3.6 Flash**, **Gemini 3.5 Flash**, and **Gemini 2.5 Pro** run sandboxed verification inside isolated containers (**NVIDIA NemoClaw** architecture) to enforce code safety and SAIF compliance before code hits production.
+3. **Agent Verification Engine (Layer 3 & 4)**: When conflicts arise, specialized Worker agents (QA, Build, Pipeline Integration) powered by **Gemini 3.6 Flash** and **Gemini 3.1 Pro** draft solutions. Critic agents powered by **Gemini 3.6 Flash**, **Gemini 3.5 Flash**, and **Gemini 3.1 Pro** run sandboxed verification inside isolated containers (**NVIDIA NemoClaw** architecture) to enforce code safety and SAIF compliance before code hits production.
 4. **CRR Intelligence Budgeting**: Calculates the **Compute-to-Rework Ratio (CRR)**:
    $$\text{CRR} = \frac{\text{Simulation Inference Cost } (€)}{\text{Value of Avoided Rework } (€)}$$
    This mathematically balances token spend against risk mitigation, preventing Jevons Paradox cost runaways.
@@ -37,7 +37,7 @@ PWM is built natively on Google Cloud Platform and powered by a hybrid LLM and W
   - **Gemini 3.6 Flash**: Serves as the primary high-speed reasoning engine for real-time telemetry ingestion, event parsing, and dynamic UI state updates.
   - **Gemini 3.1 Pro**: Executes deep causal reasoning, multi-branch conflict analysis, and complex code proposal generation for specialized Worker agents.
   - **Gemini 3.5 Flash**: Powers fast Critic agent validation loops, loop-detection audits, and SAIF security compliance checks.
-  - **Gemini 2.5 Pro**: Used for analytical fallback checks and structured code verification.
+  - **Gemini 3.1 Pro**: Used for deep causal reasoning, complex code proposal generation, and analytical verification.
 - **Latent World Models & Middleware**: Integrated connectors for **V-JEPA 2.1** (Layer 1 representation learning) and **LeWM** (Layer 2 action-conditioned latent simulation).
 - **Sandboxed Execution**: **NVIDIA NemoClaw** containerized sandbox environment for secure, isolated code execution auditing.
 - **Cloud Infrastructure & Tools**: Hosted on **Google Cloud Run** with automatic scale-to-zero cost controls, integrated inside **Google Antigravity IDE** via the **Model Context Protocol (MCP)**, and visualized using a glassmorphic React + Babylon.js / Three.js 3D frontend.
@@ -74,4 +74,4 @@ PWM is built natively on Google Cloud Platform and powered by a hybrid LLM and W
 - **Small Business SaaS Onboarding**: Rolling out closed beta access to small software businesses and tech startups.
 - **Live Stream Ingestors**: Expanding Layer 1 connectors for real-time Slack and Discord WebSocket streaming.
 - **Self-Supervised Latent Space Calibration (Phase 8)**: Grounding LeWM simulation predictions against observed actual outcomes to continuously fine-tune latent state vectors.
-- **Commercial SaaS Tier Launch**: Activating tiered subscription plans ($19.99/mo Basic, $49.99/mo Pro, $99.99/mo Enterprise).
+- **Commercial SaaS Tier Launch**: Activating tiered subscription plans (Free Hobby $0/mo, Starter $9.99/mo, Pro $49.99/mo, Enterprise $99.99/mo) with included compute quotas and a Three-Gate overage model that defaults to throttled mode — ensuring customers are never surprised by costs.

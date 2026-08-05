@@ -43,9 +43,9 @@
 ---
 
 ### Scene 4: CRR Metric & GCP Cloud Infrastructure (1:55 – 2:30)
-- **Visual**: Show the **CRR (Causal Return on ROI)** intelligence gauge updating in real-time. Cut to Google Cloud Console showing **Cloud Run** service status, **Vertex AI API** token telemetry, and GCE GPU VM life cycle scripts (`run_gpu_pipeline.py`).
+- **Visual**: Show the **CRR (Compute-to-Rework Ratio)** intelligence gauge updating in real-time. Cut to Google Cloud Console showing **Cloud Run** service status, **Vertex AI API** token telemetry, and GCE GPU VM life cycle scripts (`run_gpu_pipeline.py`).
 - **Voiceover**: 
-  > *"Every AI decision comes with a cost. PWM tracks CRR—Causal Return on ROI—ensuring model token spend directly correlates with risk mitigated. Built natively on Google Cloud, PWM runs orchestrator loops on Cloud Run, leverages Vertex AI for Gemini LLM calls, and automates on-demand Compute Engine GPU instances for intensive simulation."*
+  > *"Every AI decision comes with a cost. PWM tracks CRR—Compute-to-Rework Ratio—ensuring model token spend directly correlates with risk mitigated. Built natively on Google Cloud, PWM runs orchestrator loops on Cloud Run, leverages Vertex AI for Gemini LLM calls, and automates on-demand Compute Engine GPU instances for intensive simulation."*
 
 ---
 

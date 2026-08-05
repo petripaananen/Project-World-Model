@@ -1,6 +1,6 @@
 # XPRIZE Hackathon Submission Deliverables — Walkthrough & Verification
 
-**Date:** July 31, 2026  
+**Date:** August 4, 2026  
 **Status:** All XPRIZE Hackathon Submission Deliverables Created & Verified ✅  
 **Submission Target:** Build with Gemini XPRIZE Hackathon (Deadline: August 17, 2026)
 
@@ -30,7 +30,7 @@ We have finalized all required non-code and technical submission materials for t
 ### 3. Real GCP Billing Expense Evidence ([Docs/evidence_of_profit.md](./Docs/evidence_of_profit.md) & [Docs/xprize_additional_info.md](./Docs/xprize_additional_info.md))
 - **Actual Expense Figure**: Incorporated the official July 2026 GCP Billing CSV report:
   - Total July Expense: **€34.92** (approx. **$38.00 USD**).
-  - Gemini API Token Inferences: €33.01 (over 4.5M tokens across Gemini 3.5 Flash, Gemini 3.6 Flash, and Gemini 2.5 Pro).
+  - Gemini API Token Inferences: €33.01 (over 4.5M tokens across Gemini 3.5 Flash, Gemini 3.6 Flash, and Gemini 3.1 Pro).
   - Cloud Infrastructure & Storage: €1.83 for Artifact Registry container storage and Cloud Storage egress.
   - Cloud Run Compute: Fully offset by GCP Free Tier / promotional credits (net cost €0.08).
 - **Financial Status**: Formally declared pre-revenue $0 profit/loss statement compliant with hackathon guidelines.

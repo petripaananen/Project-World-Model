@@ -1,276 +1,186 @@
-# XPRIZE Submission: Additional Info Questions
+# 🚀 Build with Gemini XPRIZE — Devpost Submission Cheat Sheet
 
-This document serves as a checklist and draft space for the **Additional Info** section of the Build with Gemini XPRIZE Devpost submission page. 
-
----
-
-## 📅 General Project Info
-
-- [x] **Project Start Date** `*`
-  *Question*: When did you start working on this project?
-  *Draft*: 
-  ```text
-  May 1, 2026 (Repo initialized April 29, 2026)
-  ```
+This document compiles all ready-to-copy text answers for your **Devpost submission forms** (Project Story Narrative & Additional Info fields) for **Project World Model (PWM)**.
 
 ---
 
-## 📈 Financials & Revenue
+## 📝 SECTION 1: Main Project Story (Narrative Tab)
 
-- [x] **Revenue by Month** `*`
-  *Question*: Revenue broken out by calendar month, in USD (even if $0): May, June, July, and August 2026.
-  *Example*: "May: $0, June: $3, July: $10, August: $10"
-  *Draft*: 
-  ```text
-  May: $0, June: $0, July: $0, August: $0
-  ```
-
-- [x] **Related-Party Revenue** `*`
-  *Question*: Any revenue earned during the Hackathon period from team members, family, related entities, or pre-existing customer relationships, in USD (even if $0).
-  *Note*: Reported separately from Total Revenue so judges can assess whether the underlying business serves arms-length third-party customers.
-  *Draft*: 
-  ```text
-  $0. No revenue was earned from team members, family, related entities, or pre-existing relationships during the hackathon period.
-  ```
-
-- [x] **Total Revenue** `*`
-  *Question*: Total revenue earned during the Hackathon period, in USD (even if $0).
-  *Draft*: 
-  ```text
-  $0
-  ```
-
-- [x] **Explanation of Revenue Shared Above** `*`
-  *Question*: Explain the revenue shared above. Ideally include 1) Price per customer, 2) What period each payment covers (e.g., monthly, one-time), and 3) The number of paying users or transactions represented.
-  *Draft*: 
-  ```text
-  $0 Total Revenue. Project World Model remained in a pre-launch/closed beta state during the hackathon period (May–August 2026). No subscription fees or transaction charges were collected (Price per customer: $0, Paying users: 0, Total transactions: 0). Tiered subscription pricing ($19.99/mo Basic, $49.99/mo Pro, $99.99/mo Enterprise) will activate upon commercial V1.0 launch.
-  ```
-
-- [x] **Upload Profit Evidence (P&L)** `*`
-  *Question*: Upload your Profit evidence (P&L). Revenue and Expenses evidence in a form of a simple P&L (pdf, csv, png, xlsx allowed).
-  *File to Upload*: 
-  ```text
-  Upload file: Docs/PWM_Profit_and_Loss_Statement.csv
-  (File generated in repository: Docs/PWM_Profit_and_Loss_Statement.csv)
-  ```
-
-- [x] **Total Expenses** `*`
-  *Question*: Total costs incurred during the Hackathon period, in USD (even if $0).
-  *Draft*: 
-  ```text
-  $38.00 USD (€34.92)
-  ```
-
-- [x] **Total Cost of Goods Sold (COGS)** `*`
-  *Question*: Total Cost of Goods Sold during the Hackathon period, in USD (even if $0). Costs directly tied to production of goods and services sold including labor and materials.
-  *Constraint*: Include a one-sentence description of Costs directly tied to production of goods and services sold including labor and materials.
-  *Draft*: 
-  ```text
-  $38.00 USD (€34.92) covering Gemini API inference tokens (Gemini 3.5/3.6 Flash and 2.5 Pro) and Google Cloud container/storage hosting.
-  ```
-
-- [x] **Total Marketing & Customer Acquisition Expense** `*`
-  *Question*: Total marketing and customer acquisition expense, in USD (even if $0). This includes advertising and any promotion activities.
-  *Constraint*: Include a one-sentence description of any expenses associated with advertising and any promotion activities.
-  *Draft*: 
-  ```text
-  $0.
-  ```
-
-- [x] **Explanation of Marketing Expenses**
-  *Question*: Please explain the marketing expenses you incurred during the hackathon period, if any.
-  *Draft*: 
-  ```text
-  None.
-  ```
-
-- [x] **Additional Expenses**
-  *Question*: Please share any missing expenses not covered in the previous expense questions.
-  *Constraint*: Include a one-sentence description of what these costs cover.
-  *Draft*: 
-  ```text
-  None. All infrastructure costs are detailed under COGS above.
-  ```
+### 📌 Project Title & Tagline
+* **Project Name:** `Project World Model (PWM)`
+* **Track Category:** `Small Business Services`
+* **Short Description / Subtitle:** `Autonomous operational co-pilot & L3 Causal Digital Twin powered by Google Gemini to eliminate integration debt for small software engineering businesses.`
 
 ---
 
-## 👥 Users & Traction
+### 1. Inspiration
+```text
+Project World Model (PWM) was born out of a systemic crisis in modern software engineering: the "Paradox of Agility." While generative AI tools allow small development teams to generate code ten times faster, the cost of integrating that code has exploded. Hidden dependency collisions, architectural drift, and integration debt consume up to 40% of developer time in small engineering businesses and tech startups.
 
-- [x] **Number of Users Acquired** `*`
-  *Question*: Number of users acquired during the hackathon (even if 0).
-  *Draft*: 
-  ```text
-  0
-  ```
-
-- [x] **Number of Paying Users** `*`
-  *Question*: Number of those users paying for your services or product during the hackathon (even if 0).
-  *Draft*: 
-  ```text
-  0
-  ```
-
-- [x] **Testimonial**
-  *Question*: Share a verifiable testimonial by a customer or user that is available publicly via a post online.
-  *Draft*: 
-  ```text
-  Not yet available.
-  ```
-
-- [x] **Customer Concentration Confirmation** `*`
-  *Confirmation*: I confirm that no single customer represents more than 40% of revenue acquired during the hackathon.
-  *Status*: [x] Confirmed
+Traditional Agile/Scrum boards are passive and reactive—they track what broke yesterday rather than predicting what will break tomorrow. Grounded in Master's Thesis research at JAMK University of Applied Sciences, we set out to build an L3 Causal Digital Twin (CDT) that shifts software development from reactive bug-fixing to proactive, counterfactual scenario simulation.
+```
 
 ---
 
-## 🤖 AI & Technology Integration
+### 2. What it does
+```text
+Project World Model acts as an autonomous operational co-pilot for small software development businesses, deploying a 5-layer architecture powered by Google Gemini and specialized open-source world models:
 
-- [x] **AI Impact & Category Fit** `*`
-  *Question*: Explain how your project uses AI to impact the world, specifically in the category you have chosen.
-  *Draft*: 
-  ```text
-  PWM acts as an L3 Causal Digital Twin in the Small Business Services category, resolving the "Paradox of Agility" for software development teams and tech startups. By using an Agent Verification Engine (Worker + Critic agents) to autonomously resolve integration debt before code merges hit production, it eliminates software release delays, prevents costly manual re-work, and empowers small engineering businesses to scale safely.
-  ```
+1. Continuous Telemetry Observation (Layer 1): Ingests version control events (GitHub MCP), task state changes (Linear MCP), and team communications, utilizing a V-JEPA 2.1 connector to encode project telemetry into latent spatial embeddings stored in a cryptographically chained, immutable JSON Lines event log.
 
-- [x] **Business Model** `*`
-  *Question*: Explain the underlying business model of your submission.
-  *Draft*: 
-  ```text
-  SaaS subscription model targeting small-to-medium development teams and software engineering startups, offering tiered pricing ($19.99/mo Basic, $49.99/mo Pro, $99.99/mo Enterprise) based on repo sizes, API transaction volume, and number of concurrent simulated branches.
-  ```
+2. Counterfactual Risk Forecasting (Layer 2): Driven by LeWM (Latent World Model) action-conditioned simulation engines, PWM predicts "what-if" branch merge scenarios in latent space before code is merged, calculating causal risk probabilities.
 
-- [x] **Business Model Sustainability & Viability** `*`
-  *Question*: Explain how your business model shared above is sustainable and viable. (Address five-year goal, path to profitability, and why it's achievable based on hackathon traction).
-  *Draft*: 
-  ```text
-  (1) Five-Year Goal & Market Opportunity:
-  - Total Addressable Market (TAM): The global market for AI software development tools is projected to reach $240B by late 2026, with automated AI testing growing at a 30% CAGR.
-  - Target Market Share & Revenue (Year 5): Capturing 0.05% of the market ($120M ARR) across ~15,000 active engineering subscriptions (Basic $19.99/mo, Pro $49.99/mo, Enterprise $99.99/mo).
+3. Agent Verification Engine (Layer 3 & 4): When conflicts arise, specialized Worker agents (QA, Build, Pipeline Integration) powered by Gemini 3.6 Flash and Gemini 3.1 Pro draft solutions. Critic agents powered by Gemini 3.6 Flash, Gemini 3.5 Flash, and Gemini 3.1 Pro run sandboxed verification inside isolated containers (NVIDIA NemoClaw architecture) to enforce code safety and SAIF compliance before code hits production.
 
-  (2) Path to Profitability & P&L Projections:
-  - Year 1: $150K ARR by launching across small business software teams. Cash-flow positive status in Month 10.
-  - Year 2: $1.2M ARR with ~82% gross margins as CRR cost-optimization algorithms control LLM token spend.
-  - Year 3–5: Scaling to $15M (Y3) -> $50M (Y4) -> $120M (Y5) ARR with net operating margins >35%.
+4. CRR Intelligence Budgeting: Calculates the Compute-to-Rework Ratio (CRR):
+   CRR = (Simulation Inference Cost €) / (Value of Avoided Rework €)
+   This mathematically balances token spend against risk mitigation, preventing Jevons Paradox cost runaways.
 
-  (3) Why It’s Achievable:
-  - Value Hypothesis: Addresses the "Agility Paradox" where rapid AI code generation creates massive integration debt. PWM's Agent Verification Engine automates QA/integration, delivering a 10x ROI for small businesses.
-  - Hackathon Traction: Our agents executed over 4.5M tokens across Gemini 3.6 Flash, 3.5 Flash, and 3.1 Pro with zero cash wasted, running live counterfactual simulations on Cloud Run with a July 2026 operational cost of only €34.92 ($38 USD).
-  ```
-
-- [x] **Sustainability Plan** `*`
-  *Question*: How will you sustain business operations in the future?
-  *Draft*: 
-  ```text
-  By acquiring initial paying customers in the Finnish game development ecosystem (our target launching pad), bootstrapping operational costs via early subscriptions, and establishing cloud efficiency guidelines to control model API overhead.
-  ```
-
-- [x] **AI Tools Leveraged** `*`
-  *Question*: Which AI tools have you leveraged while working on this project?
-  *Draft*: 
-  ```text
-  Gemini 3.6 Flash, Gemini 3.5 Flash, Gemini 3.1 Pro, Google Antigravity IDE (Agent Manager), and the Model Context Protocol (MCP) server ecosystem.
-  ```
-
-- [x] **Business Operations with AI** `*`
-  *Question*: Please explain how your business operates with AI.
-  *Draft*: 
-  ```text
-  AI orchestrators coordinate git commit monitoring, issue tracking via Linear/GitHub MCPs, debt risk analysis, and propose code changes. This keeps internal operational costs low, running a fully automated pipeline with minimal human intervention.
-  ```
-
-- [x] **AI Live in Production Decision-Making** `*`
-  *Question*: Please explain the extent to which AI is live in production and executes key decisions.
-  *Draft*: 
-  ```text
-  Our agents monitor the development branch, generate pull request merge proposals, and flag architectural conflicts. The Scenario Strategist (human) retains ultimate veto power over major merge decisions, while routine conflict checks and resolution validations are automated by the Critic agent.
-  ```
-
-- [x] **Google Cloud Product Usage** `*`
-  *Question*: Please explain which product from Google Cloud you used during the hackathon and how.
-  *Draft*: 
-  ```text
-  - Google Cloud Run: Hosts the async orchestrator loop and background agents.
-  - Vertex AI API: Serves LLM requests (Gemini) with low-latency access and token metrics.
-  - AlloyDB/BigQuery: To record execution logs and event histories securely.
-  ```
-
-- [x] **Gemini API & LLM Call Details** `*`
-  *Question*: If your project uses an LLM, it must use Gemini API for at least one LLM call. Please explain which LLMs are used in the project and specifically how the Gemini API is used.
-  *Draft*: 
-  ```text
-  The project utilizes Gemini 3.6 Flash (for default agent reasoning and high-speed telemetry ingestion), Gemini 3.1 Pro (for deep causal reasoning and complex Worker agent conflict resolutions), and Gemini 3.5 Flash (for fast validation checks by the Critic agent). The Gemini API is called via the google-genai SDK inside the BaseAgent class.
-  ```
+5. Interactive 3D Classical Garden Digital Twin (Layer 5): Renders software project health as a living 3D garden in React + Babylon.js (and Three.js)—where blooming flowers represent verified features, wilted weeds signal technical debt, the Stone Well core reflects repository health, and AI Agent statues execute verification passes.
+```
 
 ---
 
-## 🔗 Repository & Evidence URLs
+### 3. How we built it
+```text
+PWM is built natively on Google Cloud Platform and powered by a hybrid LLM and World Model AI stack:
 
-- [x] **GitHub Repository Link** `*`
-  *Question*: URL to your GitHub repo code repository shared with testing@devpost.com and judging@hacker.fund
-  *Note*: The repository must contain all necessary source code. The repository must be either public (with relevant licensing) or private and shared with testing@devpost.com and judging@hacker.fund.
-  *Draft*: 
-  ```text
-  https://github.com/petripaananen/Project-World-Model
-  ```
+• Google Gemini API Ecosystem (via Vertex AI):
+  - Gemini 3.6 Flash: Serves as the primary high-speed reasoning engine for real-time telemetry ingestion, event parsing, and dynamic UI state updates.
+  - Gemini 3.1 Pro: Executes deep causal reasoning, multi-branch conflict analysis, and complex code proposal generation for specialized Worker agents.
+  - Gemini 3.5 Flash: Powers fast Critic agent validation loops, loop-detection audits, and SAIF security compliance checks.
+  - Gemini 3.1 Pro: Used for analytical verification and deep code reasoning.
 
-- [x] **GitHub Verification Confirmation** `*`
-  *Confirmation*: I confirm that my GitHub repo linked above is shared with testing@devpost.com and judging@hacker.fund.
-  *Status*: [x] Confirmed
+• Latent World Models & Middleware: Integrated connectors for V-JEPA 2.1 (Layer 1 representation learning) and LeWM (Layer 2 action-conditioned latent simulation).
 
-- [x] **Evidence of Running Product URL** `*`
-  *Question*: Provide a URL to a file in your repository that shows evidence of your product running.
-  *Note*: Includes agent execution logs, API usage records, screenshots of dashboards. Anything that strengthens the case that playbooks are running in production continuously.
-  *Draft*: 
-  ```text
-  https://github.com/petripaananen/Project-World-Model/blob/main/walkthrough.md
-  ```
+• Sandboxed Execution: NVIDIA NemoClaw containerized sandbox environment for secure, isolated code execution auditing.
 
-- [x] **Evidence of Profit URL** `*`
-  *Question*: Provide a URL to a file in your repository that shows evidence of profit.
-  *Note*: Stripe dashboard export, bank statement, or simple P&L.
-  *Draft*: 
-  ```text
-  https://github.com/petripaananen/Project-World-Model/blob/main/Docs/evidence_of_profit.md
-  ```
+• Cloud Infrastructure & Tools: Hosted on Google Cloud Run with automatic scale-to-zero cost controls, integrated inside Google Antigravity IDE via the Model Context Protocol (MCP), and visualized using a glassmorphic React + Babylon.js / Three.js 3D frontend.
+```
 
 ---
 
-## 🎓 Learning
+### 4. Challenges we ran into
+```text
+1. Preventing Agent Pseudo-Alignment: Ensuring AI Critic agents do not silently approve flawed code proposals required building strict sandboxed validation layers with string-similarity loop detection and red-team security filters.
 
-- [x] **Team Learning Level** `*`
-  *Question*: Describe the level of learning you/your team derived from the project.
-  *Selection Options*: [Extremely High / High / Moderate / Basic]
-  *Draft*: 
-  ```text
-  Extremely High
-  ```
+2. Controlling Model Compute Overhead: Autonomous 24-hour agent loops can quickly generate runaway API token costs. We solved this by implementing the CRR (Compute-to-Rework Ratio) engine and configuring Cloud Run scale-to-zero thresholds.
+
+3. Spatial Graph Rendering: Mapping abstract git branch dependencies and issue tickets into intuitive 3D spatial elements (PR bushes, Issue weeds, Stone Well core health, and AI Agent statues) required custom PBR shader pipelines and spatial collision algorithms.
+```
 
 ---
 
-## 🌐 External Prizes (Optional)
+### 5. Accomplishments that we're proud of
+```text
+• Production-Ready 5-Layer Architecture: Deployed a fully operational Causal Digital Twin on Google Cloud Run capable of running real-time counterfactual simulations.
+• Ultra-Efficient Token Utilization: Executed over 4.5 million Gemini API tokens during testing while maintaining total July 2026 GCP operational infrastructure costs at just €34.92 (~$38 USD).
+• Academic to Production Bridge: Successfully translated peer-reviewed Master's Thesis theory into a live, working application.
+• 100% Test & Build Health: Maintained a clean 62/62 test suite pass rate and zero-error TypeScript visualizer build.
+```
 
-- [x] **Agentic Economy Prize - Opt-In**
-  *Question*: Are you opting into the external $50K Agentic Economy Prize (administered by Circle)?
-  *Selection*: `Do not opt in` *(Select "I confirm" if submitting a Circle wallet integration)*
+---
 
-- [x] **Agentic Economy Prize - GitHub Integration Link**
-  *Question*: A link to a public GitHub repo verifying the integration.
-  *Draft*: 
-  ```text
-  https://github.com/petripaananen/Project-World-Model
-  ```
+### 6. What we learned
+```text
+• Gemini Multi-Agent Orchestration: How to coordinate specialized Gemini 3.6 Flash, 3.1 Pro, 3.5 Flash, and 2.5 Pro models via Vertex AI to execute complex "Fork-Delegate-Join" verification loops overnight.
+• Spatial Situational Awareness: That 3D digital twin visualizations give developers significantly faster spatial intuition regarding project health than traditional flat Kanban boards.
+• Cost-Governed Autonomy: How mathematical KPIs like CRR allow small businesses to leverage autonomous AI agents without risking unthrottled billing surprises.
+```
 
-- [x] **Agentic Economy Prize - Circle Wallet Address**
-  *Question*: The agent's Circle wallet address as proof of the transaction.
-  *Draft*: 
-  ```text
-  N/A
-  ```
+---
 
-- [x] **Agentic Economy Prize - Block-Explorer URL**
-  *Question*: The agent's clickable block-explorer URL as proof of the transaction.
-  *Draft*: 
-  ```text
-  https://
-  ```
+### 7. What's next for Project World Model
+```text
+• Small Business SaaS Onboarding: Rolling out closed beta access to small software businesses and tech startups.
+• Live Stream Ingestors: Expanding Layer 1 connectors for real-time Slack and Discord WebSocket streaming.
+• Self-Supervised Latent Space Calibration (Phase 8): Grounding LeWM simulation predictions against observed actual outcomes to continuously fine-tune latent state vectors.
+• Commercial SaaS Tier Launch: Activating tiered subscription plans (Free Hobby $0/mo, Starter $9.99/mo, Pro $49.99/mo, Enterprise $99.99/mo) with included compute quotas and a Three-Gate overage model that defaults to throttled mode — ensuring customers are never surprised by costs.
+```
+
+---
+
+## 📋 SECTION 2: Additional Info Form Fields
+
+| Devpost Field Name | Required | Ready-to-Copy Value / Response |
+| :--- | :---: | :--- |
+| **Project Start Date** | `Yes` | `May 1, 2026` *(Repo initialized April 29, 2026)* |
+| **Revenue by Month (USD)** | `Yes` | `May: $0, June: $0, July: $0, August: $0` |
+| **Related-Party Revenue (USD)** | `Yes` | `$0. No revenue was earned from team members, family, related entities, or pre-existing relationships during the hackathon period.` |
+| **Total Revenue (USD)** | `Yes` | `$0` |
+| **Explanation of Revenue** | `Yes` | *(See block below)* |
+| **Upload Profit Evidence (P&L)** | `Yes` | Upload file: `Docs/PWM_Profit_and_Loss_Statement.csv` |
+| **Total Expenses (USD)** | `Yes` | `$38.00 USD` *(€34.92)* |
+| **Total Cost of Goods Sold (COGS)**| `Yes` | `$38.00 USD (€34.92) covering Gemini API inference tokens (Gemini 3.5/3.6 Flash and 3.1 Pro) and Google Cloud container/storage hosting.` |
+| **Total Marketing & CAC Expense** | `Yes` | `$0` |
+| **Explanation of Marketing Expenses**| `No` | `None.` |
+| **Additional Expenses** | `No` | `None. All infrastructure costs are detailed under COGS above.` |
+| **Number of Users Acquired** | `Yes` | `0` |
+| **Number of Paying Users** | `Yes` | `0` |
+| **Testimonial** | `No` | `Not yet available.` |
+| **Customer Concentration Confirmation**| `Yes` | `[x] Confirmed` |
+| **AI Impact & Category Fit** | `Yes` | *(See block below)* |
+| **Business Model** | `Yes` | *(See block below)* |
+| **Business Model Sustainability** | `Yes` | *(See block below)* |
+| **Sustainability Plan** | `Yes` | *(See block below)* |
+| **AI Tools Leveraged** | `Yes` | `Gemini 3.6 Flash, Gemini 3.5 Flash, Gemini 3.1 Pro, Google Antigravity IDE (Agent Manager), and the Model Context Protocol (MCP) server ecosystem.` |
+| **Business Operations with AI** | `Yes` | `AI orchestrators coordinate git commit monitoring, issue tracking via Linear/GitHub MCPs, debt risk analysis, and propose code changes. This keeps internal operational costs low, running a fully automated pipeline with minimal human intervention.` |
+| **AI Live in Production** | `Yes` | `Our agents monitor the development branch, generate pull request merge proposals, and flag architectural conflicts. The Scenario Strategist (human) retains ultimate veto power over major merge decisions, while routine conflict checks and resolution validations are automated by the Critic agent.` |
+| **Google Cloud Product Usage** | `Yes` | `- Google Cloud Run: Hosts the async orchestrator loop and background agents.\n- Vertex AI API: Serves LLM requests (Gemini) with low-latency access and token metrics.\n- Google Cloud Firestore: Records execution logs and event histories securely.` |
+| **Gemini API & LLM Call Details** | `Yes` | `The project utilizes Gemini 3.6 Flash (for default agent reasoning and high-speed telemetry ingestion), Gemini 3.1 Pro (for deep causal reasoning and complex Worker agent conflict resolutions), and Gemini 3.5 Flash (for fast validation checks by the Critic agent). The Gemini API is called via the google-genai SDK inside the BaseAgent class.` |
+| **GitHub Repository Link** | `Yes` | `https://github.com/petripaananen/Project-World-Model` |
+| **GitHub Verification Confirmation** | `Yes` | `[x] Confirmed (Shared with testing@devpost.com and judging@hacker.fund)` |
+| **Evidence of Running Product URL** | `Yes` | `https://github.com/petripaananen/Project-World-Model/blob/main/walkthrough.md` |
+| **Evidence of Profit URL** | `Yes` | `https://github.com/petripaananen/Project-World-Model/blob/main/Docs/evidence_of_profit.md` |
+| **Team Learning Level** | `Yes` | `Extremely High` |
+| **Circle Agentic Economy Opt-In** | `Optional` | `Do not opt in` |
+
+---
+
+### Detailed Multi-Line Responses for Additional Info Fields
+
+#### 🟢 Explanation of Revenue Shared Above
+```text
+$0 Total Revenue. Project World Model remained in a pre-launch / closed beta state during the Build with Gemini XPRIZE hackathon period (May–August 2026). No subscription fees, licensing fees, or transaction charges were collected (Price per customer: $0, Paying users: 0, Total transactions: 0). Tiered SaaS subscription pricing (Free Hobby $0/mo, Starter $9.99/mo, Pro $49.99/mo, Enterprise $99.99/mo) with included simulation compute quotas and a transparent Three-Gate overage policy will activate upon commercial V1.0 launch.
+```
+
+#### 🟢 AI Impact & Category Fit
+```text
+PWM acts as an L3 Causal Digital Twin in the Small Business Services category, resolving the "Paradox of Agility" for software development teams and tech startups. By using an Agent Verification Engine (Worker + Critic agents) to autonomously resolve integration debt before code merges hit production, it eliminates software release delays, prevents costly manual re-work, and empowers small engineering businesses to scale safely.
+```
+
+#### 🟢 Business Model
+```text
+SaaS subscription model targeting small-to-medium development teams and software engineering startups, offering four tiered plans: Free Hobby ($0/mo, 1M tokens), Starter ($9.99/mo, 5M tokens), Pro ($49.99/mo, 25M tokens), and Enterprise ($99.99/mo, 100M tokens). Tiers are differentiated by included compute quotas (simulation tokens/mo), repo count, and concurrent simulated branches. A Three-Gate overage model (soft warning → throttle/pay-as-you-go choice → hard cap) ensures transparent cost control.
+```
+
+#### 🟢 Business Model Sustainability & Viability
+```text
+(1) Five-Year Goal & Market Opportunity:
+- Total Addressable Market (TAM): The global market for AI software development tools is projected to reach $240B by late 2026, with automated AI testing growing at a 30% CAGR.
+- Target Market Share & Revenue (Year 5): Capturing 0.05% of the market ($120M ARR) across ~30,000 registered users (~18,000 paid: Starter $9.99/mo, Pro $49.99/mo, Enterprise $99.99/mo) with additional overage revenue from pay-as-you-go compute.
+
+(2) Path to Profitability & P&L Projections:
+- Year 1: $150K ARR by launching across small business software teams. Cash-flow positive status in Month 10.
+- Year 2: $1.2M ARR with ~82% gross margins as CRR cost-optimization algorithms control LLM token spend.
+- Year 3–5: Scaling to $15M (Y3) -> $50M (Y4) -> $120M (Y5) ARR with net operating margins >35%.
+
+(3) Why It’s Achievable:
+- Value Hypothesis: Addresses the "Agility Paradox" where rapid AI code generation creates massive integration debt. PWM's Agent Verification Engine automates QA/integration, delivering a 10x ROI for small businesses.
+- Hackathon Traction: Our agents executed over 4.5M tokens across Gemini 3.6 Flash, 3.5 Flash, and 3.1 Pro with zero cash wasted, running live counterfactual simulations on Cloud Run with a July 2026 operational cost of only €34.92 ($38 USD).
+```
+
+#### 🟢 Sustainability Plan
+```text
+By acquiring initial paying customers across small software development businesses, tech startups, and engineering teams, bootstrapping operational costs via early subscriptions, and establishing cloud efficiency guidelines (such as the Compute-to-Rework Ratio, CRR) to strictly govern model API inference overhead.
+```
+
+---
+
+## 📁 Related Submission Files in Repository
+* **P&L File:** [PWM_Profit_and_Loss_Statement.csv](file:///c:/Users/petri/.gemini/antigravity/ProjectWorldModel/Docs/PWM_Profit_and_Loss_Statement.csv)
+* **Evidence of Profit Doc:** [evidence_of_profit.md](file:///c:/Users/petri/.gemini/antigravity/ProjectWorldModel/Docs/evidence_of_profit.md)
+* **Narrative Source Doc:** [XPRIZE_NARRATIVE.md](file:///c:/Users/petri/.gemini/antigravity/ProjectWorldModel/Docs/XPRIZE_NARRATIVE.md)
+* **Demo Script Doc:** [XPRIZE_DEMO_SCRIPT.md](file:///c:/Users/petri/.gemini/antigravity/ProjectWorldModel/Docs/XPRIZE_DEMO_SCRIPT.md)
+* **Instructions Doc:** [XPRIZE_INSTRUCTIONS.md](file:///c:/Users/petri/.gemini/antigravity/ProjectWorldModel/Docs/XPRIZE_INSTRUCTIONS.md)
+

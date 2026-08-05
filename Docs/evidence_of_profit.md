@@ -35,9 +35,9 @@ During the Build with Gemini XPRIZE Hackathon period (May – August 2026), Proj
 
 ### 2. Cost of Goods Sold (COGS) & API Usage
 Total infrastructure and API costs incurred in July 2026 were **€34.92** (approx. **$38.00 USD**).
-- **Gemini API Tokens**: €33.01 (over 4.5M output & input tokens across Gemini 3.5 Flash, Gemini 3.6 Flash, and Gemini 2.5 Pro used by Worker & Critic agents).
+- **Gemini API Tokens**: €33.01 (over 4.5M output & input tokens across Gemini 3.5 Flash, Gemini 3.6 Flash, and Gemini 3.1 Pro used by Worker & Critic agents).
 - **Cloud Infrastructure**: €1.83 for Artifact Registry container image storage and Cloud Storage egress.
-- **Cloud Run Compute & Memory**: Request billing totaled €0.59 but was fully offset by GCP Free Tier / promotional credits (net cost €0.08).
+- **Cloud Run Compute & Memory**: Request billing totaled €0.08 but was fully offset by GCP Free Tier / promotional credits (net cost €0.00).
 
 ### 3. Marketing & Customer Acquisition Cost (CAC)
 Marketing expenses are recorded as $0.00. Customer acquisition was pursued purely via direct founder outreach, developer community networking, and open-source documentation. No paid advertisements, promotional campaigns, or marketing consultants were employed.

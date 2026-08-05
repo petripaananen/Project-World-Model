@@ -212,7 +212,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 | 7.1 | Finalize XPRIZE Demo Video showcasing all 5 layers | ❌ Not started | **Required for Hackathon** |
 | 7.2 | Finalize XPRIZE Written Narrative (500–1000 words) | ❌ Not started | **Required for Hackathon** |
 | 7.3 | Launch Scenario Strategist marketing campaign (§5.3) | ⏸️ Deferred | *Optional (Post-Hackathon)* |
-| 7.4 | Establish Subscription Pricing Tiers: Basic ($19.99), Pro ($49.99), Enterprise ($99.99) | ⏸️ Deferred | *Optional (Post-Hackathon)* |
+| 7.4 | Establish Subscription Pricing Tiers: Free Hobby ($0), Starter ($9.99), Pro ($49.99), Enterprise ($99.99) with compute quotas and Three-Gate overage policy | ⏸️ Deferred | *Optional (Post-Hackathon)* |
 | 7.5 | Execute localized Finnish game dev ecosystem launch (§6.5) | ⏸️ Deferred | *Optional (Post-Hackathon)* |
 | 7.6 | De-academicization & Commercial Rebranding: Remove thesis academicisms (Pearl L3, Jevons Paradox) from UI/UX and documentation to prepare the product for commercial launch. | ✅ Done | Completed |
 

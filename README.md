@@ -161,7 +161,12 @@ Run the automated test suite using `pytest`:
 ```bash
 pytest tests/
 ```
-The test suite covers:
+* `test_agile_integration.py`: Validates Agile metrics (velocity, lead time, RACI, DoD checks).
 * `test_budget_and_loop.py`: Validates token budgets, cost limits, and Critic agent feedback iteration loops.
+* `test_calibration.py`: Asserts self-supervised calibration factor updates and grounding error logic.
+* `test_ftue_parsers.py`: Verifies ingestion parsers for MS Project XML and Slack JSON exports.
 * `test_gcp_config.py`: Verifies configuration environment loading, GCE setup scripts, and Layer REST connectors.
+* `test_jira_ingest.py`: Tests Jira issue and sprint ingestion functions.
+* `test_linear_ingest.py`: Tests Linear GraphQL telemetry ingestion.
+* `test_new_agents.py`: Exercises specialized Worker and Critic agents and budget guard rails.
 * `test_security_adversarial.py`: Asserts SAIF security posture, input sanitizers, and malicious code rejection.

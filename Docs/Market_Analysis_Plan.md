@@ -1,9 +1,11 @@
 # Market Analysis & Commercialization Strategy: Action Plan
 
 ## 1. Product & Pricing Positioning
-*   [ ] Finalize **Basic Tier ($19.99/mo)** feature set for Independent/Solo Developers (focus: democratization of scale, community-led growth).
-*   [ ] Finalize **Pro Tier ($49.99/mo)** feature set for Mid-Sized Studios (focus: reducing cognitive load, minimalist AI experience).
-*   [ ] Finalize **Enterprise Tier ($99.99/mo)** feature set for AAA Studios (focus: eradicating crunch culture, absolute digital sovereignty).
+*   [ ] Finalize **Free (Hobby) Tier ($0/mo)** feature set for Students, OSS Contributors & Evaluators (focus: zero-friction evaluation, 1M tokens/mo, conversion funnel).
+*   [ ] Finalize **Starter Tier ($9.99/mo)** feature set for Independent/Solo Developers (focus: democratization of scale, community-led growth, 5M tokens/mo).
+*   [ ] Finalize **Pro Tier ($49.99/mo)** feature set for Mid-Sized Studios (focus: reducing cognitive load, minimalist AI experience, 25M tokens/mo).
+*   [ ] Finalize **Enterprise Tier ($99.99/mo)** feature set for AAA Studios (focus: eradicating crunch culture, absolute digital sovereignty, 100M tokens/mo, volume pricing at 25+ seats).
+*   [ ] Finalize **Three-Gate Overage Model** and Pay-As-You-Go pricing per tier.
 
 ## 2. Core Value Differentiators (Marketing & Sales)
 *   [ ] **Ecological & Social Sustainability**: Build marketing collateral emphasizing PWM as the structural solution to "crunch culture" burnout and excessive GPU "rendering waste".
