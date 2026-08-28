@@ -22,8 +22,8 @@ The framework is conceptually validated by Petri Paananen's Master's Thesis: *"I
 
 ---
 
-## 🚀 Gemini XPRIZE Hackathon Submission
-This project is entered in the **Build with Gemini XPRIZE Hackathon** under the **Small Business Services** category.
+### 🚀 Deployed Production App
+* **Live App URL**: [project-world-model-106911803120.us-central1.run.app](https://project-world-model-106911803120.us-central1.run.app)
 
 ### 📋 Submission Deliverables Package
 *   📄 **Written Narrative (500–1,000 words)**: [Docs/XPRIZE_NARRATIVE.md](./Docs/XPRIZE_NARRATIVE.md)

@@ -2,6 +2,7 @@
 
 **Date:** August 4, 2026  
 **Status:** All XPRIZE Hackathon Submission Deliverables Created & Verified ✅  
+**Live Production URL:** [project-world-model-106911803120.us-central1.run.app](https://project-world-model-106911803120.us-central1.run.app)
 **Submission Target:** Build with Gemini XPRIZE Hackathon (Deadline: August 17, 2026)
 
 ---
