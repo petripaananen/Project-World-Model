@@ -17,7 +17,7 @@ The system operates using **Causal Counterfactual Reasoning** (Thesis §2.2), en
 
 **Academic Foundation**: The theoretical and conceptual framework of PWM is validated by Petri Paananen's Master's Thesis: *"Itseohjautuvat työnkulut videopeliteollisuudessa: tekoälyn maailmanmallit tuotannon johtamisen viitekehyksenä"* (JAMK, 2026), published at URN: [https://urn.fi/URN:NBN:fi:amk-2026052919003](https://urn.fi/URN:NBN:fi:amk-2026052919003). Full text: [Petri_Paananen_thesis.md](./Petri_Paananen_thesis.md).
 
-**Gemini XPRIZE Alignment**: PWM is entered in the **Build with Gemini XPRIZE Hackathon** (Small Business Services & Entrepreneurship categories), leveraging a fully native Google Cloud (GCP) stack for intensive GPU compute, serverless orchestration, and agentic validation.
+**Production Cloud Stack**: PWM leverages a fully native Google Cloud (GCP) stack for intensive GPU compute, serverless orchestration, and agentic validation.
 
 ---
 
@@ -116,7 +116,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 | **4** | Security & Compliance (SAIF) | ✅ **DONE** | Sandbox safety critiques, Merkle-chained event logs, NemoClaw sandbox connector |
 | **5** | Simulation Sandbox & Visualization | ✅ **DONE** | Dashboard, What-If Sandbox, telemetry visualizers, 24h phase tracker |
 | **6** | MVP & GCP Deployment | ✅ **DONE** | Cloud Run deployed, GCE GPU setup templates & automated lifecycle controls |
-| **7** | Commercial V1.0 & XPRIZE | ⏳ **PENDING** | Demo video & narrative pending. Rebranding complete. Deadline: August 17, 2026 |
+| **7** | Commercial V1.0 & Go-to-Market | ⏳ **IN PROGRESS** | Subscription tiers, product marketing, and localized game dev ecosystem launch |
 | **8** | Advanced World Model Grounding & Multi-Modal Latent Space | ⏳ **PENDING** | Self-supervised LeWM grounding and multi-modal causal embeddings |
 
 ---
@@ -191,7 +191,7 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 
 ### ✅ Phase 6 — MVP & Full GCP Deployment
 
-- **Objective**: Transition to production infrastructure and justify enterprise ROI for XPRIZE.
+- **Objective**: Transition to production infrastructure and justify enterprise ROI.
 - **Environment**: Cloud Run (dashboard), Compute Engine w/ GPUs (L1/L2 models), Firestore (audit logs).
 
 | Task | Description | Status |
@@ -203,18 +203,16 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 
 ---
 
-### ⏳ Phase 7 — Commercial V1.0, XPRIZE Submission & Go-to-Market
+### ⏳ Phase 7 — Commercial V1.0 & Go-to-Market
 
-- **Objective**: XPRIZE submission deliverables (Required) and post-hackathon commercial launch (Optional/Deferred) (Thesis §6.5).
+- **Objective**: Commercial production launch, pricing model, and ecosystem roll-out (Thesis §6.5).
 
 | Task | Description | Status | Scope |
 |------|-------------|--------|-------|
-| 7.1 | Finalize XPRIZE Demo Video showcasing all 5 layers | ❌ Not started | **Required for Hackathon** |
-| 7.2 | Finalize XPRIZE Written Narrative (500–1000 words) | ❌ Not started | **Required for Hackathon** |
-| 7.3 | Launch Scenario Strategist marketing campaign (§5.3) | ⏸️ Deferred | *Optional (Post-Hackathon)* |
-| 7.4 | Establish Subscription Pricing Tiers: Free Hobby ($0), Starter ($9.99), Pro ($49.99), Enterprise ($99.99) with compute quotas and Three-Gate overage policy | ⏸️ Deferred | *Optional (Post-Hackathon)* |
-| 7.5 | Execute localized Finnish game dev ecosystem launch (§6.5) | ⏸️ Deferred | *Optional (Post-Hackathon)* |
-| 7.6 | De-academicization & Commercial Rebranding: Remove thesis academicisms (Pearl L3, Jevons Paradox) from UI/UX and documentation to prepare the product for commercial launch. | ✅ Done | Completed |
+| 7.1 | Establish Subscription Pricing Tiers: Free Hobby ($0), Starter ($9.99), Pro ($49.99), Enterprise ($99.99) with compute quotas and Three-Gate overage policy | ⏳ In Progress | Commercial Launch |
+| 7.2 | Launch Scenario Strategist product marketing campaign (§5.3) | ⏳ In Progress | Commercial Launch |
+| 7.3 | Execute localized Finnish game dev ecosystem launch (§6.5) | ⏳ In Progress | Regional Pilot |
+| 7.4 | De-academicization & Commercial Rebranding: Remove thesis academicisms (Pearl L3, Jevons Paradox) from UI/UX and documentation to prepare the product for commercial launch. | ✅ Done | Completed |
 
 ---
 

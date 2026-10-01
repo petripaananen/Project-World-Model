@@ -18,7 +18,7 @@ PWM Event Logger — Immutable Audit Trail (SAIF Compliance)
 
 Append-only event log that records every agent decision, human veto,
 and pipeline state change. This is the foundation for:
-  - XPRIZE submission evidence (agent execution logs)
+  - Operational audit evidence (agent execution logs)
   - SAIF compliance (immutable audit trail)
   - Dashboard event feed (CLI + Web)
   - What-If Sandbox replay

@@ -58,7 +58,7 @@ For 24-hour orchestration and compliance logs, we evaluate two database options:
 | **Ops Overhead** | **Zero Ops**: No VPC config, instance sizing, or pooling needed. | **High Ops**: Requires VPC Peering, Serverless VPC Access Connector, connection pooling. |
 | **Cost** | **Incredibly Cheap**: Free tier of 50K reads/writes daily; then $0.18 per 100K. | **Expensive**: Starts at $100+/month for standard database instances. |
 | **Connection** | Direct via `google-cloud-firestore` SDK. | Needs SQLAlchemy + async pg driver + VPC proxy. |
-| **Recommendation** | **Ideal for XPRIZE Demo & Sandbox**: Provides instant JSON storage with zero VPC overhead. | **Ideal for Enterprise Scale**: Fits large SQL analytics workloads. |
+| **Recommendation** | **Ideal for Fast Prototyping & Sandbox**: Provides instant JSON storage with zero VPC overhead. | **Ideal for Enterprise Scale**: Fits large SQL analytics workloads. |
 
 ### Firestore Implementation Outline
 

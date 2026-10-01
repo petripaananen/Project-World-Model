@@ -1,5 +1,5 @@
 # Project World Model (PWM) — Profit & Loss Statement
-**Reporting Period:** May 1, 2026 – August 31, 2026 (Build with Gemini XPRIZE Hackathon)  
+**Reporting Period:** May 1, 2026 – August 31, 2026 (Initial R&D Phase)  
 **Reporting Currency:** USD ($)  
 **Status:** Pre-Launch / Closed Beta (Compliant $0 Profit/Loss Statement)
 
@@ -31,7 +31,7 @@
 ## 📝 Disclosures & Explanations
 
 ### 1. Revenue Explanation
-During the Build with Gemini XPRIZE Hackathon period (May – August 2026), Project World Model remained in a pre-launch/closed beta state. No subscription fees were collected, and no arms-length or related-party transactions occurred. This is fully compliant with the hackathon rules permitting pre-revenue projects.
+During the initial research and development period (May – August 2026), Project World Model remained in a pre-launch/closed beta state. No subscription fees were collected, and no arms-length or related-party transactions occurred.
 
 ### 2. Cost of Goods Sold (COGS) & API Usage
 Total infrastructure and API costs incurred in July 2026 were **€34.92** (approx. **$38.00 USD**).
@@ -43,7 +43,7 @@ Total infrastructure and API costs incurred in July 2026 were **€34.92** (appr
 Marketing expenses are recorded as $0.00. Customer acquisition was pursued purely via direct founder outreach, developer community networking, and open-source documentation. No paid advertisements, promotional campaigns, or marketing consultants were employed.
 
 ### 4. Human Capital & Labor Costs
-Development and testing labor was contributed entirely by the founding team on a sweat-equity basis. No payroll expenses, sub-contracting fees, or compensation payments were recorded during the Hackathon period.
+Development and testing labor was contributed entirely by the founding team on a sweat-equity basis. No payroll expenses, sub-contracting fees, or compensation payments were recorded during the initial development period.
 
 ---
 

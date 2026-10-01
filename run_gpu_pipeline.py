@@ -20,7 +20,7 @@ Project World Model (PWM) - GPU VM Lifecycle & Automated Test Runner
 This script orchestrates the lifecycle of a GCP Compute Engine GPU instance:
 1. Starts the GPU VM instance.
 2. Waits for the instance to become reachable via SSH.
-3. SSHs into the instance to run the automated XPRIZE tests/simulations.
+3. SSHs into the instance to run the automated tests/simulations.
 4. Guaranteed shutdown of the instance in a 'finally' block to prevent
    incurring unexpected running costs ($250 - $650/month).
 """

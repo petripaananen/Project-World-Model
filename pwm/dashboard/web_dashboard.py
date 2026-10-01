@@ -558,13 +558,13 @@ def create_app(
         
         from pwm.ingestion.models import ProjectState, SprintState
         state.project_state = ProjectState(
-            repo_owner="xprize",
+            repo_owner="pwm",
             repo_name=f"scenario-{scenario_id}-sandbox",
             total_open_prs=len(debt_report.conflicts),
             total_active_branches=3
         )
         state.sprint_state = SprintState(
-            team_name="XPrize Core Team",
+            team_name="PWM Core Team",
             cycle_name=f"Scenario {scenario_id} Sandbox",
             total_issues=5
         )

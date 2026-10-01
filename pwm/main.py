@@ -87,7 +87,7 @@ async def _execute_agent_pipeline(
         mode: "demo" or "analyze"
         event_logger: Optional event logger for audit trail
         detector: Optional DebtDetector or Layer2Simulation instance to capture its token usage
-        scenario_id: XPRIZE scenario ID (default: 0)
+        scenario_id: Mock scenario ID (default: 0)
 
     Returns:
         Updated PWMPipelineState with proposals, verdicts, and CRR
@@ -378,7 +378,7 @@ async def run_pipeline(
         mode: "demo" (no LLM) or "analyze" (with Gemini agents)
         ingestion_mode: "mock", "mcp", or "api"
         event_logger: Optional shared event logger for audit trail
-        scenario_id: XPRIZE scenario ID to load
+        scenario_id: Mock scenario ID to load
 
     Returns:
         Complete PWMPipelineState with all layers populated
@@ -449,7 +449,7 @@ async def run_pipeline(
     if scenario_id > 0:
         from pwm.scenarios import get_scenario
         state.debt_report, _, _ = get_scenario(scenario_id)
-        print(f"  ✓ Loaded XPRIZE Scenario {scenario_id} Mock Debt Report")
+        print(f"  ✓ Loaded Mock Scenario {scenario_id} Debt Report")
     else:
         state.debt_report = await layer2.run_simulation(
             project_state=state.project_state,
@@ -594,7 +594,7 @@ def main():
         type=int,
         choices=[0, 1, 2, 3],
         default=0,
-        help="Load a specific XPRIZE mock scenario (1=Causal Simulation, 2=NemoClaw Sandbox, 3=CRR ROI)",
+        help="Load a specific mock scenario (1=Causal Simulation, 2=NemoClaw Sandbox, 3=CRR ROI)",
     )
     parser.add_argument(
         "--no-interactive",

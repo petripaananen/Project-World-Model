@@ -26,7 +26,7 @@ from pwm.ingestion.models import (
 
 def get_scenario(scenario_id: int) -> tuple[IntegrationDebtReport, list[ResolutionProposal], list[CriticVerdict]]:
     """
-    Returns (DebtReport, Proposals, Verdicts) for the specified XPRIZE test scenario.
+    Returns (DebtReport, Proposals, Verdicts) for the specified test scenario.
     """
     if scenario_id == 1:
         return _scenario_1_cascading_failure()
