@@ -98,7 +98,7 @@ class TestBudgetAndLoopControl(unittest.IsolatedAsyncioTestCase):
         mock_response = MagicMock()
         mock_response.usage_metadata = MagicMock()
         mock_response.usage_metadata.prompt_token_count = 0
-        mock_response.usage_metadata.candidates_token_count = 6000 # 6000 * $10/M = $0.06
+        mock_response.usage_metadata.candidates_token_count = 12000 # 12000 * $5.00/M = $0.06
         mock_response.text = "Hello cost limit"
         
         agent._client.aio.models.generate_content = AsyncMock(return_value=mock_response)

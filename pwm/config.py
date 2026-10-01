@@ -49,13 +49,13 @@ class ModelConfig(BaseModel):
     """LLM model configuration."""
     # Primary reasoning model (for Worker/Critic agents)
     reasoning_model: str = Field(
-        default="gemini-3.6-flash",
-        description="Model for deep causal reasoning tasks",
+        default="gemini-3.8-flash",
+        description="Model for deep causal reasoning tasks (Gemini 3)",
     )
     # Fast model (for data processing, summarization)
     fast_model: str = Field(
-        default="gemini-3.6-flash",
-        description="Model for quick processing tasks",
+        default="gemini-3.1-flash-lite",
+        description="Model for quick processing tasks (Gemini 3)",
     )
     temperature: float = Field(default=0.2, description="Generation temperature")
     max_output_tokens: int = Field(default=8192, description="Max output tokens")
@@ -124,10 +124,10 @@ class CRRConfig(BaseModel):
     """Compute-to-Rework Ratio calculation parameters."""
     # Cost assumptions
     token_cost_per_million_input: float = Field(
-        default=1.50, description="USD per 1M input tokens (Gemini 3.6 Flash)"
+        default=1.25, description="USD per 1M input tokens (Gemini 3.8 Flash)"
     )
     token_cost_per_million_output: float = Field(
-        default=9.0, description="USD per 1M output tokens (Gemini 3.6 Flash)"
+        default=5.00, description="USD per 1M output tokens (Gemini 3.8 Flash)"
     )
     # Human cost assumptions
     developer_hourly_rate: float = Field(
@@ -347,8 +347,8 @@ class PWMConfig(BaseModel):
                 gce_zone=os.getenv("GCP_GCE_ZONE", "us-central1-a"),
             ),
             models=ModelConfig(
-                reasoning_model=os.getenv("PWM_REASONING_MODEL", "gemini-3.6-flash"),
-                fast_model=os.getenv("PWM_FAST_MODEL", "gemini-3.6-flash"),
+                reasoning_model=os.getenv("PWM_REASONING_MODEL", "gemini-3.8-flash"),
+                fast_model=os.getenv("PWM_FAST_MODEL", "gemini-3.1-flash-lite"),
                 vjepa_endpoint_url=os.getenv("PWM_VJEPA_ENDPOINT_URL", ""),
                 lewm_endpoint_url=os.getenv("PWM_LEWM_ENDPOINT_URL", ""),
                 lmms_engine_endpoint_url=os.getenv("PWM_LMMS_ENGINE_ENDPOINT_URL", ""),

@@ -58,6 +58,9 @@ class BaseAgent(ABC):
         self._total_output_tokens = 0
         self._token_lock = asyncio.Lock()
 
+        # Thought signature tracking for Gemini 3 reasoning circulation
+        self._thought_signatures: list[Any] = []
+
         # Initialize Gemini client lazily
         self._client = None
 
@@ -90,6 +93,45 @@ class BaseAgent(ABC):
             "input_tokens": self._total_input_tokens,
             "output_tokens": self._total_output_tokens,
         }
+
+    @property
+    def thought_signatures(self) -> list[Any]:
+        """Captured thought signatures from Gemini 3 reasoning outputs."""
+        return list(self._thought_signatures)
+
+    @property
+    def latest_thought_signature(self) -> Optional[Any]:
+        """Most recent thought signature captured from Gemini 3."""
+        return self._thought_signatures[-1] if self._thought_signatures else None
+
+    def clear_thought_signatures(self) -> None:
+        """Clear stored thought signatures (e.g. at the start of a new conversational session)."""
+        self._thought_signatures.clear()
+
+    def _capture_thought_signatures(self, response: Any) -> list[Any]:
+        """
+        Extract thought signatures from Gemini 3 response candidates.
+        Required by Google Cloud to maintain reasoning capability across follow-up turns.
+        """
+        extracted = []
+        candidates = getattr(response, "candidates", None) or []
+        for candidate in candidates:
+            content = getattr(candidate, "content", None)
+            if not content:
+                continue
+            parts = getattr(content, "parts", None) or []
+            for part in parts:
+                sig = getattr(part, "thought_signature", None)
+                if sig is not None:
+                    extracted.append(sig)
+                    continue
+                meta = getattr(part, "thought_metadata", None)
+                if isinstance(meta, dict) and "thought_signature" in meta:
+                    extracted.append(meta["thought_signature"])
+                    continue
+                if getattr(part, "thought", False):
+                    extracted.append(part)
+        return extracted
 
     def sanitize_input(self, text: str) -> str:
         """
@@ -127,9 +169,12 @@ class BaseAgent(ABC):
         max_output_tokens: Optional[int] = None,
         max_retries: int = 3,
         retry_delay: float = 2.0,
+        conversation_history: Optional[list[Any]] = None,
+        circulate_thoughts: bool = True,
     ) -> str:
         """
-        Call Gemini API with retry logic, token tracking, and strict SAIF safety settings.
+        Call Gemini API with retry logic, token tracking, strict SAIF safety settings,
+        and Gemini 3 thought signature circulation.
 
         Args:
             prompt: The user prompt to send
@@ -138,6 +183,8 @@ class BaseAgent(ABC):
             max_output_tokens: Override default max tokens
             max_retries: Number of retry attempts
             retry_delay: Base delay between retries (exponential backoff)
+            conversation_history: Optional prior conversation turns for multi-turn dialogues
+            circulate_thoughts: Whether to capture and preserve Gemini 3 thought signatures
 
         Returns:
             The model's text response
@@ -183,14 +230,27 @@ class BaseAgent(ABC):
         # Sanitize prompt before sending
         sanitized_prompt = self.sanitize_input(prompt)
 
+        # Build contents supporting multi-turn conversation history
+        if conversation_history:
+            request_contents = list(conversation_history)
+            request_contents.append(sanitized_prompt)
+        else:
+            request_contents = sanitized_prompt
+
         last_error = None
         for attempt in range(max_retries):
             try:
                 response = await self.client.aio.models.generate_content(
                     model=self.model_name,
-                    contents=sanitized_prompt,
+                    contents=request_contents,
                     config=gen_config,
                 )
+
+                # Capture Gemini 3 thought signatures for reasoning circulation
+                if circulate_thoughts:
+                    captured = self._capture_thought_signatures(response)
+                    if captured:
+                        self._thought_signatures.extend(captured)
 
                 # Track tokens
                 if response.usage_metadata:

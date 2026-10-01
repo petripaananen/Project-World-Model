@@ -177,16 +177,16 @@ class TestCognitiveBudgetGuard(unittest.TestCase):
         # Set cost budget low
         self.config.models.max_run_cost_usd = 0.01
         # Set tokens to cause high cost utilization (> 95% of $0.01)
-        # Cost = (input/1M * 1.50) + (output/1M * 9.0)
+        # Cost = (input/1M * 1.25) + (output/1M * 5.0)
         # Need cost > 0.0095 (95% of 0.01)
-        # 1000 output tokens = (1000/1M * 9.0) = $0.009
-        # Plus 1000 input = (1000/1M * 1.50) = $0.0015
-        # Total = $0.0105 > $0.0095
-        self.config._cumulative_input_tokens = 1000
-        self.config._cumulative_output_tokens = 1000
+        # 2000 output tokens = (2000/1M * 5.0) = $0.010
+        # Plus 2000 input = (2000/1M * 1.25) = $0.0025
+        # Total = $0.0125 > $0.0095
+        self.config._cumulative_input_tokens = 2000
+        self.config._cumulative_output_tokens = 2000
         guard = CognitiveBudgetGuard(self.config)
         action = guard.evaluate_budget()
-        # Cost utilization = $0.0105 / $0.01 = 1.05, which is > 0.95 → HALT
+        # Cost utilization = $0.0125 / $0.01 = 1.25, which is > 0.95 → HALT
         self.assertEqual(action, BudgetAction.HALT)
 
 

@@ -98,6 +98,42 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
             location="us-east4"
         )
 
+    def test_gemini_3_defaults_and_crr_pricing(self):
+        """Test that Gemini 3 model defaults and calibrated CRR rates are applied."""
+        config = PWMConfig()
+        self.assertEqual(config.models.reasoning_model, "gemini-3.8-flash")
+        self.assertEqual(config.models.fast_model, "gemini-3.1-flash-lite")
+        self.assertEqual(config.crr.token_cost_per_million_input, 1.25)
+        self.assertEqual(config.crr.token_cost_per_million_output, 5.00)
+
+    @pytest.mark.asyncio
+    async def test_base_agent_thought_signature_capture(self):
+        """Test that BaseAgent captures thought signatures from Gemini 3 candidates."""
+        from unittest.mock import MagicMock
+        class MockAgent(BaseAgent):
+            async def process(self, data, **kwargs):
+                return data
+
+        agent = MockAgent(config=self.config)
+        
+        # Create mock candidate with Gemini 3 thought signature part
+        mock_part = MagicMock()
+        mock_part.thought_signature = "sig_gemini3_abc123"
+        mock_candidate = MagicMock()
+        mock_candidate.content.parts = [mock_part]
+        mock_response = MagicMock()
+        mock_response.candidates = [mock_candidate]
+
+        extracted = agent._capture_thought_signatures(mock_response)
+        self.assertEqual(extracted, ["sig_gemini3_abc123"])
+        
+        agent._thought_signatures.extend(extracted)
+        self.assertEqual(agent.thought_signatures, ["sig_gemini3_abc123"])
+        self.assertEqual(agent.latest_thought_signature, "sig_gemini3_abc123")
+        
+        agent.clear_thought_signatures()
+        self.assertEqual(agent.thought_signatures, [])
+
     @pytest.mark.asyncio
     async def test_layer1_observation_vjepa_and_fallback(self):
         """Test Layer 1 Observation V-JEPA URL calling and fallback logic."""
