@@ -179,6 +179,8 @@ class EventLogger:
                     docs = self._db.collection("events").order_by("timestamp", direction="ASCENDING").limit(limit)
                     async for doc in docs.stream():
                         data = doc.to_dict()
+                        if not data:
+                            continue
                         # Convert Firestore Timestamp back to Python datetime
                         if "timestamp" in data and not isinstance(data["timestamp"], datetime):
                             try:
