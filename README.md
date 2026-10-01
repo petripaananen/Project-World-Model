@@ -22,9 +22,6 @@ The framework is conceptually validated by Petri Paananen's Master's Thesis: *"I
 
 ---
 
-### 🚀 Deployed Production App
-* **Live App URL**: [project-world-model-106911803120.us-central1.run.app](https://project-world-model-106911803120.us-central1.run.app)
-
 ### 🎯 Value Proposition & Operating Principles
 *   **The Mission**: Empower small software development businesses and tech startups by automating complex code integration, QA verification, and risk simulation.
 *   **AI-Native Operations**: Employs an autopilot 24-hour asynchronous cycle. Worker and Critic agents resolve code errors "in committee" overnight, generating a causal proof of verification with minimal human intervention.
