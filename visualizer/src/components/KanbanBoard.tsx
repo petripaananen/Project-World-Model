@@ -127,15 +127,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectData, pipelineS
       <div className="board-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div>
           <h2 style={{ margin: 0 }}>{projectData?.name || 'Project'} Board</h2>
-          <p className="tab-subtitle" style={{ margin: '4px 0 0 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            Actively managing items in progress. Target completion time is <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{sleTargetDays} days</span> (85% of tasks should finish within this limit).
-            <span 
-              className="material-symbols-outlined" 
-              style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
-              title="Service Level Expectation (SLE) represents the target turnaround time for a task once active development starts."
-            >
-              help
-            </span>
+          <p className="tab-subtitle" style={{ margin: '4px 0 0 0', display: 'flex', alignItems: 'center' }}>
+            Actively managing items in progress. Target completion time is <span style={{ color: 'var(--primary)', fontWeight: 700, marginLeft: '4px', marginRight: '4px' }} title="Service Level Expectation (SLE) represents the target turnaround time for a task once active development starts.">{sleTargetDays} days</span> (85% of tasks should finish within this limit).
           </p>
         </div>
         <div style={{ display: 'flex', gap: '15px' }}>

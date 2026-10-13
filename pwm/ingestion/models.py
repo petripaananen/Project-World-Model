@@ -510,6 +510,10 @@ class PWMPipelineState(BaseModel):
     # Layer 4 outputs
     verdicts: list[CriticVerdict] = Field(default_factory=list)
 
+    # Deterministic flow & stakeholder analytics
+    flow_metrics: Optional[dict[str, Any]] = None
+    stakeholder_metrics: Optional[dict[str, Any]] = None
+
     # Layer 5 outputs (human decisions)
     human_approved: Optional[bool] = None
     human_notes: str = ""

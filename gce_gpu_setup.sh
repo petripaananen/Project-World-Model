@@ -260,12 +260,40 @@ services:
               count: all
               capabilities: [gpu]
 
-  nemoclaw:
+  graph-jepa:
     build:
-      context: ./nemoclaw
+      context: ./graph-jepa
       dockerfile: Dockerfile
     ports:
-      - "8004:8004"
+      - "8005:8005"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  jepa-wms:
+    build:
+      context: ./jepa-wms
+      dockerfile: Dockerfile
+    ports:
+      - "8006:8006"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  point-jepa:
+    build:
+      context: ./point-jepa
+      dockerfile: Dockerfile
+    ports:
+      - "8007:8007"
     deploy:
       resources:
         reservations:
@@ -276,12 +304,13 @@ services:
 EOF
 
 # Create Dockerfiles for all models
-for model in vjepa lewm lmms nemoclaw; do
+for model in vjepa lewm lmms nemoclaw graph-jepa jepa-wms point-jepa; do
+  mkdir -p ~/pwm-models/$model
   cat << EOF > ~/pwm-models/$model/Dockerfile
-FROM pytorch/pytorch:2.1.2-cuda12.1-cudnn8-runtime
+FROM pytorch/pytorch:2.2.0-cuda12.1-cudnn8-runtime
 
 WORKDIR /app
-RUN pip install fastapi uvicorn pydantic
+RUN pip install fastapi uvicorn pydantic numpy httpx
 
 COPY app.py .
 
@@ -291,3 +320,4 @@ done
 
 echo "✅ GCE GPU Setup configuration complete."
 echo "💡 To run all services with docker-compose: cd ~/pwm-models && docker compose up --build -d"
+

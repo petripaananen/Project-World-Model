@@ -176,15 +176,11 @@ export const ProjectLifecycle: React.FC<ProjectLifecycleProps> = () => {
       
       {/* 1. Horizontal Timeline */}
       <div className="glass-card" style={{ padding: '20px' }}>
-        <h3 style={{ margin: '0 0 20px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <h3 
+          style={{ margin: '0 0 20px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', cursor: 'default' }}
+          title="Timeline divided into phases. Stage gates act as validation steps before moving to the next phase."
+        >
           Project Lifecycle Stage Gate Timeline
-          <span 
-            className="material-symbols-outlined" 
-            style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
-            title="Timeline divided into phases. Stage gates act as validation steps before moving to the next phase."
-          >
-            help
-          </span>
         </h3>
         
         <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px', margin: '20px 0' }}>
@@ -274,15 +270,11 @@ export const ProjectLifecycle: React.FC<ProjectLifecycleProps> = () => {
 
         {/* Right: Risk Register mapped to 9 Knowledge Areas */}
         <div className="glass-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', height: '400px' }}>
-          <h3 style={{ margin: '0 0 15px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <h3 
+            style={{ margin: '0 0 15px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', cursor: 'default' }}
+            title="Tracks potential project risks across areas like Budget, Time, Quality, and Communication."
+          >
             Project Risk Register
-            <span 
-              className="material-symbols-outlined" 
-              style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
-              title="Tracks potential project risks across areas like Budget, Time, Quality, and Communication."
-            >
-              help
-            </span>
           </h3>
           
           <div style={{ flex: 1, overflowY: 'auto', paddingRight: '2px' }}>

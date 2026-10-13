@@ -1,0 +1,62 @@
+version: '3.8'
+
+# Project World Model (PWM) - JEPA Model Serving Cluster
+# Spawns Graph-JEPA (8005), JEPA-WMs (8006), and Point-JEPA (8007)
+
+services:
+  graph-jepa:
+    build:
+      context: .
+      dockerfile: Dockerfile.models
+      args:
+        SERVICE_MODULE: pwm.serving.graph_jepa_server
+    container_name: pwm-graph-jepa
+    ports:
+      - "8005:8005"
+    environment:
+      - PWM_GRAPH_JEPA_PORT=8005
+      - PWM_GRAPH_JEPA_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  jepa-wms:
+    build:
+      context: .
+      dockerfile: Dockerfile.models
+      args:
+        SERVICE_MODULE: pwm.serving.jepa_wm_server
+    container_name: pwm-jepa-wms
+    ports:
+      - "8006:8006"
+    environment:
+      - PWM_JEPA_WM_PORT=8006
+      - PWM_JEPA_WM_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  point-jepa:
+    build:
+      context: .
+      dockerfile: Dockerfile.models
+      args:
+        SERVICE_MODULE: pwm.serving.point_jepa_server
+    container_name: pwm-point-jepa
+    ports:
+      - "8007:8007"
+    environment:
+      - PWM_POINT_JEPA_PORT=8007
+      - PWM_POINT_JEPA_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped

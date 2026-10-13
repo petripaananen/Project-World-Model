@@ -81,9 +81,12 @@ class ModelConfig(BaseModel):
     )
     # External model service endpoints
     vjepa_endpoint_url: str = Field(default="", description="Layer 1 V-JEPA service endpoint")
+    graph_jepa_endpoint_url: str = Field(default="", description="Layer 1 Graph-JEPA service endpoint for topological graphs")
     lewm_endpoint_url: str = Field(default="", description="Layer 2 LeWM service endpoint")
+    jepa_wm_endpoint_url: str = Field(default="", description="Layer 2 JEPA-WMs action-conditioned rollout endpoint")
     lmms_engine_endpoint_url: str = Field(default="", description="Layer 3 LMMs-Engine service endpoint")
     nemoclaw_endpoint_url: str = Field(default="", description="Layer 4 NemoClaw service endpoint")
+    point_jepa_endpoint_url: str = Field(default="", description="Layer 4 Point-JEPA 3D geometry service endpoint")
 
 
 class IngestionConfig(BaseModel):
@@ -350,9 +353,12 @@ class PWMConfig(BaseModel):
                 reasoning_model=os.getenv("PWM_REASONING_MODEL", "gemini-3.8-flash"),
                 fast_model=os.getenv("PWM_FAST_MODEL", "gemini-3.1-flash-lite"),
                 vjepa_endpoint_url=os.getenv("PWM_VJEPA_ENDPOINT_URL", ""),
+                graph_jepa_endpoint_url=os.getenv("PWM_GRAPH_JEPA_ENDPOINT_URL", ""),
                 lewm_endpoint_url=os.getenv("PWM_LEWM_ENDPOINT_URL", ""),
+                jepa_wm_endpoint_url=os.getenv("PWM_JEPA_WM_ENDPOINT_URL", ""),
                 lmms_engine_endpoint_url=os.getenv("PWM_LMMS_ENGINE_ENDPOINT_URL", ""),
                 nemoclaw_endpoint_url=os.getenv("PWM_NEMOCLAW_ENDPOINT_URL", ""),
+                point_jepa_endpoint_url=os.getenv("PWM_POINT_JEPA_ENDPOINT_URL", ""),
             ),
             ingestion=IngestionConfig(
                 github_owner=os.getenv("PWM_GITHUB_OWNER", ""),

@@ -137,8 +137,8 @@ export function DataTreeGardenBabylon({
         z = proposedZ + r * Math.sin(angle);
       }
       // Robust fallback: clamp to garden perimeter instead of overlapping
-      const fallbackX = Math.max(-6.4, Math.min(6.4, proposedX + (Math.random() - 0.5) * 2));
-      const fallbackZ = Math.max(-6.0, Math.min(6.0, proposedZ + (Math.random() - 0.5) * 2));
+      const fallbackX = Math.max(-6.4, Math.min(6.4, proposedX));
+      const fallbackZ = Math.max(-6.0, Math.min(6.0, proposedZ));
       console.warn(`[Collision Solver] Failed to find collision-free position for (${proposedX.toFixed(1)}, ${proposedZ.toFixed(1)}), using fallback (${fallbackX.toFixed(1)}, ${fallbackZ.toFixed(1)})`);
       return [fallbackX, 0, fallbackZ];
     };
@@ -349,7 +349,7 @@ export function DataTreeGardenBabylon({
       const ssao = new BABYLON.SSAO2RenderingPipeline("ssao", scene, 0.75, [camera]);
       ssao.radius = 2.0;
       ssao.totalStrength = 1.0;
-    } catch (e) {
+    } catch {
       // Graceful fallback for SSAO depth texture support
     }
 
@@ -431,9 +431,8 @@ export function DataTreeGardenBabylon({
     });
 
     // 12. Weather rain rendering loop
-    let groundRainEmitter: BABYLON.Mesh | null = null;
     if (isRainy) {
-      groundRainEmitter = BABYLON.MeshBuilder.CreatePlane("rainEmitter", { size: 24 }, scene);
+      const groundRainEmitter = BABYLON.MeshBuilder.CreatePlane("rainEmitter", { size: 24 }, scene);
       groundRainEmitter.rotation.x = Math.PI / 2;
       groundRainEmitter.position.y = 8;
       groundRainEmitter.isVisible = false;
@@ -659,12 +658,10 @@ export function DataTreeGardenBabylon({
       }
     });
 
-    let animationTime = 0;
     const movementSpeed = 0.015; // Cozy walking speed
 
     scene.onBeforeRenderObservable.add(() => {
-      const dt = engine.getDeltaTime() / 1000;
-      animationTime += dt;
+      const dt = scene.getEngine().getDeltaTime() / 1000;
 
       // Soft Agent-to-Agent Steering Separation (prevents gnomes from walking into/overlapping each other)
       for (let i = 0; i < gnomesList.length; i++) {

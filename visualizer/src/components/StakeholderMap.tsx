@@ -290,15 +290,11 @@ export const StakeholderMap: React.FC<StakeholderMapProps> = () => {
 
       {/* RACI Matrix section */}
       <div className="glass-card" style={{ padding: '20px' }}>
-        <h3 style={{ margin: '0 0 12px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <h3 
+          style={{ margin: '0 0 12px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', cursor: 'default' }}
+          title="RACI stands for Responsible (does the work), Accountable (approves), Consulted (provides input), and Informed (kept updated) for each system area."
+        >
           Responsibility Assignment Matrix (RACI)
-          <span 
-            className="material-symbols-outlined" 
-            style={{ fontSize: '0.95rem', color: 'var(--text-sub)', cursor: 'help' }}
-            title="RACI stands for Responsible (does the work), Accountable (approves), Consulted (provides input), and Informed (kept updated) for each system area."
-          >
-            help
-          </span>
         </h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem', textAlign: 'left' }}>
           <thead>

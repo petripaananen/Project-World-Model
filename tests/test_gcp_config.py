@@ -50,6 +50,11 @@ class TestGCPConfigAndLayers(unittest.IsolatedAsyncioTestCase):
         self.config.gcp.location = "us-east4"
         self.config.gcp.gce_instance_name = "test-gpu-host"
         self.config.gcp.gce_zone = "us-east4-a"
+        self.config.models.vjepa_endpoint_url = ""
+        self.config.models.graph_jepa_endpoint_url = ""
+        self.config.models.lewm_endpoint_url = ""
+        self.config.models.jepa_wm_endpoint_url = ""
+        self.config.models.point_jepa_endpoint_url = ""
 
     def test_config_parsing(self):
         """Test that configuration successfully parses GCE settings and model endpoints."""

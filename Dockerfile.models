@@ -1,0 +1,28 @@
+# Project World Model (PWM) - JEPA Model Serving Container
+# Supports CPU and NVIDIA CUDA runtime for Graph-JEPA, JEPA-WMs, and Point-JEPA
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir uvicorn fastapi numpy pydantic httpx
+
+# Copy PWM library and serving microservices
+COPY pwm/ ./pwm/
+
+# Default entrypoint runs the unified multi-serving cluster
+ARG SERVICE_MODULE=pwm.serving.runner
+ENV SERVICE_MODULE=${SERVICE_MODULE}
+
+EXPOSE 8005 8006 8007
+
+CMD python -m ${SERVICE_MODULE}

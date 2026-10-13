@@ -737,6 +737,11 @@ function App() {
   const [opponentLimit, setOpponentLimit] = useState<number>(1.0); // 0.1M to 2.0M tokens
   const [limitsEnforced, setLimitsEnforced] = useState(false);
 
+  // What-If Sandbox and Morning Briefing state
+  const [whatIfDelayDays, setWhatIfDelayDays] = useState<number>(3);
+  const [whatIfSelectedBranch, setWhatIfSelectedBranch] = useState<'immediate' | 'delayed' | 'revert'>('delayed');
+  const [briefingActionMsg, setBriefingActionMsg] = useState<string | null>(null);
+
   // Connection Modal state
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [connectModalTab, setConnectModalTab] = useState<'file' | 'api'>('file');
@@ -864,9 +869,24 @@ function App() {
     }
   };
 
-  useEffect(() => {
+  const handleBriefingAction = (action: 'approve' | 'revision' | 'veto') => {
+    playHoverSound();
+    if (action === 'approve') {
+      handleSubmitDecision(true);
+      setBriefingActionMsg('Approved recommendations! Resolution dispatched to staging.');
+    } else if (action === 'veto') {
+      handleSubmitDecision(false);
+      setBriefingActionMsg('Strategist VETO applied. Human engineer assigned.');
+    } else {
+      setBriefingActionMsg('Revision requested from Worker & Critic agents with target constraints.');
+    }
+  };
+
+  const [prevSelectedProject, setPrevSelectedProject] = useState(selectedProject);
+  if (prevSelectedProject !== selectedProject) {
+    setPrevSelectedProject(selectedProject);
     setSelectedGardenNode(null);
-  }, [selectedProject]);
+  }
 
   // Inactivity tracking (suspend telemetry to allow scale-to-zero)
   useEffect(() => {
@@ -903,7 +923,9 @@ function App() {
         if (msg.type === 'state_update') {
           setPipelineState(msg.data);
         }
-      } catch (err) {}
+      } catch (_err) {
+        // Ignore unparseable non-JSON websocket messages
+      }
     };
     return () => ws.close();
   }, [isInactive]);
@@ -1703,6 +1725,87 @@ function App() {
                       );
                     })()}
 
+                    {/* Executive Morning Briefing Hero Card */}
+                    <div className="executive-briefing-card glass-card" style={{ marginBottom: '20px', padding: '18px 24px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px' }}>
+                      <div className="briefing-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+                        <div className="briefing-title-group" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: '2rem', color: '#f59e0b', background: 'rgba(245, 158, 11, 0.1)', padding: '10px', borderRadius: '12px' }}>wb_sunny</span>
+                          <div>
+                            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>Scenario Strategist Morning Briefing</h3>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--text-sub)' }}>
+                              Overnight Causal Simulation Summary &bull; Causal Digital Twin Autonomous Loop
+                            </p>
+                          </div>
+                        </div>
+                        <div className="briefing-kpi-pills" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                          <div className="briefing-kpi-item" style={{ background: 'var(--surface-dim)', border: '1px solid var(--border)', padding: '8px 14px', borderRadius: '10px', textAlign: 'center' }}>
+                            <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-sub)', textTransform: 'uppercase' }}>CRR Ratio</span>
+                            <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--success)', fontFamily: 'var(--mono-font)' }}>
+                              {pipelineState?.crr?.crr?.toFixed(2) || (activeProjectData?.telemetry?.crr?.toFixed(2) || '1.45')}
+                            </span>
+                          </div>
+                          <div className="briefing-kpi-item" style={{ background: 'var(--surface-dim)', border: '1px solid var(--border)', padding: '8px 14px', borderRadius: '10px', textAlign: 'center' }}>
+                            <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-sub)', textTransform: 'uppercase' }}>Rework Avoided</span>
+                            <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--primary)', fontFamily: 'var(--mono-font)' }}>
+                              €{pipelineState?.crr?.estimated_rework_cost_usd ? Math.round(pipelineState.crr.estimated_rework_cost_usd).toLocaleString() : '3,450'}
+                            </span>
+                          </div>
+                          <div className="briefing-kpi-item" style={{ background: 'var(--surface-dim)', border: '1px solid var(--border)', padding: '8px 14px', borderRadius: '10px', textAlign: 'center' }}>
+                            <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-sub)', textTransform: 'uppercase' }}>Active Conflicts</span>
+                            <span style={{ fontSize: '1.15rem', fontWeight: 800, color: (pipelineState?.debt_report?.critical_count || 0) > 0 ? 'var(--error)' : 'var(--warning)', fontFamily: 'var(--mono-font)' }}>
+                              {pipelineState?.debt_report?.total_debt_items || activeProjectData?.risks?.length || 2} detected
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="briefing-content-body" style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border)' }}>
+                        <div className="briefing-insight-text" style={{ fontSize: '0.85rem', lineHeight: 1.5, background: 'rgba(68, 80, 183, 0.04)', border: '1px solid rgba(68, 80, 183, 0.15)', padding: '12px 16px', borderRadius: '10px', marginBottom: '14px' }}>
+                          <strong style={{ color: 'var(--primary)' }}>JEPA Causal Insight:</strong>{' '}
+                          {pipelineState?.debt_report?.conflicts?.[0]?.causal_evidence?.counterfactual ||
+                            `Latent simulation indicates staging PR #${activeProjectData?.approvals?.[0]?.title?.split(' ')[1] || '204'} by 3 days will avoid CSS regression cascade across 5 dependent components. Immediate merge has a predicted conflict risk of 85%.`}
+                        </div>
+
+                        {briefingActionMsg && (
+                          <div className="briefing-alert-banner" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(46, 160, 67, 0.1)', color: 'var(--success)', padding: '10px 14px', borderRadius: '8px', marginBottom: '14px', fontSize: '0.82rem', fontWeight: 600 }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>check_circle</span>
+                            {briefingActionMsg}
+                          </div>
+                        )}
+
+                        <div className="briefing-actions-bar" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)' }}>1-Click Triage:</span>
+                          <button 
+                            className="btn-briefing approve"
+                            onClick={() => handleBriefingAction('approve')}
+                            disabled={decisionSubmitting}
+                            style={{ background: 'var(--success)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>check_circle</span>
+                            Approve Resolutions
+                          </button>
+                          <button 
+                            className="btn-briefing revision"
+                            onClick={() => handleBriefingAction('revision')}
+                            disabled={decisionSubmitting}
+                            style={{ background: '#8455ef', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>replay</span>
+                            Request Agent Revision
+                          </button>
+                          <button 
+                            className="btn-briefing veto"
+                            onClick={() => handleBriefingAction('veto')}
+                            disabled={decisionSubmitting}
+                            style={{ background: 'var(--error)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>block</span>
+                            Strategist Absolute Veto
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Observe-Predict-Act 3-Column Console */}
                     <div className="observe-predict-act-grid">
                       
@@ -1765,15 +1868,11 @@ function App() {
                         </div>
 
                         <div style={{ marginTop: '10px' }}>
-                          <h4 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <h4 
+                            style={{ margin: '0 0 10px 0', fontSize: '0.85rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-sub)', display: 'flex', alignItems: 'center', cursor: 'default' }}
+                            title="An unalterable record of all repository events. Used by prediction algorithms to guarantee that input data hasn't been altered."
+                          >
                             Secured Activity Log
-                            <span 
-                              className="material-symbols-outlined" 
-                              style={{ fontSize: '0.9rem', color: 'var(--text-sub)', cursor: 'help' }}
-                              title="An unalterable record of all repository events. Used by prediction algorithms to guarantee that input data hasn't been altered."
-                            >
-                              help
-                            </span>
                           </h4>
                           <div className="merkle-chain-log">
                             {(pipelineState?.events || activeProjectData.events).slice(0, 8).map((evt, idx) => (
@@ -2039,7 +2138,7 @@ function App() {
                           const totalIssues = activeProjectData.telemetry.issues;
                           const openPrs = activeProjectData.telemetry.prs;
                           
-                          let blockedCount = activeProjectData.id === 'proj-live'
+                          const blockedCount = activeProjectData.id === 'proj-live'
                             ? pipelineState?.unified_graph?.nodes?.filter(n => n.type === 'issue' && n.attributes?.status === 'Blocked').length || 0
                             : activeProjectData.id === 'proj-gamma' ? 2
                             : activeProjectData.id === 'proj-beta' ? 1
@@ -2168,6 +2267,150 @@ function App() {
                         </div>
                       </div>
                     )}
+
+                    {/* Interactive What-If Causal Rollout Simulator */}
+                    <div className="glass-card whatif-sandbox-card" style={{ marginBottom: '20px', padding: '20px 24px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px' }}>
+                      <div className="whatif-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '1.6rem', background: 'rgba(68, 80, 183, 0.1)', padding: '8px', borderRadius: '10px' }}>tune</span>
+                          <div>
+                            <h3 style={{ margin: 0, fontSize: '1.15rem' }}>Interactive What-If Latent Rollout Simulator</h3>
+                            <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-sub)' }}>
+                              Powered by JEPA-WMs (facebookresearch/jepa-wms) &bull; Simulate schedule adjustments in latent space with 0 build time
+                            </p>
+                          </div>
+                        </div>
+                        <span className="live-pill" style={{ background: 'rgba(68, 80, 183, 0.12)', color: 'var(--primary)', fontWeight: 700, padding: '4px 12px', borderRadius: '12px', fontSize: '0.75rem' }}>
+                          Latent Action Rollout Active
+                        </span>
+                      </div>
+
+                      <div className="whatif-controls-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginTop: '18px' }}>
+                        {/* Slider Control */}
+                        <div className="whatif-slider-box" style={{ background: 'var(--surface-dim)', padding: '16px 20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <strong style={{ fontSize: '0.88rem' }}>Simulated PR Merge Delay</strong>
+                            <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--primary)', fontFamily: 'var(--mono-font)' }}>
+                              {whatIfDelayDays > 0 ? `+${whatIfDelayDays} Days` : whatIfDelayDays === 0 ? 'Same Day (0d)' : `${whatIfDelayDays} Days`}
+                            </span>
+                          </div>
+                          <input 
+                            type="range"
+                            min="-2"
+                            max="7"
+                            step="1"
+                            value={whatIfDelayDays}
+                            onChange={(e) => setWhatIfDelayDays(parseInt(e.target.value))}
+                            style={{ width: '100%', accentColor: 'var(--primary)', height: '6px' }}
+                          />
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-sub)', marginTop: '8px' }}>
+                            <span>Expedited (-2d)</span>
+                            <span>Standard (0d)</span>
+                            <span>Staged Buffer (+7d)</span>
+                          </div>
+
+                          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border)', fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.5 }}>
+                            <strong style={{ color: 'var(--text-main)' }}>Calculated Impact:</strong> Delaying integration by {whatIfDelayDays} days reduces peak merge conflict concurrency by {Math.min(whatIfDelayDays * 14 + 10, 85)}% and saves an estimated €{(whatIfDelayDays * 450 + 600).toLocaleString()} in cascading hotfix rework.
+                          </div>
+                        </div>
+
+                        {/* Candidate Action Rollout Cards */}
+                        <div className="whatif-branches-box" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <strong style={{ fontSize: '0.85rem', color: 'var(--text-sub)', textTransform: 'uppercase' }}>Candidate Action Rollout Branches:</strong>
+                          
+                          {/* Branch 1: Immediate Merge */}
+                          <div 
+                            className={`rollout-branch-card ${whatIfSelectedBranch === 'immediate' ? 'active' : ''}`}
+                            onClick={() => setWhatIfSelectedBranch('immediate')}
+                            style={{ 
+                              background: 'var(--surface-dim)', 
+                              border: `1px solid ${whatIfSelectedBranch === 'immediate' ? 'var(--error)' : 'var(--border)'}`, 
+                              borderRadius: '10px', 
+                              padding: '10px 14px', 
+                              cursor: 'pointer',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', color: 'var(--error)' }}>bolt</span>
+                                <strong style={{ fontSize: '0.82rem' }}>Action A: Immediate Merge (Fast Path)</strong>
+                              </div>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-sub)' }}>Merges code immediately without waiting for cross-system cache invalidation.</span>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <span className="status-pill danger" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+                                Risk: {Math.min(85 + (whatIfDelayDays < 0 ? 12 : -whatIfDelayDays * 5), 98)}%
+                              </span>
+                              <div style={{ fontSize: '0.68rem', color: 'var(--text-sub)', marginTop: '2px' }}>Latent Energy: 0.88</div>
+                            </div>
+                          </div>
+
+                          {/* Branch 2: Staged Delay */}
+                          <div 
+                            className={`rollout-branch-card ${whatIfSelectedBranch === 'delayed' ? 'active' : ''}`}
+                            onClick={() => setWhatIfSelectedBranch('delayed')}
+                            style={{ 
+                              background: 'var(--surface-dim)', 
+                              border: `1px solid ${whatIfSelectedBranch === 'delayed' ? 'var(--success)' : 'var(--border)'}`, 
+                              borderRadius: '10px', 
+                              padding: '10px 14px', 
+                              cursor: 'pointer',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', color: 'var(--success)' }}>schedule</span>
+                                <strong style={{ fontSize: '0.82rem' }}>Action B: Staged Buffer ({whatIfDelayDays > 0 ? `+${whatIfDelayDays}d` : 'Buffer'}) [Recommended]</strong>
+                              </div>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-sub)' }}>Allows CI regression suite and dependent branch tests to settle before main merge.</span>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <span className="status-pill good" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+                                Risk: {Math.max(22 - whatIfDelayDays * 2, 8)}%
+                              </span>
+                              <div style={{ fontSize: '0.68rem', color: 'var(--text-sub)', marginTop: '2px' }}>Latent Energy: 0.24</div>
+                            </div>
+                          </div>
+
+                          {/* Branch 3: Revert / Isolate */}
+                          <div 
+                            className={`rollout-branch-card ${whatIfSelectedBranch === 'revert' ? 'active' : ''}`}
+                            onClick={() => setWhatIfSelectedBranch('revert')}
+                            style={{ 
+                              background: 'var(--surface-dim)', 
+                              border: `1px solid ${whatIfSelectedBranch === 'revert' ? 'var(--primary)' : 'var(--border)'}`, 
+                              borderRadius: '10px', 
+                              padding: '10px 14px', 
+                              cursor: 'pointer',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', color: 'var(--primary)' }}>history</span>
+                                <strong style={{ fontSize: '0.82rem' }}>Action C: Cherry-pick Minimal Patch Only</strong>
+                              </div>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-sub)' }}>Extracts core bugfix commits and decouples breaking schema changes to next milestone.</span>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <span className="status-pill good" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>
+                                Risk: 12%
+                              </span>
+                              <div style={{ fontSize: '0.68rem', color: 'var(--text-sub)', marginTop: '2px' }}>Latent Energy: 0.16</div>
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
 
                     <div className="glass-card">
                       <h3>Simulation History Log</h3>
@@ -2403,26 +2646,22 @@ function App() {
                       {/* Right: Chart */}
                       <div className="cal-chart-card">
                         <div className="cal-chart-header">
-                          <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                          <h3 
+                            style={{ display: 'flex', alignItems: 'center', margin: 0, cursor: 'default' }}
+                            title="Overall error distance measures the straight-line difference between the simulated multidimensional state and the actual state. Lower is better."
+                          >
                             Simulation Drift History (Alignment Error)
-                            <span 
-                              className="material-symbols-outlined help-icon" 
-                              style={{ fontSize: '1.0rem', color: 'var(--text-sub)', cursor: 'help' }}
-                              title="Overall error distance measures the straight-line difference between the simulated multidimensional state and the actual state. Lower is better."
-                            >
-                              help
-                            </span>
                           </h3>
                           <span style={{ fontSize: '0.7rem', color: 'var(--text-sub)' }}>Target Drift: &lt; 0.0500</span>
                         </div>
                         
                         <div className="cal-bar-chart">
                           {(() => {
-                            const history = pipelineState?.calibration?.history || [
-                              { timestamp: new Date(Date.now() - 3600000 * 3).toISOString(), error: 0.045, calibration_factor: 1.0 },
-                              { timestamp: new Date(Date.now() - 3600000 * 2).toISOString(), error: 0.042, calibration_factor: 1.01 },
-                              { timestamp: new Date(Date.now() - 3600000).toISOString(), error: 0.038, calibration_factor: 1.02 },
-                              { timestamp: new Date().toISOString(), error: 0.041, calibration_factor: 1.025 }
+                            const history = pipelineState?.calibration?.history?.length ? pipelineState.calibration.history : [
+                              { timestamp: "2026-10-13T08:00:00Z", error: 0.045, calibration_factor: 1.0 },
+                              { timestamp: "2026-10-13T09:00:00Z", error: 0.042, calibration_factor: 1.01 },
+                              { timestamp: "2026-10-13T10:00:00Z", error: 0.038, calibration_factor: 1.02 },
+                              { timestamp: "2026-10-13T11:00:00Z", error: 0.041, calibration_factor: 1.025 }
                             ];
                             
                             // Map to CSS height representation

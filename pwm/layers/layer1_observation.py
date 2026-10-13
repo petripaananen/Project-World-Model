@@ -17,17 +17,23 @@ from typing import Any, Dict, Optional
 from pwm.config import PWMConfig
 from pwm.ingestion.data_fusion import DataFusionEngine
 from pwm.ingestion.models import ProjectState, SprintState, SlackState, UnifiedProjectGraph
+from pwm.simulation.jepa_core import GraphJEPAEncoder
 
 class Layer1Observation:
     """
     Layer 1: Observation & Ingestion.
-    Coordinates telemetry from Git/GitHub, Linear, and stubs for Game Engine.
-    If vjepa_endpoint_url is configured, calls the V-JEPA service to encode telemetry states;
-    otherwise, it falls back to recording raw logs directly.
+    Coordinates telemetry from Git/GitHub, Linear, Slack, and Game Engine.
+    Uses Graph-JEPA to encode project graph topology and V-JEPA to encode
+    video/runtime state. Falls back cleanly to deterministic local graph
+    representation and raw event logs.
     """
     def __init__(self, config: PWMConfig):
         self.config = config
         self.endpoint_url = config.models.vjepa_endpoint_url
+        self.graph_encoder = GraphJEPAEncoder(
+            endpoint_url=config.models.graph_jepa_endpoint_url,
+            latent_dim=64,
+        )
 
     async def process_telemetry(
         self, 
@@ -38,6 +44,10 @@ class Layer1Observation:
         # 1. Fuse data into a UnifiedProjectGraph
         fusion_engine = DataFusionEngine()
         unified_graph = fusion_engine.fuse(project_state, sprint_state, slack_state)
+        
+        # 2. Encode graph topology via Graph-JEPA
+        graph_jepa_result = await self.graph_encoder.encode(unified_graph)
+
         payload = {
             "github": project_state.model_dump() if project_state else None,
             "linear": sprint_state.model_dump() if sprint_state else None,
@@ -64,6 +74,8 @@ class Layer1Observation:
                     return {
                         "status": "vjepa_encoded",
                         "embeddings": result.get("embeddings"),
+                        "graph_embeddings": graph_jepa_result.get("latent_vector"),
+                        "graph_jepa_status": graph_jepa_result.get("status"),
                         "unified_graph": unified_graph,
                         "raw_data": payload
                     }
@@ -71,10 +83,12 @@ class Layer1Observation:
                 if self.config.verbose:
                     print(f"[Layer 1] V-JEPA connection failed ({e}). Falling back to raw logs.")
         
-        # Fallback: record/return raw data directly
+        # Fallback: record/return raw data directly with Graph-JEPA representation
         return {
             "status": "raw_logs",
             "embeddings": None,
+            "graph_embeddings": graph_jepa_result.get("latent_vector"),
+            "graph_jepa_status": graph_jepa_result.get("status"),
             "unified_graph": unified_graph,
             "raw_data": payload
         }
