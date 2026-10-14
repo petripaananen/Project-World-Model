@@ -35,6 +35,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 import numpy as np
 
+from pwm.simulation.jepa_core import OrthogonalPredictiveFactorizer
+
 # Optional PyTorch acceleration
 try:
     import torch  # type: ignore
@@ -52,6 +54,8 @@ class RolloutItem(BaseModel):
     latent_energy: float
     counterfactual_verdict: str
     predicted_state: Optional[List[float]] = None
+    factor_attributions: Optional[Dict[str, float]] = None
+    factor_energies: Optional[Dict[str, float]] = None
 
 
 class SimulationRequest(BaseModel):
@@ -62,7 +66,7 @@ class SimulationRequest(BaseModel):
 
 class SimulationResponse(BaseModel):
     status: str
-    model: str = "jepa-wm-v1"
+    model: str = "jepa-wm-v1-opf"
     device: str
     rollouts: List[RolloutItem]
 
@@ -73,54 +77,40 @@ def _simulate_rollouts(
     latent_dim: int = 64,
 ) -> List[RolloutItem]:
     """
-    Computes action-conditioned latent transitions and energy-based risk scores.
+    Computes action-conditioned latent transitions, energy scores, and
+    Orthogonal Predictive Factorization (OPF) attributions.
     """
-    base = np.array(base_state, dtype=np.float64) if base_state else np.zeros(latent_dim, dtype=np.float64)
-    if len(base) < latent_dim:
-        base = np.pad(base, (0, latent_dim - len(base)))
-    elif len(base) > latent_dim:
-        base = base[:latent_dim]
+    num_factors = 4 if latent_dim % 4 == 0 else 1
+    factor_dim = latent_dim // num_factors
+    factorizer = OrthogonalPredictiveFactorizer(
+        latent_dim=latent_dim,
+        num_factors=num_factors,
+        factor_dim=factor_dim,
+    )
 
     rollouts: List[RolloutItem] = []
 
     for act in actions:
         action_name = act.get("name", "unnamed_action")
-        action_type = act.get("type", "merge").lower()
+        action_type = act.get("type", "merge")
         risk_modifier = float(act.get("risk_modifier", 0.0))
 
-        # Latent space perturbation vector
-        perturbation = np.zeros(latent_dim, dtype=np.float64)
-        if "merge" in action_type:
-            perturbation[1] += 0.35 + risk_modifier
-            perturbation[4] += 0.15
-        elif "delay" in action_type or "buffer" in action_type:
-            perturbation[2] -= 0.20 - risk_modifier
-            perturbation[5] -= 0.10
-        elif "revert" in action_type:
-            perturbation[3] -= 0.40
-        elif "reallocate" in action_type:
-            perturbation[6] -= 0.25
-        else:
-            perturbation[0] += 0.10 + risk_modifier
-
-        projected = base + perturbation
-
-        # L2 normalization to keep projected trajectory on manifold
-        norm = np.linalg.norm(projected)
-        if norm > 1e-9:
-            projected = projected / norm
-
-        # Latent energy: distance from pre-action baseline
-        energy = float(np.linalg.norm(projected - base))
-        predicted_risk = min(max(energy * 0.75 + risk_modifier, 0.05), 0.98)
+        sim = factorizer.simulate_factor_action(
+            base_state=base_state,
+            action_name=action_name,
+            action_type=action_type,
+            risk_modifier=risk_modifier,
+        )
 
         rollouts.append(RolloutItem(
-            action=action_name,
-            action_type=action_type,
-            predicted_risk=round(predicted_risk, 3),
-            latent_energy=round(energy, 4),
-            counterfactual_verdict="SAFE" if predicted_risk < 0.45 else "RISK_HIGH",
-            predicted_state=projected.tolist()[:8],  # First 8 components for inspection
+            action=sim["action"],
+            action_type=sim["action_type"],
+            predicted_risk=sim["predicted_risk"],
+            latent_energy=sim["latent_energy"],
+            counterfactual_verdict=sim["counterfactual_verdict"],
+            predicted_state=sim["predicted_state"],
+            factor_attributions=sim.get("factor_attributions"),
+            factor_energies=sim.get("factor_energies"),
         ))
 
     return rollouts
@@ -129,19 +119,30 @@ def _simulate_rollouts(
 def create_jepa_wm_app() -> FastAPI:
     """FastAPI application factory for JEPA-WMs service."""
     app = FastAPI(
-        title="JEPA-WMs Action-Conditioned World Model Service",
-        description="Predicts counterfactual action rollouts in latent space",
-        version="1.0.0",
+        title="JEPA-WMs Action-Conditioned World Model Service (OPF Enabled)",
+        description="Predicts counterfactual action rollouts in orthogonal factorized latent space",
+        version="1.1.0",
     )
 
     @app.get("/health")
     async def health_check():
         return {
             "status": "healthy",
-            "model": "jepa-wm-v1",
+            "model": "jepa-wm-v1-opf",
             "device": DEVICE,
             "torch_available": HAS_TORCH,
+            "opf_enabled": True,
         }
+
+    @app.get("/audit-geometry")
+    async def audit_geometry(latent_dim: int = 64):
+        num_factors = 4 if latent_dim % 4 == 0 else 1
+        factorizer = OrthogonalPredictiveFactorizer(
+            latent_dim=latent_dim,
+            num_factors=num_factors,
+            factor_dim=latent_dim // num_factors,
+        )
+        return factorizer.audit_geometry()
 
     @app.post("/simulate-actions", response_model=SimulationResponse)
     async def simulate_actions(payload: SimulationRequest):

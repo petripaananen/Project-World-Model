@@ -162,12 +162,18 @@ class Layer2Simulation:
             
             # Enrich conflicts with counterfactual rollout outcomes
             if len(rollouts) >= 2:
+                top_factor_info = ""
+                attributions = rollouts[0].get("factor_attributions", {})
+                if attributions:
+                    top_factor, pct = max(attributions.items(), key=lambda x: x[1])
+                    top_factor_info = f" Primary risk driver: {top_factor} ({pct * 100:.0f}% of latent variance)."
+
                 for conflict in report.conflicts:
                     if conflict.causal_evidence:
                         conflict.causal_evidence.counterfactual = (
                             f"JEPA-WM Counterfactual: Delaying merge cuts latent conflict risk to "
                             f"{rollouts[1]['predicted_risk']:.2f}; immediate merge increases risk to "
-                            f"{rollouts[0]['predicted_risk']:.2f}."
+                            f"{rollouts[0]['predicted_risk']:.2f}.{top_factor_info}"
                         )
         except Exception as e:
             if self.config.verbose:

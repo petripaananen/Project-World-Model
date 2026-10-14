@@ -60,7 +60,7 @@ class TestModelServing(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(encode_data["edge_count"], 1)
 
     async def test_jepa_wm_service(self):
-        """Test JEPA-WMs service endpoints."""
+        """Test JEPA-WMs service endpoints (with OPF)."""
         app = create_jepa_wm_app()
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -69,9 +69,17 @@ class TestModelServing(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(resp.status_code, 200)
             data = resp.json()
             self.assertEqual(data["status"], "healthy")
-            self.assertEqual(data["model"], "jepa-wm-v1")
+            self.assertIn("jepa-wm-v1", data["model"])
+            self.assertTrue(data.get("opf_enabled", False))
 
-            # 2. Simulate actions
+            # 2. Geometry audit
+            audit_resp = await client.get("/audit-geometry")
+            self.assertEqual(audit_resp.status_code, 200)
+            audit_data = audit_resp.json()
+            self.assertEqual(audit_data["status"], "geometry_audited")
+            self.assertTrue(audit_data["is_orthonormal"])
+
+            # 3. Simulate actions
             base_state = [0.1] * 64
             actions = [
                 {"name": "Immediate Integration", "type": "merge", "risk_modifier": 0.25},
@@ -89,6 +97,8 @@ class TestModelServing(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(rollouts[0]["action"], "Immediate Integration")
             self.assertGreater(rollouts[0]["predicted_risk"], rollouts[1]["predicted_risk"])
             self.assertIn("latent_energy", rollouts[0])
+            self.assertIn("factor_attributions", rollouts[0])
+            self.assertIn("topology", rollouts[0]["factor_attributions"])
 
     async def test_point_jepa_service(self):
         """Test Point-JEPA 3D geometry service endpoints."""

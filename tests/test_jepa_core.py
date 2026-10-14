@@ -19,7 +19,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from pwm.config import PWMConfig
 from pwm.ingestion.models import UnifiedProjectGraph, FusedNode, FusedEdge
-from pwm.simulation.jepa_core import GraphJEPAEncoder, LeJEPASimulator, JEPAWorldModel
+from pwm.simulation.jepa_core import (
+    GraphJEPAEncoder,
+    LeJEPASimulator,
+    JEPAWorldModel,
+    OrthogonalPredictiveFactorizer,
+)
 from pwm.layers.layer1_observation import Layer1Observation
 
 
@@ -77,8 +82,47 @@ class TestJEPACore(unittest.IsolatedAsyncioTestCase):
         divergence = lejepa.calculate_latent_divergence(current)
         self.assertTrue(0.0 <= divergence <= 1.0)
 
+    def test_orthogonal_predictive_factorizer_geometry(self):
+        """Verify OPF decomposition, lossless synthesis, and orthonormal geometry audit."""
+        factorizer = OrthogonalPredictiveFactorizer(latent_dim=64, num_factors=4, factor_dim=16)
+
+        # 1. Geometry audit
+        audit = factorizer.audit_geometry()
+        self.assertEqual(audit["status"], "geometry_audited")
+        self.assertTrue(audit["is_orthonormal"])
+        self.assertLess(audit["orthogonality_error"], 1e-6)
+        self.assertLess(audit["reconstruction_error"], 1e-6)
+        self.assertEqual(audit["num_factors"], 4)
+        self.assertEqual(audit["factor_dim"], 16)
+
+        # 2. Decompose and compose lossless invertibility
+        state = [float(i * 0.05) for i in range(64)]
+        coords = factorizer.decompose(state)
+        self.assertEqual(coords.shape, (4, 16))
+
+        reconstructed = factorizer.compose(coords)
+        for original_val, recon_val in zip(state, reconstructed.tolist()):
+            self.assertAlmostEqual(original_val, recon_val, places=6)
+
+        # 3. Factor action simulation with targeted attributions
+        sim = factorizer.simulate_factor_action(
+            base_state=state,
+            action_name="PR Merge",
+            action_type="merge",
+            risk_modifier=0.1,
+        )
+        self.assertIn("factor_energies", sim)
+        self.assertIn("factor_attributions", sim)
+        self.assertIn("topology", sim["factor_attributions"])
+        self.assertIn("velocity", sim["factor_attributions"])
+        self.assertIn("architecture", sim["factor_attributions"])
+        # Merge should have high topology and architecture attribution
+        self.assertGreater(sim["factor_attributions"]["topology"], 0.20)
+        self.assertGreater(sim["factor_attributions"]["architecture"], 0.10)
+        self.assertAlmostEqual(sum(sim["factor_attributions"].values()), 1.0, places=2)
+
     async def test_jepa_world_model_counterfactual_rollouts(self):
-        """Verify action-conditioned latent rollout counterfactuals."""
+        """Verify action-conditioned latent rollout counterfactuals with OPF."""
         jepa_wm = JEPAWorldModel(endpoint_url="", latent_dim=64)
 
         base_state = [0.1] * 64
@@ -94,6 +138,10 @@ class TestJEPACore(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(0.0 <= rollouts[0]["predicted_risk"] <= 1.0)
         self.assertEqual(rollouts[1]["action_type"], "delay")
         self.assertTrue(rollouts[1]["predicted_risk"] < rollouts[0]["predicted_risk"])
+        # Verify factor attributions are returned
+        self.assertIn("factor_attributions", rollouts[0])
+        self.assertIn("topology", rollouts[0]["factor_attributions"])
+        self.assertIn("factor_energies", rollouts[0])
 
 
 if __name__ == "__main__":
