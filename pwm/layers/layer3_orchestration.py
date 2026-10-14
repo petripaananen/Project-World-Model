@@ -13,16 +13,18 @@
 # limitations under the License.
 
 import httpx
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from pwm.config import PWMConfig
 from pwm.ingestion.models import PWMPipelineState, ResolutionProposal
 from pwm.agents.worker_agent import WorkerAgentFactory
 from pwm.agents.planner_agent import GoalPlannerAgent
+from pwm.simulation.jepa_core import JEPAWorldModel
 
 class Layer3Orchestration:
     """
     Layer 3: Agentic Orchestration.
-    Manages specialized Worker agents (QA, Build, Art Integration).
+    Manages specialized Worker agents (QA, Build, Art Integration) with
+    RSI-Anything Phase 1 'Predict-Before-Evaluate' latent pre-screening.
     If lmms_engine_endpoint_url is configured, feeds visual layouts (dependency charts)
     for visual task planning.
     """
@@ -30,6 +32,10 @@ class Layer3Orchestration:
         self.config = config
         self.endpoint_url = config.models.lmms_engine_endpoint_url
         self._token_usage = {"input_tokens": 0, "output_tokens": 0}
+        self.jepa_wm = JEPAWorldModel(
+            endpoint_url=config.models.jepa_wm_endpoint_url,
+            latent_dim=64,
+        )
 
     @property
     def token_usage(self) -> Dict[str, int]:
@@ -95,6 +101,14 @@ class Layer3Orchestration:
                     project_context=enriched_context,
                 )
                 proposal.agent_type = agent_type
+
+                # RSI Phase 1: Predict-Before-Evaluate Pre-Screening Filter
+                base_latent = (
+                    state.debt_report.latent_state
+                    if state.debt_report and state.debt_report.latent_state
+                    else None
+                )
+                proposal = await self.pre_screen_strategies(proposal, base_state=base_latent)
                 all_proposals.append(proposal)
                 
                 # Accumulate token usage
@@ -108,3 +122,74 @@ class Layer3Orchestration:
             from pwm.scenarios import generate_demo_proposals
             proposals, _ = generate_demo_proposals(state)
             return proposals
+
+    async def pre_screen_strategies(
+        self,
+        proposal: ResolutionProposal,
+        base_state: Optional[List[float]] = None,
+    ) -> ResolutionProposal:
+        """
+        RSI-Anything Phase 1: Predict-Before-Evaluate Pre-Screening Filter.
+        Takes candidate strategies, simulates each in OPF latent space,
+        and objectively selects the strategy with lowest predicted risk and latent energy.
+        """
+        if not proposal.strategies or len(proposal.strategies) <= 1:
+            return proposal
+
+        base = base_state or [0.1] * 64
+        candidate_actions = []
+        for s in proposal.strategies:
+            title_lower = s.title.lower() + " " + s.description.lower()
+            if "delay" in title_lower or "stage" in title_lower or "buffer" in title_lower:
+                act_type = "delay"
+            elif "revert" in title_lower or "rollback" in title_lower:
+                act_type = "revert"
+            elif "reallocate" in title_lower or "handoff" in title_lower:
+                act_type = "reallocate"
+            elif "merge" in title_lower or "integrate" in title_lower:
+                act_type = "merge"
+            else:
+                act_type = "general"
+
+            risk_mod = (
+                0.15 if getattr(s.risk_level, "value", str(s.risk_level)) in ["high", "critical"]
+                else (-0.10 if getattr(s.risk_level, "value", str(s.risk_level)) == "low" else 0.0)
+            )
+            candidate_actions.append({
+                "name": s.title,
+                "type": act_type,
+                "risk_modifier": risk_mod,
+            })
+
+        try:
+            rollouts = await self.jepa_wm.simulate_counterfactuals(base, candidate_actions)
+            for s, r in zip(proposal.strategies, rollouts):
+                s.predicted_risk = r.get("predicted_risk")
+                s.latent_energy = r.get("latent_energy")
+                s.factor_attributions = r.get("factor_attributions")
+                s.factor_energies = r.get("factor_energies")
+
+            # Predict-Before-Evaluate Selection:
+            # Pick strategy with lowest predicted risk (and lowest latent energy as tie-breaker)
+            best_idx = min(
+                range(len(proposal.strategies)),
+                key=lambda i: (
+                    proposal.strategies[i].predicted_risk if proposal.strategies[i].predicted_risk is not None else 999.0,
+                    proposal.strategies[i].latent_energy if proposal.strategies[i].latent_energy is not None else 999.0,
+                ),
+            )
+            proposal.recommended_strategy_index = best_idx
+
+            # Enrich worker reasoning with RSI selection justification
+            chosen = proposal.strategies[best_idx]
+            if chosen.predicted_risk is not None and chosen.latent_energy is not None:
+                proposal.worker_reasoning += (
+                    f"\n[RSI Predict-Before-Evaluate]: Strategy '{chosen.title}' objectively selected "
+                    f"via OPF simulation (predicted risk: {chosen.predicted_risk:.2f}, "
+                    f"latent energy: {chosen.latent_energy:.4f})."
+                )
+        except Exception as e:
+            if self.config.verbose:
+                print(f"[Layer 3] RSI Pre-screening simulation note: {e}")
+
+        return proposal

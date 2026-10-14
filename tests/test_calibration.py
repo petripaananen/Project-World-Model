@@ -103,8 +103,10 @@ class TestWorldModelCalibration(unittest.IsolatedAsyncioTestCase):
     def test_save_load_state(self):
         """Test that calibrator correctly persists state to disk."""
         self.calibrator.calibration_factor = 2.5
+        self.calibrator.factor_weights["topology"] = 1.25
         self.calibrator.last_predicted_latent_state = [0.1, -0.2, 0.5]
         self.calibrator.history = [{"error": 0.5, "calibration_factor": 2.5}]
+        self.calibrator.record_trajectory_experience("merge_pr", 0.35, outcome_verdict="approved")
         
         self.calibrator.save_state()
         self.assertTrue(self.state_file.exists())
@@ -114,9 +116,40 @@ class TestWorldModelCalibration(unittest.IsolatedAsyncioTestCase):
         new_calibrator.load_state()
         
         self.assertEqual(new_calibrator.calibration_factor, 2.5)
+        self.assertEqual(new_calibrator.factor_weights["topology"], 1.25)
         self.assertEqual(new_calibrator.last_predicted_latent_state, [0.1, -0.2, 0.5])
         self.assertEqual(len(new_calibrator.history), 1)
         self.assertEqual(new_calibrator.history[0]["error"], 0.5)
+        self.assertEqual(len(new_calibrator.trajectory_buffer), 1)
+        self.assertEqual(new_calibrator.trajectory_buffer[0]["action_name"], "merge_pr")
+
+    def test_factorized_grounding_error_and_weights_update(self):
+        """Test RSI factorized grounding error and factor weights adaptation."""
+        pred = [0.1] * 64
+        act = [0.1] * 64
+        act[0] += 0.5  # Perturb topology factor (index 0..15)
+
+        errors = self.calibrator.calculate_factorized_grounding_error(pred, act)
+        self.assertIn("topology", errors)
+        self.assertIn("velocity", errors)
+        self.assertIn("coordination", errors)
+        self.assertIn("architecture", errors)
+        self.assertGreater(errors["topology"], 0.0)
+
+        # Update factor weights
+        initial_topology_weight = self.calibrator.factor_weights["topology"]
+        updated_weights = self.calibrator.update_factor_weights(errors)
+        self.assertNotEqual(updated_weights["topology"], initial_topology_weight)
+
+    def test_trajectory_buffer_recording(self):
+        """Test RSI trajectory experience replay buffer limits and formatting."""
+        for i in range(110):
+            self.calibrator.record_trajectory_experience(f"action_{i}", 0.1 * (i % 10), outcome_verdict="approved")
+
+        # Buffer capped at 100
+        self.assertEqual(len(self.calibrator.trajectory_buffer), 100)
+        self.assertEqual(self.calibrator.trajectory_buffer[-1]["action_name"], "action_109")
+
 
     @pytest.mark.asyncio
     async def test_layer2_simulation_multi_modal_context_and_scaling(self):

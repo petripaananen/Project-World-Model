@@ -13,9 +13,16 @@
 # limitations under the License.
 
 import httpx
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from pwm.config import PWMConfig
-from pwm.ingestion.models import PWMPipelineState, ResolutionProposal, CriticVerdict, CriticVerdictStatus
+from pwm.ingestion.models import (
+    PWMPipelineState,
+    ResolutionProposal,
+    CriticVerdict,
+    CriticVerdictStatus,
+    RetainGateReport,
+    RetainGateStatus,
+)
 from pwm.agents.critic_agent import CriticAgent
 from pwm.agents.opponent_agent import OpponentAgent
 from pwm.agents.artistic_integrity_agent import ArtisticIntegrityAgent
@@ -107,19 +114,20 @@ class Layer4Validation:
                                 f"\n\n[✅ NVIDIA NemoClaw Sandbox Audit]\n"
                                 f"Proposal passed isolated sandbox checks: {result.get('details')}"
                             )
-                return proposals, verdicts
+                return self.apply_retain_gate(proposals, verdicts, state)
             except Exception as e:
                 if self.config.verbose:
                     print(f"[Layer 4] NemoClaw connection failed ({e}). Using Gemini Critic validation only.")
-                return proposals, verdicts
+                return self.apply_retain_gate(proposals, verdicts, state)
         
         if mode == "analyze":
-            return await self._run_gemini_validation(state, project_context)
+            proposals, verdicts = await self._run_gemini_validation(state, project_context)
+            return self.apply_retain_gate(proposals, verdicts, state)
         else:
             # Fallback to importing generate_demo_proposals dynamically
             from pwm.scenarios import generate_demo_proposals
             proposals, verdicts = generate_demo_proposals(state)
-            return proposals, verdicts
+            return self.apply_retain_gate(proposals, verdicts, state)
 
     async def _run_gemini_validation(
         self,
@@ -195,3 +203,77 @@ class Layer4Validation:
                         print(f"[Layer 4] Artistic Integrity check failed ({e}). Continuing without.")
 
         return proposals, verdicts
+
+    def apply_retain_gate(
+        self,
+        proposals: List[ResolutionProposal],
+        verdicts: List[CriticVerdict],
+        state: Optional[PWMPipelineState] = None,
+    ) -> Tuple[List[ResolutionProposal], List[CriticVerdict]]:
+        """
+        RSI-Anything Phase 2: Layer 4 Gated 'Retain' Firewall.
+        Enforces a 4-criteria validation gate before proposals are retained:
+          1. Anti-Strategic Dishonesty check (must be False)
+          2. Sandbox Security check (must not be sandbox-rejected)
+          3. Latent Risk Tolerance (predicted risk must be < 0.90)
+          4. CRR Budget Ceiling (CRR must be <= 0.30 if CRR report present)
+        """
+        for proposal, verdict in zip(proposals, verdicts):
+            fail_status: Optional[RetainGateStatus] = None
+            fail_reason: str = ""
+
+            # Check 1: Dishonesty
+            if verdict.strategic_dishonesty_detected:
+                fail_status = RetainGateStatus.FAILED_DISHONESTY
+                fail_reason = "Strategic dishonesty detected by Critic Agent."
+            # Check 2: Sandbox security
+            elif "NVIDIA NemoClaw Sandbox Alert" in verdict.critique or verdict.verdict == CriticVerdictStatus.REJECTED:
+                if "NemoClaw Sandbox Alert" in verdict.critique:
+                    fail_status = RetainGateStatus.FAILED_SANDBOX
+                    fail_reason = "Security sandbox violation flagged by NemoClaw."
+            # Check 3: Latent Risk / Energy Tolerance
+            elif proposal.strategies:
+                rec_idx = max(0, min(proposal.recommended_strategy_index, len(proposal.strategies) - 1))
+                rec_strategy = proposal.strategies[rec_idx]
+                if rec_strategy.predicted_risk is not None and rec_strategy.predicted_risk >= 0.90:
+                    fail_status = RetainGateStatus.FAILED_ENERGY
+                    fail_reason = (
+                        f"Predicted latent risk ({rec_strategy.predicted_risk:.2f}) "
+                        f"exceeds safe tolerance threshold (0.90)."
+                    )
+            # Check 4: CRR Budget Ceiling
+            if not fail_status and state:
+                crr_val = None
+                if hasattr(state, "crr") and state.crr is not None:
+                    crr_val = getattr(state.crr, "crr", None)
+                elif hasattr(state, "crr_report") and state.crr_report is not None:
+                    crr_val = getattr(state.crr_report, "crr_ratio", getattr(state.crr_report, "crr", None))
+
+                if crr_val is not None and crr_val > 0.30:
+                    fail_status = RetainGateStatus.FAILED_CRR_BUDGET
+                    fail_reason = f"CRR economic ceiling exceeded ({crr_val:.2f} > 0.30)."
+
+            if fail_status:
+                report = RetainGateReport(
+                    status=fail_status,
+                    sandbox_cleared=fail_status != RetainGateStatus.FAILED_SANDBOX,
+                    dishonesty_detected=fail_status == RetainGateStatus.FAILED_DISHONESTY,
+                    reason=fail_reason,
+                )
+                proposal.retain_gate_report = report
+                verdict.retain_gate_report = report
+                if verdict.verdict == CriticVerdictStatus.APPROVED:
+                    verdict.verdict = CriticVerdictStatus.RETAIN_VETOED
+                    verdict.critique += f"\n\n[🛑 RSI Retain Gate Veto]: {fail_reason}"
+            else:
+                report = RetainGateReport(
+                    status=RetainGateStatus.PASSED,
+                    sandbox_cleared=True,
+                    dishonesty_detected=False,
+                    reason="Passed all 4 RSI Retain Gate checks (Energy, CRR, Dishonesty, Sandbox).",
+                )
+                proposal.retain_gate_report = report
+                verdict.retain_gate_report = report
+
+        return proposals, verdicts
+

@@ -54,6 +54,7 @@ class CriticVerdictStatus(str, Enum):
     APPROVED = "approved"           # Proposal is sound, proceed
     REJECTED = "rejected"           # Proposal has fundamental flaws
     NEEDS_REVISION = "needs_revision"  # Proposal needs specific changes
+    RETAIN_VETOED = "retain_vetoed"    # Blocked by Layer 4 RSI Retain Gate
 
 
 class ConflictType(str, Enum):
@@ -428,6 +429,33 @@ class ResolutionStrategy(BaseModel):
     risk_level: DebtSeverity = DebtSeverity.LOW
     affected_files: list[str] = Field(default_factory=list)
     trade_offs: str = ""
+    # RSI / OPF Latent simulation metrics (Predict -> Select)
+    predicted_risk: Optional[float] = None
+    latent_energy: Optional[float] = None
+    factor_attributions: Optional[dict[str, float]] = None
+    factor_energies: Optional[dict[str, float]] = None
+
+
+class RetainGateStatus(str, Enum):
+    """Outcomes of the Layer 4 RSI Retain Gate."""
+    PASSED = "passed"
+    FAILED_ENERGY = "failed_energy_increase"
+    FAILED_CRR_BUDGET = "failed_crr_budget"
+    FAILED_SANDBOX = "failed_sandbox_security"
+    FAILED_DISHONESTY = "failed_strategic_dishonesty"
+
+
+class RetainGateReport(BaseModel):
+    """
+    RSI-Anything Gated Retention Audit for Layer 4.
+    Ensures autonomous resolutions do not degrade stability, budget, or security.
+    """
+    status: RetainGateStatus = RetainGateStatus.PASSED
+    energy_reduction_delta: float = 0.0
+    crr_ratio: float = 0.0
+    sandbox_cleared: bool = True
+    dishonesty_detected: bool = False
+    reason: str = ""
 
 
 class ResolutionProposal(BaseModel):
@@ -445,6 +473,7 @@ class ResolutionProposal(BaseModel):
         default="general_agent",
         description="Agent type: general_agent, qa_agent, build_agent, art_agent",
     )
+    retain_gate_report: Optional[RetainGateReport] = None
 
 
 # ──────────────────────────────────────────────────────────────
@@ -477,6 +506,7 @@ class CriticVerdict(BaseModel):
 
     # If approved, the final validated proposal
     approved_strategy_index: Optional[int] = None
+    retain_gate_report: Optional[RetainGateReport] = None
 
 
 # ──────────────────────────────────────────────────────────────
