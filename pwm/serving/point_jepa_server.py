@@ -35,7 +35,7 @@ import numpy as np
 
 # Optional PyTorch acceleration
 try:
-    import torch
+    import torch  # type: ignore
     HAS_TORCH = True
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 except ImportError:
