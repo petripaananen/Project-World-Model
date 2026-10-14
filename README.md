@@ -1,162 +1,310 @@
 # 🌍 Project World Model (PWM) Framework
 
-Eradicating integration debt via **Causal Digital Twins** and an asynchronous **Agent Verification Engine**.
+### Autonomous Causal Digital Twin & Self-Improving Multi-Agent Production Management
 
-> **Stop reacting, start predicting.** Evolving enterprise engineering management from association-level tracking (Agile/Scrum) to causal simulation.
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Tests Passing](https://img.shields.io/badge/tests-81%20passed-brightgreen.svg)](tests/)
+[![Gemini 3 Ready](https://img.shields.io/badge/AI-Gemini%203%20%2B%20Vertex%20AI-orange.svg)](https://cloud.google.com/vertex-ai)
+[![JEPA & RSI Powered](https://img.shields.io/badge/JEPA--Anything%20%7C%20RSI--Anything-Integrated-purple.svg)](Docs/RSI_Anything_Review_and_PWM_Benchmark.md)
+[![GCP Scale-to-Zero](https://img.shields.io/badge/GCP-Cloud%20Run%20%7C%20Scale--to--Zero-blue.svg)](deploy.sh)
 
----
-
-## 📖 Theoretical Foundation
-The **Project World Model (PWM)** framework addresses the **"Paradox of Agility"**: the phenomenon where exponential asset generation by AI models creates massive "integration debt" that completely overwhelms linear, human-driven Agile/Scrum pipelines. 
-
-PWM solves this by acting as a **Causal Digital Twin (CDT)**. It orchestrates an asynchronous **Agent Verification Engine** using specialized Worker and Critic agents to simulate, detect, and resolve integration debt before it hits production. 
-
-The framework is conceptually validated by Petri Paananen's Master's Thesis: *"Itseohjautuvat työnkulut videopeliteollisuudessa: tekoälyn maailmanmallit tuotannon johtamisen viitekehyksenä"* (English: *"Emergent Workflows in the Video Game Industry: Leveraging AI World Models as a Framework for Production Management"*) (JAMK, 2026), published at URN: [URN:NBN:fi:amk-2026052919003](https://urn.fi/URN:NBN:fi:amk-2026052919003).
-
-### ✨ Key Features & Benefits
-*   **Predictive Simulation over Reactive Tracking**: Shifting management from reactive "firefighting" to proactive simulation, preventing cascading failures in a latent simulation core.
-*   **Level 3 Causal Payouts**: Capable of counterfactual reasoning (*"what-if"* scenarios) in latent space rather than simple association tracking.
-*   **Asynchronous Agentic Collaboration**: Implements the `AsyncThink` protocol for autonomous task delegation (`Fork-Delegate-Join`), running agent negotiations and conflict resolutions overnight.
-*   **Auditor Firewall**: Audits agent activity to detect *strategic dishonesty* (e.g. agents cutting corners or hiding parameters to meet schedules) using white-box interpretability.
-*   **Morale & Intellectual Property Protection**: Restricts AI to technical execution, leaving creative direction and absolute veto power in human hands. Supports local edge models (`LeWorldModel`/`LingBot-World`) to preserve IP privacy.
+> **Stop reacting, start predicting.** Moving enterprise software production from association-level tracking (Agile / Scrum / Kanban) to self-calibrating, causal world model simulation.
 
 ---
 
-### 🎯 Value Proposition & Operating Principles
-*   **The Mission**: Empower small software development businesses and tech startups by automating complex code integration, QA verification, and risk simulation.
-*   **AI-Native Operations**: Employs an autopilot 24-hour asynchronous cycle. Worker and Critic agents resolve code errors "in committee" overnight, generating a causal proof of verification with minimal human intervention.
-*   **Business Viability (CRR Economics)**: Guided by the **Compute-to-Rework Ratio (CRR)**:
-    $$\text{CRR} = \frac{\text{Simulation Inference Cost } (€)}{\text{Value of Avoided Rework } (€)}$$
-    This mathematically and economically justifies agent compute costs against developer hourly rates, preventing Jevons Paradox cost runaways.
-*   **Engineering Scalability**: Democratizes enterprise-level QA and integration capabilities, allowing small software businesses, tech startups, and engineering teams to scale and compete without massive QA departments.
-*   **GCP & Gemini Stack**: Deployed on Google Cloud (Cloud Run, Firestore, Compute Engine) and powered by the **Gemini API (via Vertex AI)** for multi-agent reasoning, latent-space causal simulation, and secure critiques.
+## 📖 Theoretical Foundation & Academic Grounding
+
+The **Project World Model (PWM)** framework solves the **"Paradox of Agility"**: the phenomenon where exponential code and asset generation by generative AI models creates massive, unmanageable **integration debt** that completely overwhelms linear, human-driven Scrum and Kanban workflows.
+
+PWM resolves this by operating as a **Causal Digital Twin (CDT)**. Operating an asynchronous **24-hour Agent Verification Engine** (`AsyncThink`), PWM autonomously models, detects, simulates, and resolves integration debt across version control, sprint backlogs, and team communication before conflicts reach production.
+
+### 🎓 Academic Research Foundation
+The framework is conceptually and empirically validated by Petri Paananen's Master's Thesis:  
+> **"Itseohjautuvat työnkulut videopeliteollisuudessa: tekoälyn maailmanmallit tuotannon johtamisen viitekehyksenä"**  
+> *(English: "Emergent Workflows in the Video Game Industry: Leveraging AI World Models as a Framework for Production Management")*  
+> Jyväskylä University of Applied Sciences (JAMK, 2026)  
+> **Permanent URN**: [URN:NBN:fi:amk-2026052919003](https://urn.fi/URN:NBN:fi:amk-2026052919003)
 
 ---
 
-## 🎨 System Architecture
+## 🚀 What's New in PWM (Recent Major Innovations)
 
-The framework is organized into 5 functional layers matching the thesis specification:
+PWM has recently integrated state-of-the-art breakthroughs in non-generative self-supervised world models and recursive self-improvement:
 
-![PWM Architecture Diagram](Docs/pwm_architecture_diagram.png)
+### 1. ⚡ Orthogonal Predictive Factorization (OPF) — *JEPA-Anything* (arXiv:2609.20800)
+Monolithic latent state representations risk entangling conflicting signals. PWM decomposes its 64-dimensional latent project state $s \in \mathbb{R}^{64}$ into $K=4$ orthogonal factor subspaces ($r=16$) with lossless orthonormal synthesis:
+* **Topology** ($c_{\text{topology}}$): Graph connectivity, cyclic dependencies, PR-issue blast radius, code churn.
+* **Velocity** ($c_{\text{velocity}}$): Sprint throughput, commit frequency, cycle time lag, WIP accumulation.
+* **Coordination** ($c_{\text{coordination}}$): Developer handoffs, communication sentiment, cross-team blockers.
+* **Architecture** ($c_{\text{architecture}}$): Interface rot, modular coupling, API boundary stability.
+* **Guaranteed Geometry**: Includes automated Gram matrix audits ensuring $\|W W^T - I\|_F < 10^{-6}$ for true subspace independence.
 
-1. **Layer 1: Observation & Ingestion** (`pwm/layers/layer1_observation.py`): Ingests version control, task tracking, and Slack exports, storing them in a cryptographically chained, immutable JSON Lines event log.
-2. **Layer 2: Latent Simulation Core** (`pwm/layers/layer2_simulation.py`): Predicts conflict propagation in latent space, calculating causal risk probabilities and tracking CRR budgets.
-3. **Layer 3: Agentic Orchestration** (`pwm/layers/layer3_orchestration.py`): Decomposes integration debt into parallel task streams routed to specialized Worker agents (QA, Build, Art Integration).
-4. **Layer 4: Validation / Auditor Firewall** (`pwm/layers/layer4_validation.py`): Audits code proposals via sandboxed validation, filtering out strategic dishonesty or insecure commands.
-5. **Layer 5: Scenario Strategist Interface** (`pwm/dashboard/`): Displays real-time conflict propagation, CRR gauges, debate logs, and day/night cycle schedules with human-in-the-loop veto capability.
+### 2. 🔄 Recursive Self-Improvement (RSI) Engine — *RSI-Anything* (arXiv:2610.13912)
+Embodying the closed-loop cycle `Propose → Predict → Select → Evaluate → Learn → Retain`:
+* **"Predict-Before-Evaluate" Pre-Screening Filter (Layer 3)**: Candidate strategies generated by Worker agents are pre-simulated in OPF latent space *before* incurring LLM critique costs. The system objectively selects the strategy with lowest predicted risk and latent energy ($E = \|s' - s\|_2$).
+* **Gated "Retain" Firewall (Layer 4)**: Enforces an automated 4-stage firewall before any proposal is retained:
+  1. *Anti-Strategic Dishonesty*: Critic agent detects shortcut-taking or hidden complexity.
+  2. *NVIDIA NemoClaw Sandbox Clearance*: Isolated micro-sandbox blocks unauthorized syscalls and privilege escalation.
+  3. *Latent Risk Tolerance*: Rejects any intervention where predicted latent risk exceeds $0.90$.
+  4. *CRR Economic Budget Ceiling*: Vetoes proposals if Compute-to-Rework Ratio exceeds $0.30$.
+  Vetoed proposals transition to `RETAIN_VETOED` and are routed to human Scenario Strategists.
+* **Factorized Experience Replay Buffer (Layer 2)**: Rolling 100-step transition buffer tracking factorized grounding errors with online gradient adaptation.
+
+### 3. 🧠 Gemini 3 Thought Signature Circulation
+Upgraded to support Google's **Gemini 3** family (`gemini-2.5-pro`, `gemini-2.5-flash`, and preview variants) with **Thought Signature Preservation**, allowing multi-turn debates between Worker, Critic, and Opponent agents to circulate internal reasoning chains without loss of nuance.
+
+### 4. 🌐 Interactive 3D DTO Garden (Babylon.js Digital Twin)
+An interactive 3D spatial digital twin built with Babylon.js and modular low-poly PBR assets:
+* **Visual Conflict Mapping**: Integration debt appears as weathering boulders, sprint velocity as flowing fountains, and work packages as blossoming foliage.
+* **Autonomous AI Gnome Avatars**: Real-time obstacle-avoiding agent statues navigating between work sockets with steering separation and deadlock recovery.
+* **Dynamic Weather System**: Project stress maps directly to 3D weather (sunny clear skies for healthy low-risk sprints vs. stormy overcast skies during critical merge conflicts).
+* **Live Mouseover Telemetry**: Raycast hover tooltips displaying real-time agent thought states, PR numbers, and risk scores.
+
+### 5. 📊 Deterministic Flow & Stakeholder Analytics
+* **Flow Metrics**: Automated Little's Law throughput, WIP drift analysis, cycle time percentiles, and bottleneck velocity flags.
+* **Stakeholder Dynamics**: RACI matrix balance scoring, cognitive load indices, and cross-discipline communication friction detection.
 
 ---
 
-## 🛠️ Codebase Structure
+## 🎨 5-Layer System Architecture
+
+```mermaid
+graph TD
+    subgraph L1["Layer 1: Ingestion & Observation"]
+        Git["Git / GitHub Ingestion"]
+        Track["Linear / Jira Backlogs"]
+        Comm["Slack / Communication Logs"]
+        Merkle["Merkle-Chained Audit Log"]
+        Git & Track & Comm --> Merkle
+    end
+
+    subgraph L2["Layer 2: Latent Simulation Core"]
+        GraphJEPA["Graph-JEPA Topological Encoder"]
+        LeJEPA["LeJEPA + SIGReg Regularizer"]
+        OPF["Orthogonal Predictive Factorizer (K=4, r=16)"]
+        CRR["Compute-to-Rework Engine (CRR)"]
+        Calib["WorldModelCalibrator (Trajectory Buffer)"]
+        Merkle --> GraphJEPA --> LeJEPA --> OPF
+        OPF --> CRR
+        OPF --> Calib
+    end
+
+    subgraph L3["Layer 3: Agentic Orchestration"]
+        WorkerFactory["Worker Agent Factory"]
+        Workers["Specialist Agents (QA, Build, Art, General)"]
+        PreScreen["Predict-Before-Evaluate Pre-Screening Filter"]
+        WorkerFactory --> Workers --> PreScreen
+    end
+
+    subgraph L4["Layer 4: Validation & Firewall"]
+        Critic["Gemini Critic Agent"]
+        Opponent["Dialectical Opponent Agent"]
+        NemoClaw["NVIDIA NemoClaw Sandbox"]
+        RetainGate{"Gated Retain Firewall"}
+        PreScreen --> Critic & Opponent --> NemoClaw --> RetainGate
+    end
+
+    subgraph L5["Layer 5: Scenario Strategist Interface"]
+        WebDash["FastAPI WebSocket Dashboard"]
+        Garden["3D Babylon.js DTO Garden"]
+        Human["Human Scenario Strategist (Veto Power)"]
+        RetainGate -->|APPROVED| Garden & WebDash
+        RetainGate -->|RETAIN_VETOED| Human
+    end
+
+    Calib -.->|Feedback Online Learning| L2
+```
+
+### Detailed Layer Breakdown
+
+| Layer | Component | Core Responsibilities |
+|---|---|---|
+| **Layer 1: Observation** | `pwm.layers.layer1_observation` | Ingests Git commits, PRs, Linear/Jira tasks, Slack messages, and MS Project XML into a unified bipartite dependency graph with SHA-256 Merkle tamper-proofing. |
+| **Layer 2: Simulation** | `pwm.layers.layer2_simulation` | Houses the `GraphJEPAEncoder`, `LeJEPASimulator` with SIGReg, `OrthogonalPredictiveFactorizer`, and `WorldModelCalibrator`. Computes counterfactual rollouts and tracks CRR budgets. |
+| **Layer 3: Orchestration** | `pwm.layers.layer3_orchestration` | Decomposes debt items and runs the `AsyncThink` protocol. Uses the **Predict-Before-Evaluate** pre-screening filter to rank candidate strategies in latent space before evaluation. |
+| **Layer 4: Validation** | `pwm.layers.layer4_validation` | Hosts the multi-agent consensus loop (Critic + Opponent + Artistic Integrity) and executes the **Gated Retain Firewall** with NemoClaw sandbox isolation. |
+| **Layer 5: Interface** | `pwm.dashboard` | Real-time WebSocket web dashboard, 3D DTO Garden, CLI terminal HUD, and human-in-the-loop decision routing. |
+
+---
+
+## 🤖 The Multi-Agent Organization
+
+PWM organizes its AI agents into three specialized functional tiers matching Thesis Kuvio 6 & 7:
 
 ```
-Project World Model/
-├── Dockerfile                   # Cloud Run container configuration
-├── deploy.sh                    # Automated Cloud Run deployment script
-├── gce_gpu_setup.sh             # Setup script for CUDA, Docker & model containers on GCE
-├── run_gpu_pipeline.py          # Script orchestrating GCE VM startup/shutdown lifecycle
-├── Docs/                        # Architecture & setup guides
-│   ├── Grand_Plan.md            # Technical blueprint
-│   ├── Grand_Plan_Review.md     # Phase checklist & gap analysis
-│   └── GCP_SETUP.md             # IAM, API, and Firestore setup guide
-├── pwm/                         # Active package
-│   ├── main.py                  # Pipeline execution CLI & loop orchestration
-│   ├── config.py                # Pydantic configuration and CRR parameters
-│   ├── agents/                  # Gemini-powered Worker & Critic agents
-│   ├── layers/                  # Layer 1-4 REST connectors and semantic fallbacks
-│   ├── ingestion/               # MCP and API adapters (GitHub, Linear, Slack)
-│   ├── logging/                 # Merkle-chained event logger and Firestore backoffs
-│   ├── simulation/              # CRR calculator and local debt detector
-│   └── dashboard/               # FastAPI WebSocket web server & CLI dashboard
-└── tests/                       # Complete pytest suite
+                          ┌────────────────────────┐
+                          │   Scenario Strategist  │ (Human-in-the-Loop)
+                          └───────────┬────────────┘
+                                      │ Overrides / Veto
+                                      ▼
+         ┌─────────────────────────────────────────────────────────┐
+         │             Strategic & Flow Orchestration              │
+         │  PlannerAgent  │  PortfolioAgent  │  StakeholderAgent   │
+         │  ScrumMaster   │  KanbanFlow      │  BudgetGuard        │
+         └───────────┬─────────────────────────────────┬───────────┘
+                     │ Directives                      │ Audits
+                     ▼                                 ▼
+┌──────────────────────────────────────────┐   ┌───────────────────────────────┐
+│        Specialist Worker Agents          │   │   Dialectical & Quality Guard │
+│  MergeConflictWorker  │  QAWorker        │◄──┤  CriticAgent (Gemini 3 Pro)   │
+│  BuildWorker          │  ArtIntegration  │   │  OpponentAgent (Devil's Adv)  │
+│  GeneralWorkerAgent                      │   │  ArtisticIntegrityAgent       │
+└──────────────────────────────────────────┘   └───────────────────────────────┘
 ```
+
+* **Worker Agents**: Propose concrete code refactors, dependency updates, and branch integrations (`qa_agent.py`, `build_agent.py`, `art_agent.py`).
+* **Critic Agent**: Detects logical flaws, anti-patterns, and **strategic dishonesty** (agents hiding bugs to pass CI).
+* **Opponent Agent**: Dialectical devil's advocate challenging every proposal with worst-case scenario testing.
+* **Artistic Integrity Agent**: Enforces visual and creative fidelity in creative and gaming software projects, ensuring AI optimizations do not strip human aesthetic soul.
+* **Budget Guard Agent**: Monitors API token consumption and token-per-watt efficiency to prevent runaway expenses.
+
+---
+
+## 💰 Economic Justification: CRR Economics
+
+A central tenet of the PWM framework is economic discipline. AI agents must never cost more than the human rework they prevent. PWM continuously computes the **Compute-to-Rework Ratio (CRR)**:
+
+$$\text{CRR} = \frac{\text{Total AI Inference Cost (€)} + \text{Infrastructure & GPU Cost (€)}}{\text{Estimated Human Developer Rework Saved (€)}}$$
+
+* **$\text{CRR} < 0.10$**: Exceptional efficiency (AI is 10x+ cheaper than manual firefighting).
+* **$\text{CRR} \le 0.30$**: Target operating budget envelope.
+* **$\text{CRR} > 0.30$**: Layer 4 Retain Firewall veto triggered (`FAILED_CRR_BUDGET`).
+* **$\text{CRR} \ge 1.00$**: **Jevons Paradox Alert** — autonomous execution halted; requires explicit human executive override.
+
+---
+
+## ⚡ Model Serving & Hybrid Cloud Architecture
+
+PWM uses a cost-optimized **Hybrid Serverless + On-Demand GPU** topology:
+
+```
+┌────────────────────────────────────────┐       ┌───────────────────────────────────────┐
+│          Google Cloud Run              │       │       Google Compute Engine (GCE)     │
+│       (Serverless Orchestration)       │       │            (On-Demand GPU VM)         │
+│                                        │       │                                       │
+│  • Web Dashboard & 3D DTO Garden       │ HTTP  │  • GraphJEPA Server (:8001)           │
+│  • Layers 1, 3, 4, 5 Execution         ├──────►│  • JEPA World Model Server (:8000)    │
+│  • Vertex AI Gemini 3 Gateway          │       │  • PointJEPA 3D Server (:8002)        │
+│  • Scale-to-Zero (--min-instances=0)   │       │  • NVIDIA NemoClaw Sandbox (:8008)    │
+└────────────────────────────────────────┘       └──────────────────┬────────────────────┘
+                                                                    │
+                                                 Automated Auto-Shutdown on Idle
+```
+
+* **Cloud Run Scale-to-Zero**: Containerized orchestration scale-to-zero (`--min-instances=0`) when no active users are connected, avoiding idle hosting charges.
+* **On-Demand GPU Lifecycle**: `run_gpu_pipeline.py` starts the GPU VM via GCP API, waits for health checks, processes batched embeddings, and guarantees shutdown in a `finally` block.
+* **Semantic Vertex AI Fallbacks**: If the GPU VM is offline, PWM seamlessly falls back to Gemini Pro/Flash semantic simulation with zero downtime.
 
 ---
 
 ## 💻 Quick Start & Local Execution
 
-### 1. Installation
-Clone the repository and install dependencies in a virtual environment:
+### 1. Prerequisites & Installation
 ```bash
-python -m venv venv
-source venv/Scripts/activate  # On Windows
+# Clone the repository
+git clone https://github.com/petripaananen/Project-World-Model.git
+cd Project-World-Model
+
+# Setup Python virtual environment
+python -m venv .venv
+source .venv/Scripts/activate  # Windows: .venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Configuration
-Create a `.env` file in the root directory:
+### 2. Environment Configuration
+Create a `.env` file in the project root:
 ```env
 GOOGLE_API_KEY=your_gemini_api_key
-GCP_PROJECT_ID=project-world-model
+GCP_PROJECT_ID=your-gcp-project-id
 GCP_LOCATION=us-central1
+NEMOCLAW_ENDPOINT_URL=http://localhost:8008/audit
+JEPA_WM_ENDPOINT_URL=http://localhost:8000
 ```
 
-### 3. Run Commands
+### 3. Execution Commands
 
-* **Run CLI Demo Mode** (no API keys required):
+* **Run Interactive 3D DTO Web Dashboard** (Recommended):
+  ```bash
+  python -m pwm.main --web --port 8765
+  ```
+  Open `http://localhost:8765` to view the live dashboard and Babylon.js 3D Garden.
+
+* **Run CLI Demo Mode** (Fully deterministic, no API keys required):
   ```bash
   python -m pwm.main --mode demo
   ```
 
-* **Run CLI Analyze Mode** (invokes Gemini agents):
+* **Run Live Gemini 3 Agent Analysis**:
   ```bash
   python -m pwm.main --mode analyze
   ```
 
-* **Run Interactive Web Dashboard**:
+* **Run Continuous 24h Autonomous Loop**:
   ```bash
-  python -m pwm.main --web --port 8765
-  ```
-  Open `http://localhost:8765` in your browser.
-
-* **Run continuous async loop mode**:
-  ```bash
-  python -m pwm.main --loop --web
+  python -m pwm.main --loop --interval 300
   ```
 
-* **Execute Specific Scenarios**:
-  * Scenario 1 (Causal Simulation): `python -m pwm.main --scenario 1`
+* **Simulate Specific Pre-Built Scenarios**:
+  * Scenario 1 (Causal Counterfactual Simulation): `python -m pwm.main --scenario 1`
   * Scenario 2 (NemoClaw Sandbox Veto): `python -m pwm.main --scenario 2`
-  * Scenario 3 (CRR Budget Alert): `python -m pwm.main --scenario 3`
+  * Scenario 3 (CRR Budget Alert & Jevons Defense): `python -m pwm.main --scenario 3`
 
----
-
-## 📡 Google Cloud Platform (GCP) Deployment
-
-The project runs in a production environment using a **hybrid serverless + on-demand GPU VM** architecture:
-
-### 1. Web Dashboard & Orchestration (Cloud Run)
-Deploys to serverless Google Cloud Run using the deployment shell script:
-```bash
-chmod +x deploy.sh
-./deploy.sh
-```
-The Cloud Run instance connects serverlessly to **Vertex AI** for agent execution and **Firestore** for audit logs.
-
-### 2. On-Demand GPU Models (Compute Engine)
-Deep local models (V-JEPA 2.1, LeWorldModel, LMMs-Engine, and NVIDIA NemoClaw) run in Docker containers on a Compute Engine GPU instance:
-* Use `gce_gpu_setup.sh` on the GPU VM (Ubuntu 22.04 LTS with T4/L4 GPUs) to install NVIDIA drivers and pull mock/serving endpoints.
-* Run the lifecycle script locally or from Cloud Run to execute a cost-optimized pipeline:
+* **Start the Standalone JEPA Model Serving Cluster**:
   ```bash
-  python run_gpu_pipeline.py --project your-project-id --instance pwm-gpu-host --zone us-central1-a
+  python -m pwm.serving.runner --all
   ```
-  This automatically starts the VM, waits for SSH connectivity, runs tests, and shuts down the instance immediately in a `finally` block to prevent unexpected billing.
-* **Vertex AI Semantic Fallbacks**: If the GPU VM is offline, Layer 1-4 connectors gracefully fall back to Vertex AI (Gemini Pro/Flash) semantic calculations.
 
 ---
 
-## 🧪 Testing
+## 🧪 Automated Test Suite
 
-Run the automated test suite using `pytest`:
+PWM enforces a strict pre-deployment testing rule: all release commits must pass 100% of local unit and integration tests.
+
 ```bash
 pytest tests/
 ```
-* `test_agile_integration.py`: Validates Agile metrics (velocity, lead time, RACI, DoD checks).
-* `test_budget_and_loop.py`: Validates token budgets, cost limits, and Critic agent feedback iteration loops.
-* `test_calibration.py`: Asserts self-supervised calibration factor updates and grounding error logic.
-* `test_ftue_parsers.py`: Verifies ingestion parsers for MS Project XML and Slack JSON exports.
-* `test_gcp_config.py`: Verifies configuration environment loading, GCE setup scripts, and Layer REST connectors.
-* `test_jira_ingest.py`: Tests Jira issue and sprint ingestion functions.
-* `test_linear_ingest.py`: Tests Linear GraphQL telemetry ingestion.
-* `test_new_agents.py`: Exercises specialized Worker and Critic agents and budget guard rails.
-* `test_security_adversarial.py`: Asserts SAIF security posture, input sanitizers, and malicious code rejection.
+
+### Test Coverage (81 Passed / 0 Failures):
+* `test_rsi_integration.py`: Validates Layer 3 Predict-Before-Evaluate selection, Layer 4 Retain Gate veto conditions (dishonesty, sandbox, energy, CRR), and closed-loop trajectory recording.
+* `test_jepa_core.py`: Asserts GraphJEPA topological embeddings, LeJEPA SIGReg regularization, and OPF Gram matrix orthonormality.
+* `test_calibration.py`: Asserts self-supervised calibration factor updates, factorized grounding errors, and trajectory persistence.
+* `test_new_agents.py`: Validates Worker, Critic, Opponent, and specialized agent consensus workflows.
+* `test_security_adversarial.py`: Validates SAIF security posture, prompt injection resistance, and NemoClaw isolation.
+* `test_budget_and_loop.py`: Validates CRR calculations, token budget enforcement, and debate loops.
+* `test_agile_integration.py`: Tests deterministic Agile metrics (velocity, lead time, RACI, DoD compliance).
+* `test_model_serving.py`: Tests FastAPI JEPA microservice endpoints (`/simulate`, `/encode-graph`, `/audit-geometry`).
+* `test_gcp_config.py`: Verifies GCP configuration loading, GCE lifecycle management, and semantic fallbacks.
+* `test_jira_ingest.py` & `test_linear_ingest.py`: Tests real-world issue tracker adapters.
+* `test_ftue_parsers.py`: Verifies MS Project XML and Slack export parsers.
+
+---
+
+## 📚 Academic Citation & References
+
+If you use or build upon the Project World Model framework in your academic research or enterprise engineering, please cite:
+
+```bibtex
+@mastersthesis{paananen2026pwm,
+  author       = {Petri Paananen},
+  title        = {Itseohjautuvat työnkulut videopeliteollisuudessa: tekoälyn maailmanmallit tuotannon johtamisen viitekehyksenä},
+  school       = {Jyväskylä University of Applied Sciences (JAMK)},
+  year         = {2026},
+  type         = {Master's Thesis},
+  url          = {https://urn.fi/URN:NBN:fi:amk-2026052919003}
+}
+```
+
+### Key Literature & Architecture References:
+1. **RSI-Anything**: Gen-Verse (2026). *RSI-Anything: Learning to Self-Improve World Models and Policies through Gated Retention*. arXiv:2610.13912.
+2. **JEPA-Anything**: Gen-Verse (2026). *JEPA-Anything: Learning Predictive Models across Different Worlds*. arXiv:2609.20800.
+3. **LeJEPA**: Balestriero, R., & LeCun, Y. (2025). *LeJEPA: Provable and Scalable Self-Supervised Learning Without Heuristics*. Meta AI Research.
+4. **Google SAIF**: *Secure AI Framework: Standards for Agentic Risk Mitigation*. Google Cloud Security.
+
+---
+
+## 📄 License
+
+This project is licensed under the **Apache License, Version 2.0**. See the [LICENSE](LICENSE) file for details.
