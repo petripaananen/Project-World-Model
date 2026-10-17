@@ -173,6 +173,6 @@ gantt
 
 #### Step 4: Verification & Test Suite
 - [ ] Update test assertions in `tests/test_gcp_config.py` and `tests/test_new_agents.py`.
-- [ ] Execute `pytest tests/` (all 62 tests passing).
+- [ ] Execute `pytest tests/` (all 97 tests passing).
 - [ ] Validate CRR calculation under the new pricing model.
 - [ ] Run sample multi-turn worker-critic loop with live Vertex AI credentials.

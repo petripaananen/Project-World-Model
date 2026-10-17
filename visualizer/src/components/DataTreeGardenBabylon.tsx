@@ -21,6 +21,16 @@ interface DataTreeGardenBabylonProps {
   projectName?: string;
   filters?: Record<string, boolean>;
   onHover: (data: HoveredData | null) => void;
+  zEnv?: {
+    reversibility: number;
+    coupling: number;
+    latency: number;
+    exogenous_volatility?: number;
+    stochasticity?: number;
+  } | null;
+  quasimetricEnergy?: number | null;
+  cvar95?: number | null;
+  constraintStatus?: string | null;
   [key: string]: any;
 }
 
@@ -30,6 +40,10 @@ export function DataTreeGardenBabylon({
   projectName = '',
   filters,
   onHover,
+  zEnv,
+  quasimetricEnergy,
+  cvar95,
+  constraintStatus,
 }: DataTreeGardenBabylonProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -395,9 +409,10 @@ export function DataTreeGardenBabylon({
       buildRoseBush(scene, pr.position, pr.status, pr.node);
     });
 
-    // 9. Issue Weeds
+    // 9. Issue Weeds (scale mass/density with low reversibility z_env)
+    const reversibility = zEnv?.reversibility ?? 1.0;
     gardenElements.issues.forEach(issue => {
-      buildWeed(scene, issue.position, issue.status, issue.node);
+      buildWeed(scene, issue.position, issue.status, issue.node, reversibility);
     });
 
     // 10. Static Fences Borders (crooked hand-built look)
@@ -497,7 +512,13 @@ export function DataTreeGardenBabylon({
             }
             const canvasRect = canvasRef.current!.getBoundingClientRect();
             onHover({
-              node: details,
+              node: {
+                ...details,
+                z_env: zEnv,
+                quasimetric_energy: quasimetricEnergy,
+                cvar_95: cvar95,
+                constraint_status: constraintStatus,
+              },
               x: canvasRect.left + scene.pointerX,
               y: canvasRect.top + scene.pointerY
             });
@@ -951,7 +972,7 @@ export function DataTreeGardenBabylon({
       scene.dispose();
       engine.dispose();
     };
-  }, [graph, theme, crr, projectName, themeColors, isRainy, onHover, gardenElements, filters]);
+  }, [graph, theme, crr, projectName, themeColors, isRainy, onHover, gardenElements, filters, zEnv, quasimetricEnergy, cvar95, constraintStatus]);
 
   return (
     <canvas

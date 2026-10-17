@@ -14,6 +14,6 @@
 
 ## 3. Go-to-Market (GTM) Execution Roadmap
 *   [ ] **Launchpad Selection**: Establish the Finnish Game Ecosystem (€3.17B turnover) as the primary early-adopter testbed due to its operational maturity.
-*   [ ] **Lead with ROI**: Structure the primary enterprise sales motion around the irrefutable mathematics of the **Compute-to-Rework Ratio (CRR)** metric.
+*   [ ] **Lead with ROI**: Structure the primary enterprise sales motion around the irrefutable mathematics of the **Compute-to-Rework Ratio ($\text{CRR}$)** metric ($\text{CRR} \ll 0.10$, delivering $>10\times$ avoided rework ROI).
 *   [ ] **Emphasize Interoperability**: Ensure product messaging guarantees Flawless API Interoperability (functioning as a non-disruptive intelligence layer over Jira/GitHub, not a rip-and-replace).
 *   [ ] **Prioritize Sovereignty**: Finalize the architectural guarantee of Absolute Digital Sovereignty for Enterprise clients (air-gapped, on-premise execution).

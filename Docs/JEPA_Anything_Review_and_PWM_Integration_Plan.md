@@ -3,7 +3,7 @@
 > **Framework Reference**: *JEPA-Anything: Learning Predictive Models across Different Worlds* (Gen-Verse, arXiv:2609.20800, Sept 2026)  
 > **Target Product**: Project World Model (PWM) — Causal Digital Twin & Autonomous Verification Engine  
 > **Author**: Antigravity AI (Pair Programming with Petri Paananen)  
-> **Status**: Prototype Integrated & Validated (All 72 PyTest tests passing)
+> **Status**: Prototype Integrated & Validated (All 97 PyTest tests passing)
 
 ---
 
@@ -17,7 +17,7 @@
 
 While **JEPA-Anything** does not offer off-the-shelf pre-trained weights for software engineering (its pre-trained checkpoints span single-cell biology, molecular dynamics, weather, and physical fields), its theoretical and structural foundation—**Orthogonal Predictive Factorization (OPF)** implemented in [`jepa-anything-core`](https://github.com/Gen-Verse/JEPA-Anything/tree/main/jepa-anything-core)—solves the most acute latent-space bottleneck in PWM's Layer 2 Latent Simulation Core: **latent factor entanglement during counterfactual action simulation**.
 
-By replacing monolithic 64-dimensional latent state projections with **orthogonal factorized coordinates** (`d = K × r`), PWM transitions from coarse heuristic perturbation to **true Level 3 Causal Interventions** with factor-attributed risk explanations.
+By replacing monolithic 64-dimensional latent state projections with **orthogonal factorized coordinates** ($d = K \times r$), PWM transitions from coarse heuristic perturbation to **true Level 3 Causal Interventions** with factor-attributed risk explanations.
 
 ---
 
@@ -27,22 +27,19 @@ Introduced in late 2026 by researchers from Gen-Verse (PhAI Labs, National Unive
 
 ### The Monolithic Target Bottleneck
 In traditional JEPAs:
-1. Observations are mapped into a single monolithic target representation vector `s ∈ ℝᵈ`.
-2. A single predictor pathway attempts to forecast the next state `s_(t+1)` conditioned on context or action.
+1. Observations are mapped into a single monolithic target representation vector $\mathbf{s} \in \mathbb{R}^d$.
+2. A single predictor pathway attempts to forecast the next state $\mathbf{s}_{t+1}$ conditioned on context or action.
 3. In complex, heterogeneous environments (such as software projects with Git ASTs, Jira tickets, and Slack chatter), dominant high-variance signals crowd out subtle structural dynamics, starving them of gradient updates (**capacity-allocation starvation**).
 
 ### The Core Innovation: Orthogonal Predictive Factorization (OPF)
-1. **Factor Group Decomposition**: The latent state `s ∈ ℝᵈ` is decomposed into `K` complementary factor groups of width `r` (`d = K × r`):
-   ```text
-   state s ∈ ℝᵈ  ⇄  predictive coordinates c ∈ ℝ^(K × r)
-   ```
-2. **Dedicated Prediction Pathways**: Each factor group is predicted through an independent, parallel predictor pathway rather than one monolithic network.
-3. **Lossless Synthesis**: A complete state is synthesized through an orthonormal basis (`W · Wᵀ = I`) or Moore–Penrose pseudo-inverse:
-   ```text
-   s = compose(c)
-   ```
+1. **Factor Group Decomposition**: The latent state $\mathbf{s} \in \mathbb{R}^d$ is decomposed into $K$ complementary factor groups of width $r$ ($d = K \times r$):
+   $$\mathbf{s} \in \mathbb{R}^d \iff \mathbf{c} \in \mathbb{R}^{K \times r}$$
+2. **Dedicated Prediction Pathways**: Each factor group is predicted through an independent, parallel predictor pathway rather than one monolithic network:
+   $$\hat{\mathbf{c}}_{k, t+1} = f_{\theta_k}(\mathbf{c}_{k, t}, a_t)$$
+3. **Lossless Synthesis**: A complete state is synthesized through an orthonormal basis ($W W^T = I$) or Moore–Penrose pseudo-inverse:
+   $$\mathbf{s} = \text{compose}(\mathbf{c}) = W^T \operatorname{vec}(\mathbf{c})$$
 4. **Regularization Triad**:
-   - **Projector-Gram Orthogonality Loss**: Direct geometric penalty `‖W · Wᵀ - I‖` enforcing strict subspace independence.
+   - **Projector-Gram Orthogonality Loss**: Direct geometric penalty $\|W W^T - I\|_F$ enforcing strict subspace independence.
    - **Coordinate Activity & Variance Hinge**: Guarantees each factor coordinate maintains healthy variance and prevents factor collapse.
    - **Factor Decorrelation**: Ensures statistical independence across factor channels.
 
@@ -52,11 +49,11 @@ In traditional JEPAs:
 
 | Dimension | Monolithic JEPA (PWM Previous) | JEPA-Anything (OPF Paradigm) | Impact on PWM Causal Twin |
 | :--- | :--- | :--- | :--- |
-| **Latent State Architecture** | Flat vector `s_t ∈ ℝ⁶⁴` compressed from text/graph embeddings. | Factorized coordinate matrix `c ∈ ℝ⁴ˣ¹⁶` (`d = K × r = 64`). | **High**: Separates graph topology, velocity, team coordination, and architecture into isolated subspaces. |
-| **Counterfactual Intervention** | Scalar vector perturbation (`perturbation[1] += 0.35`). Actions perturb unrelated dimensions. | Targeted factor perturbations. Action coupling matrices only act on causally relevant factor subspaces. | **Critical**: True Pearl Level 3 Causal Simulation. Interventions avoid bleeding across domains. |
-| **Latent Energy Explainability** | Opaque scalar Euclidean distance: `E = ‖s_(t+1) - s_t‖₂`. | Factor-wise energy decomposition: `E_k = ‖c_(k, t+1) - c_(k, t)‖₂` and percentage attributions. | **High**: Layer 5 Dashboard explains *why* an action carries risk (e.g., 78% PR topology, 4% velocity). |
+| **Latent State Architecture** | Flat vector $\mathbf{s}_t \in \mathbb{R}^{64}$ compressed from text/graph embeddings. | Factorized coordinate matrix $\mathbf{c} \in \mathbb{R}^{4 \times 16}$ ($d = K \times r = 64$). | **High**: Separates graph topology, velocity, team coordination, and architecture into isolated subspaces. |
+| **Counterfactual Intervention** | Scalar vector perturbation ($\mathbf{p}[1] \leftarrow \mathbf{p}[1] + 0.35$). Actions perturb unrelated dimensions. | Targeted factor perturbations. Action coupling matrices only act on causally relevant factor subspaces. | **Critical**: True Pearl Level 3 Causal Simulation. Interventions avoid bleeding across domains. |
+| **Latent Energy Explainability** | Opaque scalar Euclidean distance: $E = \|\mathbf{s}_{t+1} - \mathbf{s}_t\|_2$. | Factor-wise energy decomposition: $E_k = \|\mathbf{c}_{k, t+1} - \mathbf{c}_{k, t}\|_2$ and percentage attributions. | **High**: Layer 5 Dashboard explains *why* an action carries risk (e.g., 78% PR topology, 4% velocity). |
 | **Anti-Collapse Mechanism** | Batch-level SIGReg (Balestriero & LeCun 2025) checking isotropic covariance. | Coordinate-level standard deviation hinge + Projector-Gram geometric orthogonality. | **Medium**: Complements and reinforces existing LeJEPA SIGReg. |
-| **Parameter & Compute Overhead** | Single dense layer: `d × d` parameters. | `K` parallel `r × r` predictors: `K · (r × r) = d × r` (less parameters!) or identical matched capacity. | **Zero Penalty**: Zero extra inference latency or memory footprint; fully scale-to-zero compliant. |
+| **Parameter & Compute Overhead** | Single dense layer: $d \times d$ parameters. | $K$ parallel $r \times r$ predictors: $K \cdot (r \times r) = d \times r$ (fewer parameters) or matched capacity. | **Zero Penalty**: Zero extra inference latency or memory footprint; fully scale-to-zero compliant. |
 
 ---
 
@@ -122,22 +119,20 @@ When evaluating what-if decisions:
   - Imposes maximum **c_velocity** penalty due to discarded work.
 
 ### Enhancement 3: Explainable Latent Energy Attribution
-Previously, PWM calculated a single scalar energy value `E = ‖s_(t+1) - s_t‖₂`.
+Previously, PWM calculated a single scalar energy value $E = \|\mathbf{s}_{t+1} - \mathbf{s}_t\|_2$.
 With OPF, PWM calculates per-factor latent energy:
 
-```text
-Factor Latent Energy:      E_k = ‖c'_k - c_k‖₂
-Factor Risk Attribution:   Attr_k = E_k / (∑ E_j)
-Total Causal Risk:         Risk = min(max(0.45·E_topo + 0.30·E_arch + 0.15·E_velo + 0.10·E_coord + modifier, 0.05), 0.98)
-```
+$$E_k = \|\mathbf{c}'_k - \mathbf{c}_k\|_2$$
+$$\text{Attr}_k = \frac{E_k}{\sum_{j=1}^K E_j}$$
+$$\text{Risk} = \min\left(\max\left(0.45 E_{\text{topo}} + 0.30 E_{\text{arch}} + 0.15 E_{\text{velo}} + 0.10 E_{\text{coord}} + \text{modifier}, 0.05\right), 0.98\right)$$
 
 This transforms cryptic risk scores into intuitive engineering management diagnoses:
 > *"Immediate PR #402 merge carries high risk (0.78). 72% of latent perturbation originates in PR Dependency Topology, while Sprint Velocity accounts for only 4%. Recommendation: Buffer merge until dependency #399 merges to eliminate 72% of the conflict energy."*
 
 ### Enhancement 4: Automated Geometry Auditing for Layer 4 Firewall
 Using `audit_geometry()`, PWM's Layer 4 Auditor Firewall continuously audits the world model's manifold:
-- Checks Gram matrix orthogonality error: `‖W · Wᵀ - I‖ < 10⁻⁶`.
-- Tests random vector reconstruction fidelity: `‖s - compose(decompose(s))‖ < 10⁻⁶`.
+- Checks Gram matrix orthogonality error: $\|W W^T - I\|_F < 10^{-6}$.
+- Tests random vector reconstruction fidelity: $\|\mathbf{s} - \text{compose}(\text{decompose}(\mathbf{s}))\|_2 < 10^{-6}$.
 - Guarantees that agent suggestions do not induce manifold collapse or hallucinated risk values.
 
 ---

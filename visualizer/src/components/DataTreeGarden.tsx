@@ -11,6 +11,16 @@ interface DataTreeGardenProps {
   projectName?: string;
   filters?: Record<string, boolean>;
   uiVisible?: boolean;
+  zEnv?: {
+    reversibility: number;
+    coupling: number;
+    latency: number;
+    exogenous_volatility?: number;
+    stochasticity?: number;
+  } | null;
+  quasimetricEnergy?: number | null;
+  cvar95?: number | null;
+  constraintStatus?: string | null;
   [key: string]: any;
 }
 
@@ -20,6 +30,10 @@ export function DataTreeGarden({
   projectName,
   filters,
   uiVisible = true,
+  zEnv,
+  quasimetricEnergy,
+  cvar95,
+  constraintStatus,
 }: DataTreeGardenProps) {
   const [hoveredInfo, setHoveredInfo] = useState<HoveredData | null>(null);
   const [showLegend, setShowLegend] = useState(true);
@@ -64,6 +78,10 @@ export function DataTreeGarden({
           projectName={projectName}
           filters={filters}
           onHover={setHoveredInfo}
+          zEnv={zEnv}
+          quasimetricEnergy={quasimetricEnergy}
+          cvar95={cvar95}
+          constraintStatus={constraintStatus}
         />
       </Suspense>
 
@@ -176,6 +194,46 @@ export function DataTreeGarden({
                     {hoveredInfo.node.risk?.toFixed(2) ?? '0.00'}
                   </span>
                 </div>
+              </div>
+            )}
+
+            {/* Domain-Agnostic CDT Telemetry */}
+            {(zEnv || hoveredInfo.node.z_env) && (
+              <div style={{ marginTop: '8px', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.12)', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#8ec5fc' }}>System ID (z_env):</span>
+                  <span style={{ fontWeight: 600, color: '#e0e6ed', background: 'rgba(142, 197, 252, 0.15)', padding: '1px 5px', borderRadius: '3px' }}>
+                    γ:{(hoveredInfo.node.z_env?.reversibility ?? zEnv?.reversibility ?? 1.0).toFixed(2)} | κ:{(hoveredInfo.node.z_env?.coupling ?? zEnv?.coupling ?? 0.2).toFixed(2)}
+                  </span>
+                </div>
+                {(hoveredInfo.node.quasimetric_energy !== undefined && hoveredInfo.node.quasimetric_energy !== null || quasimetricEnergy !== undefined && quasimetricEnergy !== null) && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#aaa' }}>Quasimetric E:</span>
+                    <span style={{ fontWeight: 600, color: '#f39c12' }}>
+                      {(hoveredInfo.node.quasimetric_energy ?? quasimetricEnergy)?.toFixed(3)}
+                    </span>
+                  </div>
+                )}
+                {(hoveredInfo.node.cvar_95 !== undefined && hoveredInfo.node.cvar_95 !== null || cvar95 !== undefined && cvar95 !== null) && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#aaa' }}>CVaR₀.₉₅ Risk:</span>
+                    <span style={{ fontWeight: 600, color: '#ff4d4d' }}>
+                      {(hoveredInfo.node.cvar_95 ?? cvar95)?.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {(hoveredInfo.node.constraint_status || constraintStatus) && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: '#aaa' }}>Constraints:</span>
+                    <span style={{
+                      fontWeight: 700,
+                      color: (hoveredInfo.node.constraint_status || constraintStatus)?.startsWith('SAT') ? '#2ecc71' : '#e74c3c',
+                      fontSize: '10px'
+                    }}>
+                      {(hoveredInfo.node.constraint_status || constraintStatus)}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>

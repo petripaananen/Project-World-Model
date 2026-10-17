@@ -6,13 +6,15 @@
 *   [ ] Validate the technical flow of the **5-Layer Architecture** (Observation -> Latent Simulation -> Agentic Orchestration -> Validation -> Scenario Strategist).
 
 ## 2. Economic & Operational Feasibility
-*   [ ] Develop the mathematical calculation engine for the **Compute-to-Rework Ratio (CRR)** (Cost of AI inference / Value of human rework saved).
+*   [ ] Develop the mathematical calculation engine for the **Compute-to-Rework Ratio (CRR)**:
+
+    $$\text{CRR} = \frac{C_{\text{compute}}}{V_{\text{rework}}} = \frac{\text{Cost of AI Inference (€)}}{\text{Value of Human Rework Saved (€)}}$$
 *   [ ] Implement the **"Management Control of Compute"** paradigm: Build cognitive budgeting tools to throttle simulations and combat the *Jevons Paradox* (unchecked hallucination loops inflating cloud bills).
 *   [ ] Design the **Asynchronous 24-Hour Workflow**: Set up night-cycle batch processing for heavy simulations and morning-cycle dashboard generation for executive review.
 
 ## 3. The Scenario Strategist User Experience (UX/UI)
 *   [ ] Develop UI/UX for **Defining Objective Functions** (allowing leaders to set high-level qualitative and quantitative boundaries for the agents).
-*   [ ] Develop UI/UX for **Managing the Intelligence Budget** (real-time CRR dashboard and granular token capping tools).
+*   [ ] Develop UI/UX for **Managing the Intelligence Budget** (real-time $\text{CRR}$ dashboard and granular token capping tools).
 *   [ ] Develop UI/UX for **Resolving Strategic/Creative Conflicts** (the dashboard where pre-validated solutions are presented and the human exercises absolute veto power).
 
 ## 4. Technical Integration Milestones

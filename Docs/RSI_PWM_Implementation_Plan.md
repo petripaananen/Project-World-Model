@@ -114,10 +114,10 @@ graph TD
 #### Tasks:
 1. **Extend `WorldModelCalibrator` with 4-Factor Coordinate Tracking**:
    * Instead of computing a single Euclidean distance over flat 64D vectors, decompose both `predicted` and `actual` states using `OrthogonalPredictiveFactorizer`:
-     * $E_{\text{ground, topo}} = \|c_{\text{topo, pred}} - c_{\text{topo, actual}}\|_2$
-     * $E_{\text{ground, velo}} = \|c_{\text{velo, pred}} - c_{\text{velo, actual}}\|_2$
-     * $E_{\text{ground, comm}} = \|c_{\text{comm, pred}} - c_{\text{comm, actual}}\|_2$
-     * $E_{\text{ground, arch}} = \|c_{\text{arch, pred}} - c_{\text{arch, actual}}\|_2$
+     * $E_{\text{ground, topo}} = \|\mathbf{c}_{\text{topo, pred}} - \mathbf{c}_{\text{topo, actual}}\|_2$
+     * $E_{\text{ground, velo}} = \|\mathbf{c}_{\text{velo, pred}} - \mathbf{c}_{\text{velo, actual}}\|_2$
+     * $E_{\text{ground, comm}} = \|\mathbf{c}_{\text{comm, pred}} - \mathbf{c}_{\text{comm, actual}}\|_2$
+     * $E_{\text{ground, arch}} = \|\mathbf{c}_{\text{arch, pred}} - \mathbf{c}_{\text{arch, actual}}\|_2$
 2. **Implement Experience Trajectory Buffer**:
    * Store historical transitions in `calibration_state.json`:
      ```json
@@ -147,11 +147,11 @@ graph TD
 #### Tasks:
 1. **Unit Tests**:
    * Verify Worker pre-screens multiple strategies and picks the minimum energy strategy.
-   * Verify the Retain Gate rejects proposals when energy increases or CRR exceeds 0.30.
+   * Verify the Retain Gate rejects proposals when energy increases or $\text{CRR} > 0.30$.
    * Verify factorized grounding errors are calculated and stored in `WorldModelCalibrator`.
 2. **End-to-End Test**:
    * Run full pipeline on test scenario (`python -m pwm.main --mode demo`) to verify seamless integration across all 5 layers.
-   * Ensure all 72+ tests pass with zero regressions.
+   * Ensure all 97 tests pass with zero regressions.
 
 ---
 
@@ -160,9 +160,9 @@ graph TD
 | Metric | Baseline (Current) | Target with RSI Integration |
 | :--- | :--- | :--- |
 | **Worker Strategy Quality** | Subjective LLM recommendation | Objective OPF latent energy minimum |
-| **Failed Critic Loop Rounds** | ~25–30% initial rejection rate | $< 12\%$ (due to early latent pre-screening) |
-| **CRR Cost per Resolution** | ~$0.18–$0.25 per resolution | $\le \$0.11$ per resolution (fewer Critic iterations) |
-| **Grounding Drift Visibility** | 1 global scalar | 4 distinct factor drift monitors (`topo`, `velo`, `comm`, `arch`) |
+| **Failed Critic Loop Rounds** | $\approx 25\text{--}30\%$ initial rejection rate | $< 12\%$ (due to early latent pre-screening) |
+| **CRR Cost per Resolution** | $\sim \$0.18\text{--}\$0.25$ per resolution | $\le \$0.11$ per resolution (fewer Critic iterations) |
+| **Grounding Drift Visibility** | $1$ global scalar | $4$ distinct factor drift monitors ($\mathbf{c}_{\text{topo}}$, $\mathbf{c}_{\text{velo}}$, $\mathbf{c}_{\text{comm}}$, $\mathbf{c}_{\text{arch}}$) |
 | **Regression Safety** | Post-hoc manual review | Automated 4-point **Retain Gate** |
 
 ---

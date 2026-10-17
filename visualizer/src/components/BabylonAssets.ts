@@ -969,7 +969,7 @@ export function buildRoseBush(scene: BABYLON.Scene, position: BABYLON.Vector3, s
   return bushNode;
 }
 
-export function buildWeed(scene: BABYLON.Scene, position: BABYLON.Vector3, status: string, node?: any) {
+export function buildWeed(scene: BABYLON.Scene, position: BABYLON.Vector3, status: string, node?: any, reversibility: number = 1.0) {
   const details = node;
   const rockFile = status.toLowerCase() === 'backlog'
     ? 'Rock-UkxWNmiFFj.glb'
@@ -977,10 +977,16 @@ export function buildWeed(scene: BABYLON.Scene, position: BABYLON.Vector3, statu
       ? 'Japanese Sedge.glb'
       : 'Rock.glb';
 
-  const glbRoot = instantiateGLBModel(scene, rockFile, null, position, 0.45, 0, details);
+  // In low reversibility regimes (gamma_rev < 0.6, physical/irreversible), scale boulder mass/density
+  const baseScale = 0.45;
+  const scale = reversibility < 0.6
+    ? baseScale * (1.0 + (1.0 - reversibility) * 0.45)
+    : baseScale;
+
+  const glbRoot = instantiateGLBModel(scene, rockFile, null, position, scale, 0, details);
   if (glbRoot) {
     glbRoot.metadata = { type: 'issue', details };
-    addCollisionBox(scene, glbRoot, 0.55, 0.5, 0); // rock/sedge footprint
+    addCollisionBox(scene, glbRoot, 0.55 * (scale / baseScale), 0.5, 0); // rock/sedge footprint
     return glbRoot;
   }
 

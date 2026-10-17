@@ -40,6 +40,16 @@ interface UnifiedProjectGraph {
 interface PipelineState {
   run_id: string;
   unified_graph?: UnifiedProjectGraph;
+  z_env?: {
+    reversibility: number;
+    coupling: number;
+    latency: number;
+    exogenous_volatility?: number;
+    stochasticity?: number;
+  };
+  quasimetric_energy?: number | null;
+  cvar_95?: number | null;
+  constraint_status?: string | null;
   crr?: {
     crr: number;
     total_ai_cost_usd: number;
@@ -1533,6 +1543,10 @@ function App() {
                 sprintVelocity={activeProjectData?.telemetry?.sprintVelocity}
                 filters={filters}
                 uiVisible={uiVisible}
+                zEnv={pipelineState?.z_env}
+                quasimetricEnergy={pipelineState?.quasimetric_energy}
+                cvar95={pipelineState?.cvar_95}
+                constraintStatus={pipelineState?.constraint_status}
               />
             )}
           </div>

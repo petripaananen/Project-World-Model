@@ -26,6 +26,7 @@ from pwm.ingestion.models import (
 from pwm.agents.critic_agent import CriticAgent
 from pwm.agents.opponent_agent import OpponentAgent
 from pwm.agents.artistic_integrity_agent import ArtisticIntegrityAgent
+from pwm.analysis.constraint_formalizer import ConstraintAutoFormalizer, SymbolicConstraint
 
 class WorkerAgentDispatcher:
     def __init__(self, config: PWMConfig):
@@ -48,6 +49,8 @@ class Layer4Validation:
     """
     Layer 4: Validation / Auditor Firewall.
     Connects to the NVIDIA NemoClaw service to perform security sandbox audits on proposed strategies.
+    Enforces the Neuro-Symbolic Auto-Formalizer at Gate 2b to mathematically guarantee
+    project precedence and capacity compliance before RSI retention.
     Fallback uses prompt-isolated safety critique loops (Gemini CriticAgent).
     """
     def __init__(self, config: PWMConfig):
@@ -57,6 +60,7 @@ class Layer4Validation:
         self.critic = CriticAgent(config)
         self.artistic_integrity = ArtisticIntegrityAgent(config)
         self._worker_dispatcher = WorkerAgentDispatcher(config)
+        self.formalizer = ConstraintAutoFormalizer()
 
     @property
     def token_usage(self) -> Dict[str, int]:
@@ -209,18 +213,38 @@ class Layer4Validation:
         proposals: List[ResolutionProposal],
         verdicts: List[CriticVerdict],
         state: Optional[PWMPipelineState] = None,
+        constraints: Optional[List[Any]] = None,
     ) -> Tuple[List[ResolutionProposal], List[CriticVerdict]]:
         """
         RSI-Anything Phase 2: Layer 4 Gated 'Retain' Firewall.
-        Enforces a 4-criteria validation gate before proposals are retained:
+        Enforces a 5-criteria validation gate before proposals are retained:
           1. Anti-Strategic Dishonesty check (must be False)
           2. Sandbox Security check (must not be sandbox-rejected)
-          3. Latent Risk Tolerance (predicted risk must be < 0.90)
-          4. CRR Budget Ceiling (CRR must be <= 0.30 if CRR report present)
+          2b. Symbolic Constraint Satisfaction (must be SAT)
+          3. Latent Risk & CVaR_0.95 Tolerance (predicted risk < 0.90)
+          4. CRR Budget Ceiling (CRR <= 0.30 if CRR report present)
         """
+        # Resolve active symbolic constraints
+        formal_constraints: List[SymbolicConstraint] = []
+        if constraints:
+            for c in constraints:
+                if isinstance(c, SymbolicConstraint):
+                    formal_constraints.append(c)
+                elif isinstance(c, str):
+                    formal_constraints.extend(self.formalizer.formalize_rules([c]))
+
+        if state and state.universal_events:
+            for evt in state.universal_events:
+                if evt.constraints:
+                    formal_constraints.extend(self.formalizer.formalize_rules(evt.constraints))
+
+        all_sat = True
+
         for proposal, verdict in zip(proposals, verdicts):
             fail_status: Optional[RetainGateStatus] = None
             fail_reason: str = ""
+            symbolic_sat = True
+            symbolic_counterexample: Optional[str] = None
 
             # Check 1: Dishonesty
             if verdict.strategic_dishonesty_detected:
@@ -231,14 +255,24 @@ class Layer4Validation:
                 if "NemoClaw Sandbox Alert" in verdict.critique:
                     fail_status = RetainGateStatus.FAILED_SANDBOX
                     fail_reason = "Security sandbox violation flagged by NemoClaw."
+            # Check 2b: Symbolic Constraint Satisfaction
+            elif formal_constraints:
+                verif = self.formalizer.verify_proposal(proposal, active_constraints=formal_constraints)
+                if not verif.is_sat:
+                    fail_status = RetainGateStatus.FAILED_CONSTRAINT
+                    fail_reason = verif.counterexample_trace
+                    symbolic_sat = False
+                    symbolic_counterexample = verif.counterexample_trace
+                    all_sat = False
             # Check 3: Latent Risk / Energy Tolerance
-            elif proposal.strategies:
+            if not fail_status and proposal.strategies:
                 rec_idx = max(0, min(proposal.recommended_strategy_index, len(proposal.strategies) - 1))
                 rec_strategy = proposal.strategies[rec_idx]
-                if rec_strategy.predicted_risk is not None and rec_strategy.predicted_risk >= 0.90:
+                risk_val = rec_strategy.cvar_95 if rec_strategy.cvar_95 is not None else rec_strategy.predicted_risk
+                if risk_val is not None and risk_val >= 0.90:
                     fail_status = RetainGateStatus.FAILED_ENERGY
                     fail_reason = (
-                        f"Predicted latent risk ({rec_strategy.predicted_risk:.2f}) "
+                        f"Predicted latent risk/CVaR ({risk_val:.2f}) "
                         f"exceeds safe tolerance threshold (0.90)."
                     )
             # Check 4: CRR Budget Ceiling
@@ -258,6 +292,8 @@ class Layer4Validation:
                     status=fail_status,
                     sandbox_cleared=fail_status != RetainGateStatus.FAILED_SANDBOX,
                     dishonesty_detected=fail_status == RetainGateStatus.FAILED_DISHONESTY,
+                    symbolic_sat=symbolic_sat,
+                    symbolic_counterexample=symbolic_counterexample,
                     reason=fail_reason,
                 )
                 proposal.retain_gate_report = report
@@ -270,10 +306,15 @@ class Layer4Validation:
                     status=RetainGateStatus.PASSED,
                     sandbox_cleared=True,
                     dishonesty_detected=False,
-                    reason="Passed all 4 RSI Retain Gate checks (Energy, CRR, Dishonesty, Sandbox).",
+                    symbolic_sat=True,
+                    symbolic_counterexample=None,
+                    reason="Passed all 5 RSI Retain Gate checks (Energy, CRR, Dishonesty, Sandbox, Symbolic Constraints).",
                 )
                 proposal.retain_gate_report = report
                 verdict.retain_gate_report = report
+
+        if state:
+            state.constraint_status = "SAT" if all_sat else "UNSAT"
 
         return proposals, verdicts
 

@@ -14,7 +14,9 @@ By operating as an **L3 Causal Digital Twin**, PWM shifts project management fro
 
 ### Layer 2: Latent Simulation Core (The Brain)
 *   **Goal**: Causal reasoning and "what-if" counterfactuals without heavy pixel rendering.
-*   **Implementation**: For the MVP, we simulate the V-JEPA/LingBot-World semantic abstractions by using Gemini 3.1 Pro's massive context window to map code/asset dependencies and calculate the **Compute-to-Rework Ratio (CRR)**.
+*   **Implementation**: For the MVP, we simulate the V-JEPA/LingBot-World semantic abstractions by using Gemini 3.1 Pro's massive context window to map code/asset dependencies and calculate the **Compute-to-Rework Ratio (CRR)**:
+
+    $$\text{CRR} = \frac{\text{Simulation Inference Cost (€)}}{\text{Avoided Rework Value (€)}}$$
 
 ### Layer 3: Agentic Orchestration (The Workforce)
 *   **Goal**: Asynchronous execution of parallel resolution streams.
@@ -43,5 +45,5 @@ By operating as an **L3 Causal Digital Twin**, PWM shifts project management fro
 *   Run adversarial tests to ensure Beta successfully vetoes bad compromises.
 
 **Phase 3: Causal Simulation Logic (Layer 2)**
-*   Write a Python-based state engine that calculates the **CRR metric** (Compute Token Cost vs. Human Rework Hours Saved).
+*   Write a Python-based state engine that calculates the **$\text{CRR}$ metric** ($\text{CRR} = \frac{C_{\text{compute}}}{V_{\text{rework}}}$ with target threshold $\text{CRR} < 0.10$).
 *   Create a CLI dashboard for the Scenario Strategist to visualize the latent timeline and make veto decisions.

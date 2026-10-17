@@ -108,7 +108,7 @@ class Layer3Orchestration:
                     if state.debt_report and state.debt_report.latent_state
                     else None
                 )
-                proposal = await self.pre_screen_strategies(proposal, base_state=base_latent)
+                proposal = await self.pre_screen_strategies(proposal, base_state=base_latent, z_env=state.z_env)
                 all_proposals.append(proposal)
                 
                 # Accumulate token usage
@@ -127,14 +127,18 @@ class Layer3Orchestration:
         self,
         proposal: ResolutionProposal,
         base_state: Optional[List[float]] = None,
+        z_env: Optional[Any] = None,
     ) -> ResolutionProposal:
         """
         RSI-Anything Phase 1: Predict-Before-Evaluate Pre-Screening Filter.
-        Takes candidate strategies, simulates each in OPF latent space,
-        and objectively selects the strategy with lowest predicted risk and latent energy.
+        Takes candidate strategies, simulates each in OPF latent space conditioned on z_env,
+        computes Quasimetric Latent Energy and CVaR_0.95 tail risk, and objectively
+        selects the strategy with optimal composite risk and irreversibility profile.
         """
         if not proposal.strategies or len(proposal.strategies) <= 1:
             return proposal
+
+        from pwm.simulation.crr_engine import quasimetric_latent_energy, compute_cvar_95
 
         base = base_state or [0.1] * 64
         candidate_actions = []
@@ -162,31 +166,49 @@ class Layer3Orchestration:
             })
 
         try:
-            rollouts = await self.jepa_wm.simulate_counterfactuals(base, candidate_actions)
+            rollouts = await self.jepa_wm.simulate_counterfactuals(base, candidate_actions, z_env=z_env)
+            sigma_exo = float(getattr(z_env, "stochasticity", z_env.get("stochasticity", 0.1) if isinstance(z_env, dict) else 0.1))
+
             for s, r in zip(proposal.strategies, rollouts):
                 s.predicted_risk = r.get("predicted_risk")
                 s.latent_energy = r.get("latent_energy")
                 s.factor_attributions = r.get("factor_attributions")
                 s.factor_energies = r.get("factor_energies")
 
+                pred_state = r.get("predicted_state", base)
+                # Compute Quasimetric Latent Energy
+                q_energy = quasimetric_latent_energy(base, pred_state, z_env=z_env)
+                s.quasimetric_energy = round(q_energy, 4)
+
+                # Compute CVaR_0.95 tail risk
+                risk_val = s.predicted_risk if s.predicted_risk is not None else 0.3
+                cvar = compute_cvar_95(risk_val, sigma_exo=sigma_exo)
+                s.cvar_95 = round(cvar, 4)
+
             # Predict-Before-Evaluate Selection:
-            # Pick strategy with lowest predicted risk (and lowest latent energy as tie-breaker)
+            # Rank by CVaR_0.95 risk, then quasimetric energy
             best_idx = min(
                 range(len(proposal.strategies)),
                 key=lambda i: (
-                    proposal.strategies[i].predicted_risk if proposal.strategies[i].predicted_risk is not None else 999.0,
-                    proposal.strategies[i].latent_energy if proposal.strategies[i].latent_energy is not None else 999.0,
+                    proposal.strategies[i].cvar_95 if proposal.strategies[i].cvar_95 is not None else (
+                        proposal.strategies[i].predicted_risk if proposal.strategies[i].predicted_risk is not None else 999.0
+                    ),
+                    proposal.strategies[i].quasimetric_energy if proposal.strategies[i].quasimetric_energy is not None else (
+                        proposal.strategies[i].latent_energy if proposal.strategies[i].latent_energy is not None else 999.0
+                    ),
                 ),
             )
             proposal.recommended_strategy_index = best_idx
 
             # Enrich worker reasoning with RSI selection justification
             chosen = proposal.strategies[best_idx]
-            if chosen.predicted_risk is not None and chosen.latent_energy is not None:
+            if chosen.predicted_risk is not None:
+                energy_disp = chosen.quasimetric_energy if chosen.quasimetric_energy is not None else chosen.latent_energy
+                cvar_disp = chosen.cvar_95 if chosen.cvar_95 is not None else chosen.predicted_risk
                 proposal.worker_reasoning += (
                     f"\n[RSI Predict-Before-Evaluate]: Strategy '{chosen.title}' objectively selected "
                     f"via OPF simulation (predicted risk: {chosen.predicted_risk:.2f}, "
-                    f"latent energy: {chosen.latent_energy:.4f})."
+                    f"CVaR_0.95: {cvar_disp:.2f}, quasimetric energy: {energy_disp:.4f})."
                 )
         except Exception as e:
             if self.config.verbose:

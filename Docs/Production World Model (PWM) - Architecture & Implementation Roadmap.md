@@ -19,7 +19,7 @@ The following framework maps the discussed open-source models directly to the sp
 
 ## **Layer 2: The Latent Core & Simulation Engine**
 
-**Function:** The predictive core that processes "what-if" workflow scenarios. This layer ensures compute-to-rework ratios (CRR) remain optimized by executing complex causal predictions locally, forecasting the downstream impact of production bottlenecks or schedule shifts.
+**Function:** The predictive core that processes "what-if" workflow scenarios. This layer ensures compute-to-rework ratios ($\text{CRR} = \frac{C_{\text{compute}}}{V_{\text{rework}}} < 0.10$) remain optimized by executing complex causal predictions locally in latent space $\mathbf{s} \in \mathbb{R}^d$, forecasting the downstream impact of production bottlenecks or schedule shifts.
 
 * **Selected Model (Primary):** LeWorldModel / LeWM  
 * **GitHub Link:** [GitHub \- lucas-maes/le-wm: Official code base for LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels](https://github.com/lucas-maes/le-wm)  

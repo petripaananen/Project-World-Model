@@ -176,7 +176,7 @@ Project World Model/
 - **Academic credibility**: The Master's Thesis provides a peer-reviewed conceptual foundation (Thesis §4.2, §5).
 - **Clear 5-layer architecture**: Well-separated concerns mapping to the thesis framework.
 - **Production dashboard**: Modern glassmorphic UI with real-time data, conflict cards, and What-If sandbox.
-- **CRR metric**: A novel KPI backed by the thesis (§5.8.2) with concrete cost/benefit calculation.
+- **$\text{CRR}$ metric**: A novel KPI backed by the thesis (§5.8.2) with concrete cost/benefit calculation ($\text{CRR} = \frac{C_{\text{compute}}}{V_{\text{rework}}} < 0.10$).
 - **SAIF security posture**: Safety filters, sanitizers, and adversarial tests implemented.
 - **GCP GPU VM integration**: Full support for on-demand GPU VM orchestration with automated start/stop cost protection.
 - **Sandbox verification**: Live checks via NVIDIA NemoClaw connector for secure execution audits.

@@ -13,19 +13,20 @@
 # limitations under the License.
 
 import httpx
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from pwm.config import PWMConfig
 from pwm.ingestion.data_fusion import DataFusionEngine
-from pwm.ingestion.models import ProjectState, SprintState, SlackState, UnifiedProjectGraph
+from pwm.ingestion.models import ProjectState, SprintState, SlackState, UnifiedProjectGraph, UniversalEventTuple
+from pwm.ingestion.hypergraph_inducer import HypergraphInducer
 from pwm.simulation.jepa_core import GraphJEPAEncoder
 
 class Layer1Observation:
     """
     Layer 1: Observation & Ingestion.
-    Coordinates telemetry from Git/GitHub, Linear, Slack, and Game Engine.
-    Uses Graph-JEPA to encode project graph topology and V-JEPA to encode
-    video/runtime state. Falls back cleanly to deterministic local graph
-    representation and raw event logs.
+    Coordinates telemetry from Git/GitHub, Linear, Slack, Game Engine,
+    or generic domain records (physical construction, EPC megaprojects).
+    Uses HypergraphInducer to induce UniversalEventTuple hypergraphs,
+    Graph-JEPA to encode topological structures, and Merkle chaining.
     """
     def __init__(self, config: PWMConfig):
         self.config = config
@@ -34,16 +35,31 @@ class Layer1Observation:
             endpoint_url=config.models.graph_jepa_endpoint_url,
             latent_dim=64,
         )
+        self.hypergraph_inducer = HypergraphInducer()
 
     async def process_telemetry(
         self, 
         project_state: Optional[ProjectState] = None, 
         sprint_state: Optional[SprintState] = None,
-        slack_state: Optional[SlackState] = None
+        slack_state: Optional[SlackState] = None,
+        generic_records: Optional[List[Dict[str, Any]]] = None,
+        universal_events: Optional[List[UniversalEventTuple]] = None,
+        domain: str = "software",
     ) -> Dict[str, Any]:
-        # 1. Fuse data into a UnifiedProjectGraph
-        fusion_engine = DataFusionEngine()
-        unified_graph = fusion_engine.fuse(project_state, sprint_state, slack_state)
+        # 1. Induce UniversalEventTuples and synthesize UnifiedProjectGraph
+        tuples: List[UniversalEventTuple] = []
+        if universal_events:
+            tuples = universal_events
+        elif generic_records:
+            tuples = self.hypergraph_inducer.from_generic_records(generic_records, domain=domain)
+        elif project_state or sprint_state or slack_state:
+            tuples = self.hypergraph_inducer.from_software_telemetry(project_state, sprint_state, slack_state)
+
+        if tuples:
+            unified_graph = self.hypergraph_inducer.to_unified_project_graph(tuples)
+        else:
+            fusion_engine = DataFusionEngine()
+            unified_graph = fusion_engine.fuse(project_state, sprint_state, slack_state)
         
         # 2. Encode graph topology via Graph-JEPA
         graph_jepa_result = await self.graph_encoder.encode(unified_graph)

@@ -69,4 +69,22 @@ In the Project World Model Causal Digital Twin, every visual element in the gard
 ## ⛈️ 11. Weather System (Pipeline Load & Debt Severity)
 * **Visual:** Sunny sky with sunbeams vs. overcast sky with rain/storm effects.
 * **DTO Description:** Represents **overall workspace technical debt and test coverage load**.
-* **DTO Function:** Healthy pipelines run in sunny spring weather; high technical debt, failing test suites, or critical PR blocks trigger dark clouds, fog, and falling rain.
+* **DTO Function:** Healthy pipelines ($\text{CRR} \le 0.30$) run in sunny spring weather; high technical debt ($\text{CRR} > 0.30$), failing test suites, or critical PR blocks trigger dark clouds, fog ($\text{density} = 0.008$), and falling rain particles.
+
+## 📐 12. Spatial Physics & Domain-Agnostic Telemetry Mathematics
+The 3D DTO Garden adheres to strict spatial layout constraints and real-time telemetry bindings:
+
+* **Ground-Level Flush Elevation**: All ground objects, soil plots, and bases MUST align flush with the terrain plane:
+  $$y \in [0.005, 0.01]\,\text{m}$$
+* **Centroid Exclusion Radii ($r_{\text{exclusion}}$)**:
+  - Central Water Fountain: $r_{\text{fountain}} = 2.4\,\text{m}$ at $(x, z) = (0.0, 0.0)$
+  - Epic Left & Right Trees: $r_{\text{tree}} = 3.0\,\text{m}$ at $(x, z) = (\pm 3.6, -1.8)$
+  - Verification Agent Avatars: $r_{\text{agent}} = 1.0\,\text{m}$
+* **Dynamic Boulder Mass & Collision Scaling**:
+  When the System Identification reversibility parameter drops below $\gamma_{\text{rev}} < 0.6$ (indicating irreversible physical operations or concrete lock-in), weed/issue boulders scale non-linearly:
+  $$\text{scale} = s_0 \cdot \left[1.0 + (1.0 - \gamma_{\text{rev}}) \cdot 0.45\right]$$
+  where $s_0 = 0.45$ is the base mesh scale. The collision box footprint scales proportionally:
+  $$w_{\text{col}} = 0.55 \cdot \left(\frac{\text{scale}}{s_0}\right)\,\text{m}$$
+* **Raycast Hover Telemetry Binding**: Real-time raycasting dynamically computes and displays the System Identification vector $\mathbf{z}_{\text{env}} = (\gamma_{\text{rev}}, \kappa_{\text{coupling}}, \tau_{\text{latency}}, \sigma_{\text{exo}})^T$, Quasimetric Latent Energy $E_{\text{quasi}}$, and 95th percentile Conditional Value at Risk:
+  $$\text{CVaR}_{0.95}(L) = \mathbb{E}[L \mid L \ge \text{VaR}_{0.95}(L)]$$
+

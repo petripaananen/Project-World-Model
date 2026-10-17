@@ -69,8 +69,71 @@ class ConflictType(str, Enum):
 
 
 # ──────────────────────────────────────────────────────────────
-# Layer 1: Ingestion Models
+# Layer 1: Ingestion Models (Universal Causal Tuple & Domain Specifics)
 # ──────────────────────────────────────────────────────────────
+
+class ActorType(str, Enum):
+    """Categorization of causal actors executing operations."""
+    HUMAN = "human"
+    TEAM = "team"
+    CONTRACTOR = "contractor"
+    AI_AGENT = "ai_agent"
+
+
+class ActorNode(BaseModel):
+    """An actor node in the universal causal hypergraph."""
+    actor_id: str
+    name: str
+    actor_type: ActorType = ActorType.HUMAN
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class OperationType(str, Enum):
+    """Universal state transition operations."""
+    CREATE = "create"
+    MUTATE = "mutate"
+    VERIFY = "verify"
+    BLOCK = "block"
+    COMMIT_RESOURCE = "commit_resource"
+    REVERT = "revert"
+
+
+class ArtifactNode(BaseModel):
+    """
+    An abstract deliverable, task, physical component, or resource
+    with reversibility weighting (Thesis §5.2).
+    """
+    artifact_id: str
+    name: str
+    artifact_type: str = "component"
+    reversibility_weight: float = Field(
+        default=1.0, ge=0.0, le=1.0,
+        description="Reversibility index in [0, 1]. 1.0 = fully reversible (software/docs), 0.0 = irreversible (poured concrete, committed capital).",
+    )
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class UniversalEventTuple(BaseModel):
+    """
+    Universal Domain-Agnostic Project Event Tuple (Layer 1).
+    Decoupled representation mapping software sprints, EPC construction,
+    or R&D pipelines into a unified causal hypergraph.
+    """
+    event_id: str = Field(default_factory=lambda: str(datetime.now().timestamp()))
+    actor: ActorNode
+    operation: OperationType
+    artifact: ArtifactNode
+    dependencies: list[str] = Field(
+        default_factory=list,
+        description="Directed causal edges to upstream artifact_ids or event_ids.",
+    )
+    constraints: list[str] = Field(
+        default_factory=list,
+        description="Natural language or formal constraint references (e.g., temporal precedence, resource limits).",
+    )
+    timestamp: float = Field(default_factory=lambda: datetime.now().timestamp())
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
 
 class CommitInfo(BaseModel):
     """A single commit from the repository."""
@@ -363,6 +426,11 @@ class CRRResult(BaseModel):
     gpu_cost_usd: float = 0.0
     electricity_cost_usd: float = 0.0
 
+    # Phase 3 Quasimetric & CVaR additions
+    quasimetric_energy: Optional[float] = None
+    cvar_95: Optional[float] = None
+    irreversible_rework_cost_usd: float = 0.0
+
     # Jevons Paradox detection (Thesis §5.8.1)
     jevons_paradox_alert: bool = Field(
         default=False,
@@ -434,6 +502,9 @@ class ResolutionStrategy(BaseModel):
     latent_energy: Optional[float] = None
     factor_attributions: Optional[dict[str, float]] = None
     factor_energies: Optional[dict[str, float]] = None
+    # Phase 3 Quasimetric & Tail Risk additions
+    quasimetric_energy: Optional[float] = None
+    cvar_95: Optional[float] = None
 
 
 class RetainGateStatus(str, Enum):
@@ -443,6 +514,7 @@ class RetainGateStatus(str, Enum):
     FAILED_CRR_BUDGET = "failed_crr_budget"
     FAILED_SANDBOX = "failed_sandbox_security"
     FAILED_DISHONESTY = "failed_strategic_dishonesty"
+    FAILED_CONSTRAINT = "failed_symbolic_constraint"
 
 
 class RetainGateReport(BaseModel):
@@ -455,6 +527,8 @@ class RetainGateReport(BaseModel):
     crr_ratio: float = 0.0
     sandbox_cleared: bool = True
     dishonesty_detected: bool = False
+    symbolic_sat: bool = True
+    symbolic_counterexample: Optional[str] = None
     reason: str = ""
 
 
@@ -529,16 +603,21 @@ class PWMPipelineState(BaseModel):
     sprint_state: Optional[SprintState] = None
     slack_state: Optional[SlackState] = None
     unified_graph: Optional[UnifiedProjectGraph] = None
+    universal_events: list[UniversalEventTuple] = Field(default_factory=list)
 
     # Layer 2 outputs
     debt_report: Optional[IntegrationDebtReport] = None
     crr: Optional[CRRResult] = None
+    z_env: Optional[dict[str, float]] = None
 
     # Layer 3 outputs
     proposals: list[ResolutionProposal] = Field(default_factory=list)
+    quasimetric_energy: Optional[float] = None
+    cvar_95: Optional[float] = None
 
     # Layer 4 outputs
     verdicts: list[CriticVerdict] = Field(default_factory=list)
+    constraint_status: Optional[str] = None
 
     # Deterministic flow & stakeholder analytics
     flow_metrics: Optional[dict[str, Any]] = None

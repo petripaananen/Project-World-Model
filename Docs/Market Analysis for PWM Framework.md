@@ -110,9 +110,15 @@ To address this critical reporting gap, the PWM framework introduces and product
 
 ### **Defining and Calculating the CRR Metric**
 
-The CRR mathematically quantifies the financial efficiency of replacing slow, expensive human manual rework with cheap, hyper-fast cognitive computing power (AI inference).1 It is calculated by dividing the total financial cost of the AI inference utilized to simulate a specific scenario by the financial value of the human labor hours (rework) saved by proactively preventing the cascading failure.1
+The Compute-to-Rework Ratio ($\text{CRR}$) mathematically quantifies the financial efficiency of replacing slow, expensive human manual rework with cheap, hyper-fast cognitive computing power (AI inference):
 
-Consider a practical deployment scenario: The PWM's asynchronous Agent Verification Engine spends $10 in raw token compute costs running continuous overnight latent simulations. During this process, the system identifies a deeply embedded architectural memory leak triggered only under highly specific spatial conditions. If left undetected, this error would have required a senior software engineer two full days to trace and manually patch, valued at an estimated $1,200 in human capital. The resulting CRR calculation heavily favors the simulation, yielding an operational ratio of 0.008. A highly optimized, low CRR proves unequivocally to studio CFOs that investing heavily in the PWM's compute budget is vastly more profitable, scalable, and reliable than continually expanding the human QA headcount.1
+$$\text{CRR} = \frac{C_{\text{compute}}}{V_{\text{rework}}} = \frac{\text{Simulation Inference Cost (€)}}{\text{Avoided Rework Value (€)}}$$
+
+Consider a practical deployment scenario: The PWM's asynchronous Agent Verification Engine spends $\$10$ in raw token compute costs running continuous overnight latent simulations. During this process, the system identifies a deeply embedded architectural memory leak triggered only under highly specific spatial conditions. If left undetected, this error would have required a senior software engineer two full days to trace and manually patch, valued at an estimated $\$1{,}200$ in human capital. The resulting $\text{CRR}$ calculation heavily favors the simulation, yielding an operational ratio of:
+
+$$\text{CRR} = \frac{\$10}{\$1{,}200} \approx 0{,}0083 \quad (\approx 120\times\ \text{ROI})$$
+
+A highly optimized, low $\text{CRR} < 0.10$ proves unequivocally to studio CFOs that investing heavily in the PWM's compute budget is vastly more profitable, scalable, and reliable than continually expanding the human QA headcount.
 
 ### **Token Price Collapse and the Management of the Jevons Paradox**
 

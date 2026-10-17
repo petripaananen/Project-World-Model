@@ -131,11 +131,34 @@ class DashboardState:
                 "factor": calibrator.calibration_factor,
                 "history": calibrator.history[-20:]
             }
+            default_z_env = calibrator.z_env.to_dict()
         except Exception:
             data["calibration"] = {
                 "factor": 1.0,
                 "history": []
             }
+            default_z_env = {
+                "reversibility": 1.0,
+                "coupling": 0.2,
+                "latency": 1.0,
+                "stochasticity": 0.1,
+            }
+
+        # Embed Domain-Agnostic Telemetry (z_env, quasimetric energy, CVaR_0.95, constraints)
+        data["z_env"] = state.z_env or default_z_env
+        best_strat = None
+        if state.proposals and state.proposals[0].strategies:
+            idx = state.proposals[0].recommended_strategy_index
+            if 0 <= idx < len(state.proposals[0].strategies):
+                best_strat = state.proposals[0].strategies[idx]
+
+        data["quasimetric_energy"] = state.quasimetric_energy if state.quasimetric_energy is not None else (
+            getattr(best_strat, "quasimetric_energy", None) if best_strat else None
+        )
+        data["cvar_95"] = state.cvar_95 if state.cvar_95 is not None else (
+            getattr(best_strat, "cvar_95", None) if best_strat else None
+        )
+        data["constraint_status"] = state.constraint_status or "SAT"
 
         # Embed cycle data directly into state (Thesis Kuvio 8)
         try:

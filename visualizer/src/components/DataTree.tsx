@@ -12,6 +12,11 @@ export interface TaskNode {
   subtasks?: TaskNode[];
   description?: string;
   elementType?: string;
+  z_env?: any;
+  quasimetric_energy?: number | null;
+  cvar_95?: number | null;
+  constraint_status?: string | null;
+  [key: string]: any;
 }
 
 export interface HoveredData {

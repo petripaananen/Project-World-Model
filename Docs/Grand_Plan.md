@@ -80,13 +80,11 @@ Layers 2, 3, and 4 collectively form the **"Itseohjautuvat työnkulut"** (self-g
 
 The thesis introduces **CRR** as the new primary KPI replacing Agile Velocity:
 
-```
-CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
-```
+$$\text{CRR} = \frac{\text{Simulation Inference Cost (€)}}{\text{Avoided Human Rework Value (€)}}$$
 
 - **Numerator**: Token costs + GPU infrastructure costs for latent simulation
 - **Denominator**: Human expert-hours saved by detecting cascading failures in latent space before they reach production (at €75/hour developer rate)
-- **Thesis example** (§5.8.2): 2M tokens @ €10 inference → detects critical memory leak → saves 15h dev time (€1,125) → **CRR = 0.008** (125x return)
+- **Thesis example** (§5.8.2): $2 \times 10^6$ tokens @ €10 inference $\to$ detects critical memory leak $\to$ saves $15\,\text{h}$ dev time (€1,125) $\to$ $\text{CRR} = 0.008$ ($125\times$ return)
 
 > [!WARNING]
 > **Compute Runaway Alert (Compute Runaway Warning)** (Thesis §5.8.1): As inference costs plummet, total compute consumption explodes. The Scenario Strategist must enforce **token budget ceilings** to prevent hallucination loops inflating cloud bills.
@@ -94,12 +92,12 @@ CRR = Simulation Inference Cost (€) / Avoided Human Rework Value (€)
 ### 📏 CRR Interpretation Thresholds
 
 | CRR Value | Interpretation |
-|-----------|---------------|
-| < 0.01 | Exceptional — AI costs negligible vs. rework |
-| < 0.10 | Excellent — AI is 10x+ cheaper than human rework |
-| < 0.50 | Good — Significant savings |
-| < 1.00 | Warning — Margins thin, approaching Compute Runaway territory |
-| ≥ 1.00 | Danger — AI costs exceed human rework value; recalibrate |
+|---|---|
+| $\text{CRR} < 0.01$ | Exceptional — AI costs negligible vs. rework |
+| $\text{CRR} < 0.10$ | Excellent — AI is $10\times$+ cheaper than human rework |
+| $\text{CRR} < 0.50$ | Good — Significant savings |
+| $\text{CRR} < 1.00$ | Warning — Margins thin, approaching Compute Runaway territory |
+| $\text{CRR} \ge 1.00$ | Danger — AI costs exceed human rework value; recalibrate |
 
 ---
 

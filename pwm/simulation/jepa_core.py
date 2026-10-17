@@ -301,13 +301,23 @@ class OrthogonalPredictiveFactorizer:
         action_name: str,
         action_type: str,
         risk_modifier: float = 0.0,
+        z_env: Optional[Any] = None,
     ) -> Dict[str, Any]:
         """
         Executes an action intervention along factorized predictive coordinates.
-        Computes per-factor energy E_k = ||c'_k - c_k||_2 and attribution ratios.
+        Conditioned on continuous latent system identification z_env:
+            P(s_{t+1} | s_t, a_t, z_env)
+        Computes per-factor energy E_k = ||c'_k - c_k||_2 and attribution ratios
+        while preserving orthonormal basis geometry ||W W^T - I||_F < 10^-6.
         """
         base_coords = self.decompose(base_state)  # shape (4, 16)
         perturbed_coords = np.copy(base_coords)
+
+        # Extract z_env parameters (default to software nominal: gamma=1.0, kappa=0.2, tau=1.0, sigma=0.1)
+        gamma_rev = float(getattr(z_env, "reversibility", z_env.get("reversibility", 1.0) if isinstance(z_env, dict) else 1.0))
+        kappa_coupling = float(getattr(z_env, "coupling", z_env.get("coupling", 0.2) if isinstance(z_env, dict) else 0.2))
+        tau_latency = float(getattr(z_env, "latency", z_env.get("latency", 1.0) if isinstance(z_env, dict) else 1.0))
+        sigma_exo = float(getattr(z_env, "stochasticity", z_env.get("stochasticity", 0.1) if isinstance(z_env, dict) else 0.1))
 
         # Factor-targeted perturbation deltas:
         # Index 0: topology, Index 1: velocity, Index 2: coordination, Index 3: architecture
@@ -326,9 +336,10 @@ class OrthogonalPredictiveFactorizer:
             perturbed_coords[2, 0] += 0.05
         elif "revert" in act_lower:
             # Reverting clears architectural defects and merge conflicts, but incurs rework lag
-            perturbed_coords[0, 0] -= 0.35
-            perturbed_coords[3, 0] -= 0.40
-            perturbed_coords[1, 0] += 0.35
+            revert_clearance = 0.40 * gamma_rev  # Irreversible environments cannot clear architecture freely
+            perturbed_coords[0, 0] -= 0.35 * gamma_rev
+            perturbed_coords[3, 0] -= revert_clearance
+            perturbed_coords[1, 0] += 0.35 + ((1.0 - gamma_rev) * 0.20)
             perturbed_coords[2, 0] += 0.10
         elif "reallocate" in act_lower:
             # Reallocating team changes coordination and smooths velocity
@@ -337,6 +348,26 @@ class OrthogonalPredictiveFactorizer:
         else:
             # Generic action
             perturbed_coords[0, 0] += 0.10 + risk_modifier
+
+        # ── System Identification (z_env) Conditioning ──────────────────
+        if gamma_rev < 1.0 and "revert" not in act_lower:
+            # Low reversibility: lock-in penalty expands permanent architectural & topological footprints
+            irrev_delta = 1.0 - gamma_rev
+            perturbed_coords[3, 1] += irrev_delta * 0.30
+            perturbed_coords[0, 2] += irrev_delta * 0.20
+
+        if kappa_coupling > 0.2:
+            # High coupling rigidity: cascades topological churn into coordination
+            perturbed_coords[2, 1] += (kappa_coupling - 0.2) * abs(perturbed_coords[0, 0])
+
+        if tau_latency > 1.0:
+            # Latency damping: slows velocity transition response
+            lag_factor = 1.0 / (1.0 + 0.15 * (tau_latency - 1.0))
+            perturbed_coords[1, :] = base_coords[1, :] + (perturbed_coords[1, :] - base_coords[1, :]) * lag_factor
+
+        if sigma_exo > 0.05:
+            # Exogenous stochasticity: injects deterministic bounded residual variance
+            perturbed_coords[1, 2] += 0.05 * sigma_exo * math.sin(float(perturbed_coords[0, 0]))
 
         # Compute factor-wise latent energies E_k = ||c'_k - c_k||_2
         factor_energies: Dict[str, float] = {}
@@ -395,7 +426,7 @@ class JEPAWorldModel:
     powered by Orthogonal Predictive Factorization (OPF) (Gen-Verse / JEPA-Anything).
 
     Simulates counterfactual actions in factorized latent space:
-        c_{k, t+1} = Predictor_k(c_{k, t}, action)
+        c_{k, t+1} = Predictor_k(c_{k, t}, action, z_env)
         s_{t+1} = compose(c_{t+1})
     and evaluates latent energy / risk with factor attribution without pixel generation
     or build execution.
@@ -416,6 +447,7 @@ class JEPAWorldModel:
         self,
         base_state: List[float],
         actions: List[Dict[str, Any]],
+        z_env: Optional[Any] = None,
     ) -> List[Dict[str, Any]]:
         """
         Simulate a list of candidate actions from current latent state.
@@ -451,6 +483,7 @@ class JEPAWorldModel:
                 action_name=action_name,
                 action_type=action_type,
                 risk_modifier=risk_modifier,
+                z_env=z_env,
             )
             rollouts.append(rollout)
 

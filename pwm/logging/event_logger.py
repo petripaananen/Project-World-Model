@@ -152,6 +152,15 @@ class EventLogger:
     def log_path(self) -> Path:
         return self._log_path
 
+    @property
+    def last_event_hash(self) -> str:
+        """Returns the latest Merkle chain hash."""
+        return self._last_event_hash
+
+    def get_last_event_hash(self) -> str:
+        """Returns the latest Merkle chain hash."""
+        return self._last_event_hash
+
     def has_firestore(self) -> bool:
         """Check if Firestore client is initialized and active."""
         return self._db is not None

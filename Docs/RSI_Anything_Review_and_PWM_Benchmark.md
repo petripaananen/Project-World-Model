@@ -42,11 +42,13 @@ graph TD
     P6 -->|Next Iteration Baseline| P1
 ```
 
-1. **Propose**: A generator or worker policy proposes a diverse set of candidate actions, code diffs, or plans (`a₁, a₂, ..., aₙ`).
-2. **Predict**: The JEPA-Anything world model predicts the latent outcome and latent energy `E_k` for all proposed candidates *in parallel inside latent space* without touching real compilers, test suites, or live environments.
-3. **Select**: The framework ranks candidates by predicted score and selects only the highest-potential candidate for ground-truth execution.
+1. **Propose**: A generator or worker policy proposes a diverse set of candidate actions, code diffs, or plans ($\mathcal{A} = \{a_1, a_2, \dots, a_n\}$).
+2. **Predict**: The JEPA-Anything world model predicts the latent outcome and latent energy $E_k = \|\mathbf{c}_k' - \mathbf{c}_k\|_2$ for all proposed candidates *in parallel inside latent space* without touching real compilers, test suites, or live environments.
+3. **Select**: The framework ranks candidates by predicted score:
+   $$\pi^* = \arg\min_{\pi \in \Pi} [0.45 \cdot \text{Risk}(\pi) + 0.35 \cdot \text{CVaR}_{0.95}(\pi) + 0.20 \cdot E_{\text{quasi}}(\pi)]$$
+   and selects only the highest-potential candidate for ground-truth execution.
 4. **Evaluate**: Only the chosen candidate triggers expensive external evaluation (test runner, compiler, or sandbox).
-5. **Learn**: The gap between the world model's prediction and the real-world observation (Grounding Error) provides supervision to update both the policy and the world model.
+5. **Learn**: The gap between the world model's prediction and the real-world observation (Grounding Error $\|\mathbf{s}_{\text{pred}} - \mathbf{s}_{\text{obs}}\|_2$) provides supervision to update both the policy and the world model.
 6. **Retain**: A strict **compatibility gate** audits the updated policy-model pair. If the update degrades performance on benchmark anchors, it is rejected and rolled back.
 
 ### Key Empirical Results Reported in the Paper
@@ -62,11 +64,11 @@ graph TD
 | Feature / Dimension | RSI-Anything (Gen-Verse 2026) | Project World Model (PWM) | Comparative Assessment |
 | :--- | :--- | :--- | :--- |
 | **Primary Mission** | Domain-general algorithmic self-improvement across discrete tasks (code repair, GUI, lab). | Enterprise Causal Digital Twin (CDT) managing socio-technical integration debt. | **Complementary**: RSI focuses on algorithm iteration; PWM focuses on enterprise engineering governance. |
-| **Underlying World Model** | Monolithic or factorized JEPA-Anything (OPF). | Hybrid: Graph-JEPA + LeJEPA (SIGReg) + Point-JEPA + OPF (4 factor groups). | **PWM Advantage**: PWM models multi-modal project reality (Git ASTs + Agile sprints + Slack + 3D meshes). |
-| **Candidate Filtering** | **Predict-Before-Execute**: Generates `N` candidates, scores in latent space, tests only top candidate. | Single-pass proposal generation per conflict, evaluated directly by Critic Agent. | **RSI Advantage**: RSI avoids expensive downstream evaluation by filtering early in latent space. |
+| **Underlying World Model** | Monolithic or factorized JEPA-Anything (OPF). | Hybrid: Graph-JEPA + LeJEPA (SIGReg) + Point-JEPA + OPF ($K=4$ factor groups, $r=16$). | **PWM Advantage**: PWM models multi-modal project reality (Git ASTs + Agile sprints + Slack + 3D meshes). |
+| **Candidate Filtering** | **Predict-Before-Execute**: Generates $N$ candidates, scores in latent space, tests only top candidate. | Single-pass proposal generation per conflict, evaluated directly by Critic Agent. | **RSI Advantage**: RSI avoids expensive downstream evaluation by filtering early in latent space. |
 | **Adversarial Audit & Deception** | None. Relies on standard test suites and objective reward metrics. | **Layer 4 Auditor Firewall**: Explicitly audits Worker proposals for *Strategic Dishonesty* and pseudo-alignment. | **PWM Advantage**: RSI is blind to agents cutting corners, faking tests, or introducing malicious code. |
-| **Self-Improvement Mechanism** | Multi-generation policy fine-tuning + world model weight adaptation with gated retention. | `WorldModelCalibrator` tuning online learning rate factor based on L2 Grounding Error. | **RSI Advantage**: RSI updates the full policy and model; PWM currently updates a calibration scalar. |
-| **Economic Guardrails** | None (unbounded compute until budget runs out). | **CRR Law**: `CRR = Simulation Inference Cost / Value of Avoided Rework`, scale-to-zero enforcement. | **PWM Advantage**: PWM guarantees business viability and prevents Jevons Paradox cost runaways. |
+| **Self-Improvement Mechanism** | Multi-generation policy fine-tuning + world model weight adaptation with gated retention. | `WorldModelCalibrator` tuning online learning rate factor based on $L_2$ Grounding Error. | **RSI Advantage**: RSI updates the full policy and model; PWM currently updates a calibration scalar. |
+| **Economic Guardrails** | None (unbounded compute until budget runs out). | **CRR Law**: $\text{CRR} = \frac{\text{Simulation Inference Cost } (€)}{\text{Value of Avoided Rework } (€)}$, scale-to-zero enforcement. | **PWM Advantage**: PWM guarantees business viability and prevents Jevons Paradox cost runaways. |
 | **Human Governance** | Autonomous closed loop; no explicit human veto mechanism. | **Layer 5 Scenario Strategist**: Human retains absolute veto power; creative direction reserved for humans. | **PWM Advantage**: Complies with EU AI Act, enterprise IP safety, and engineer morale safeguards. |
 
 ---
@@ -94,9 +96,9 @@ graph TD
 #### Pros
 1. **Holistic Socio-Technical Modeling**: Simultaneously tracks code ASTs, PR dependency graphs, Agile burndown rates, Slack communication friction, and 3D spatial collisions in a single digital twin.
 2. **Auditor Firewall & Anti-Strategic Dishonesty**: Layer 4 explicitly detects when AI agents are being unrealistically optimistic, cutting corners, or attempting sandbox escape.
-3. **CRR Economic Viability**: Every simulation cycle is mathematically bounded by the Compute-to-Rework Ratio, ensuring that agent compute never costs more than the developer hours it saves.
+3. **CRR Economic Viability**: Every simulation cycle is mathematically bounded by the Compute-to-Rework Ratio ($\text{CRR} \le 0.30$), ensuring that agent compute never costs more than the developer hours it saves.
 4. **Human-in-the-Loop Governance**: Real-time Day/Night simulation dashboards give engineering leads clear factor-attributed risk gauges and absolute veto control.
-5. **Factorized Latent State (OPF Integrated)**: Latent state decomposes cleanly into 4 orthogonal factor subspaces (`c_topology`, `c_velocity`, `c_coordination`, `c_architecture`), providing transparent causal explainability.
+5. **Factorized Latent State (OPF Integrated)**: Latent state decomposes cleanly into $K=4$ orthogonal factor subspaces ($\mathbf{c}_{\text{topology}}, \mathbf{c}_{\text{velocity}}, \mathbf{c}_{\text{coordination}}, \mathbf{c}_{\text{architecture}}$), providing transparent causal explainability.
 
 #### Cons
 1. **Heuristic Single-Pass Proposals**: In Layer 3, Worker agents currently generate a single resolution proposal per conflict rather than evaluating a pool of candidate diffs against the world model prior to critique.
@@ -127,20 +129,20 @@ graph TD
 ```
 
 ### Improvement 1: Pre-Screening Proposals with OPF (`Predict → Select`)
-* **How it works**: When a Worker agent resolves a conflict, it prompts Gemini with temperature 0.7 to generate `N = 3` candidate resolution diffs.
+* **How it works**: When a Worker agent resolves a conflict, it prompts Gemini with temperature 0.7 to generate $N = 3$ candidate resolution diffs: $\mathcal{A}_{\text{cand}} = \{a_1, a_2, a_3\}$.
 * Before invoking the expensive Critic Agent (which costs significant LLM tokens), PWM encodes the diffs into candidate vectors and calls [`JEPAWorldModel.simulate_counterfactuals`](file:///c:/Users/petri/.gemini/antigravity/ProjectWorldModel/pwm/simulation/jepa_core.py#L383).
-* The candidate with the lowest predicted risk and minimal `architecture` + `topology` energy is selected.
+* The candidate with the lowest predicted risk and minimal $E_{\text{arch}} + E_{\text{topo}}$ energy is selected.
 * **CRR Benefit**: Cuts failed Critic rounds by ~50%, saving token budget and maximizing CRR.
 
 ### Improvement 2: The "Retain" Gate in Layer 4 Auditor Firewall
 * **How it works**: When an overnight simulation cycle generates a series of auto-fixes or workflow changes, PWM passes them through a formal `Retain` check:
-  1. Did the fix reduce total latent energy across the 4 factors?
+  1. Did the fix reduce total latent energy across the $K=4$ factors: $\sum_{k=1}^4 E_k < E_{\text{threshold}}$?
   2. Did it pass all regression tests in the sandboxed build?
-  3. Is the CRR $< 0.30$?
-* If any check fails, the candidate is discarded and flagged for human review in the Layer 5 Dashboard.
+  3. Is the CRR within budget: $\text{CRR} < 0.30$?
+* If any check fails, the candidate is discarded and flagged for human review in the Layer 5 Dashboard (`RETAIN_VETOED`).
 
 ### Improvement 3: Multi-Generation Experience Buffer in `WorldModelCalibrator`
-* Extend [`pwm/simulation/calibration.py`](file:///c:/Users/petri/.gemini/antigravity/ProjectWorldModel/pwm/simulation/calibration.py) to store a rolling trajectory buffer of `(s_predicted, action, s_observed, outcome)`.
+* Extend [`pwm/simulation/calibration.py`](file:///c:/Users/petri/.gemini/antigravity/ProjectWorldModel/pwm/simulation/calibration.py) to store a rolling trajectory buffer of $(\mathbf{s}_{\text{pred}}, a, \mathbf{s}_{\text{obs}}, \text{outcome})$.
 * When grounding error exceeds the threshold, use the buffer to adjust factor-specific coupling weights rather than just a single global scalar.
 
 ---
